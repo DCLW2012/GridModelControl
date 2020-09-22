@@ -34,6 +34,7 @@ namespace Common
         public static bool updateraintile { get; set; }
         public static bool isgenraintile { get; set; }
         public static bool updatebyfile { get; set; }
-
+        public static bool isstartbat { get; set; }
+        
     }
 }

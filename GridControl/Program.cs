@@ -122,22 +122,7 @@ namespace GridControl
                                                     Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
                                                 }
                                             }
-                                            if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
-                                            {
-                                                string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
-                                                DirectoryInfo info = new DirectoryInfo(apppath);
-                                                String batRootPath = info.Parent.FullName;
-                                                bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
-                                                if (isStartsucess)
-                                                {
-                                                    Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
-                                                }
-
-                                            }
+                                            
                                         }
                                         else
                                         {
@@ -147,7 +132,7 @@ namespace GridControl
 
 
                                     //12、写出bat，执行,传入bat批量启动全路径
-                                    if (dbTableConfigs[keyString].Count > 0)
+                                    if (dbTableConfigs[keyString].Count > 0 && HookHelper.isstartbat)
                                     {
                                         if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
                                         {
@@ -263,22 +248,7 @@ namespace GridControl
                                                 Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
                                             }
                                         }
-                                        if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
-                                        {
-                                            string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
-                                            DirectoryInfo info = new DirectoryInfo(apppath);
-                                            String batRootPath = info.Parent.FullName;
-                                            bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
-                                            if (isStartsucess)
-                                            {
-                                                Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
-                                            }
-
-                                        }
+                                       
                                     }
                                     else
                                     {
@@ -288,7 +258,7 @@ namespace GridControl
 
 
                                 //12、写出bat，执行,传入bat批量启动全路径
-                                if (dbTableConfigs[keyString].Count > 0)
+                                if (dbTableConfigs[keyString].Count > 0 && HookHelper.isstartbat)
                                 {
                                     if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
                                     {
@@ -370,18 +340,22 @@ namespace GridControl
 
             }
 
-            HookHelper.updatebyfile = false;
-            if (args.Contains("-updatebyfile"))
+
+            HookHelper.isstartbat = false;
+            if (args.Contains("-isstartbat"))
             {
-                int index = args.ToList().IndexOf("-updatebyfile");
+                int index = args.ToList().IndexOf("-isstartbat");
 
                 //！ 参数标识符 后放的有值，才更新初始控制参数
                 if (index + 1 <= args.Length - 1)
                 {
-                    HookHelper.updatebyfile = bool.Parse(args[index + 1]);
+                    HookHelper.isstartbat = bool.Parse(args[index + 1]);
                 }
 
             }
+            
+
+            
             
 
             HookHelper.updateraintile = true;
