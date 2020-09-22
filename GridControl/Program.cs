@@ -67,7 +67,7 @@ namespace GridControl
                                 HookHelper.rainTileDirectory = folderPath;
 
                                 //!1、执行切片，调用python执行
-                                bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
+                                bool isGenTilesucess = true; //GenRainTile.CreateTile(curDatFullname, folderPath);
 
                                 if (!isGenTilesucess)
                                 {

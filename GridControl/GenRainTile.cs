@@ -69,6 +69,21 @@ namespace GridControl
             myProcess.WaitForExit();
             #endregion
 
+            //string path1 = System.IO.Directory.GetCurrentDirectory();
+            //string pythonFullname = path1 + "//script//" + HookHelper.raindataForPython;
+            //Process p = new Process(); // create process (i.e., the python program
+            //p.StartInfo.FileName = "python.exe";
+            //p.StartInfo.RedirectStandardOutput = true;
+            //p.StartInfo.UseShellExecute = false; // make sure we can read the output from stdout
+            //p.StartInfo.Arguments = pythonFullname + datFullname; // start the python program with two parameters
+            //p.Start(); // start the process (the python program)
+
+            //StreamReader s = p.StandardOutput;
+            //String output = s.ReadToEnd();
+            //string[] r = output.Split(new char[] { ' ' }); // get the parameter
+            //Console.WriteLine(r[0]);
+
+            //p.WaitForExit();
             return true;
         }
 
