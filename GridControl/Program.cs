@@ -39,12 +39,155 @@ namespace GridControl
             try
             {
                 //! 遍历指定目录下的降雨数据
-                FileInfo[] fInfo = GenRainTile.GetRaindatList();
-                int datnum = fInfo.Length;
-                for (int d = 0; d < datnum; ++d)
+                if (HookHelper.isgenraintile)
+                {
+                    FileInfo[] fInfo = GenRainTile.GetRaindatList();
+                    int datnum = fInfo.Length;
+                    for (int d = 0; d < datnum; ++d)
+                    {
+                        //! 当前dat文件全路径
+                        string curDatFullname = fInfo[d].FullName;
+
+                        int num = dbValues.Count;
+                        //！ 遍历每个省的网格模型
+                        foreach (var curDB in dbValues)
+                        {
+                            //! key名称
+                            string keyString = curDB.Key;
+
+                            //！ 每个省的切片目录,对每个省执行两步操作
+                            //! 1、根据指定的src降雨目录，执行python切片，输出路径为tile指定的目录
+                            //！2、根据数据库中配置的模型存放目录，写出批量启动bat命令，一次性启动当前省份的n个并行程序
+                            foreach (var curTBType in curDB.Value)
+                            {
+                                //! 只有配置了raintile目录才执行计算
+                                string keyTableType = curTBType.Key;
+                                string folderPath = curTBType.Value;
+                                HookHelper.rainTileDirectory = "";
+                                if (keyTableType.ToUpper() == "RAINTILEFOLDER")
+                                {
+                                    HookHelper.rainTileDirectory = folderPath;
+
+                                    //!1、执行切片，调用python执行
+                                    if (HookHelper.isgenraintile)
+                                    {
+                                        bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
+
+                                        if (!isGenTilesucess)
+                                        {
+                                            Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", keyString) + DateTime.Now);
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", keyString) + DateTime.Now);
+                                        }
+                                    }
+
+                                    //! 启动bat前是否执行exec.bat文件的更新--仅更新降雨目录
+                                    if (HookHelper.updateraintile && d == 0)
+                                    {
+                                        //！遍历当前省份下 computer中的所有app路径，在路径下找到exec.bat文件，替换其中的out值
+                                        if (dbTableConfigs[keyString].Count > 0)
+                                        {
+                                            int appnum = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count;
+                                            for (int a = 0; a < appnum; ++a)
+                                            {
+                                                //!当前路径
+                                                string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                                                string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                                                //execbat路径
+                                                string execpath = apppath + "exec.bat";
+                                                if (apppath.EndsWith("/"))
+                                                {
+                                                    execpath = apppath + "exec.bat";
+                                                }
+                                                else
+                                                {
+                                                    execpath = apppath + "\\" + "exec.bat";
+                                                }
+
+
+                                                string outpath = HookHelper.rainTileDirectory;
+
+                                                // 更新execpath的值
+                                                bool isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                                //！覆盖更新通过模板文件
+                                                if (HookHelper.updatebyfile)
+                                                {
+                                                    isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
+                                                }
+                                                if (isUpExec)
+                                                {
+                                                    Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
+                                                }
+                                            }
+                                            if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
+                                            {
+                                                string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
+                                                DirectoryInfo info = new DirectoryInfo(apppath);
+                                                String batRootPath = info.Parent.FullName;
+                                                bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                                if (isStartsucess)
+                                                {
+                                                    Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
+                                                }
+
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine(string.Format("{0}区域更新exec.bat失败  ", keyString) + DateTime.Now);
+                                        }
+                                    }
+
+
+                                    //12、写出bat，执行,传入bat批量启动全路径
+                                    if (dbTableConfigs[keyString].Count > 0)
+                                    {
+                                        if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
+                                        {
+                                            string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
+                                            DirectoryInfo info = new DirectoryInfo(apppath);
+                                            String batRootPath = info.Parent.FullName;
+                                            bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                            if (isStartsucess)
+                                            {
+                                                Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
+                                            }
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(string.Format("{0}区域所有单元批量执行失败  ", keyString) + DateTime.Now);
+                                    }
+
+                                }
+
+
+
+                            }
+                            Console.WriteLine(string.Format("{0}台风场{1}省份区域计算完成  ", curDatFullname, keyString) + DateTime.Now);
+                            Console.WriteLine(string.Format("-------------------{0}场次{1}区域END---------------------", curDatFullname, keyString) + DateTime.Now);
+                        }
+
+                        Console.WriteLine(string.Format("{0}台风场所有省份计算完成  ", curDatFullname) + DateTime.Now);
+                        Console.WriteLine(string.Format("*****************************{0}场次END**************************", curDatFullname) + DateTime.Now);
+                    }
+                }
+                else
                 {
                     //! 当前dat文件全路径
-                    string curDatFullname = fInfo[d].FullName;
+                    string curDatFullname = "仅更新参数文件，不切片";
 
                     int num = dbValues.Count;
                     //！ 遍历每个省的网格模型
@@ -67,16 +210,83 @@ namespace GridControl
                                 HookHelper.rainTileDirectory = folderPath;
 
                                 //!1、执行切片，调用python执行
-                                bool isGenTilesucess = true; //GenRainTile.CreateTile(curDatFullname, folderPath);
+                                if (HookHelper.isgenraintile)
+                                {
+                                    bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
 
-                                if (!isGenTilesucess)
-                                {
-                                    Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", keyString) + DateTime.Now);
-                                    continue;
-                                }else
-                                {
-                                    Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", keyString) + DateTime.Now);
+                                    if (!isGenTilesucess)
+                                    {
+                                        Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", keyString) + DateTime.Now);
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", keyString) + DateTime.Now);
+                                    }
                                 }
+
+                                //! 启动bat前是否执行exec.bat文件的更新--仅更新降雨目录
+                                if (HookHelper.updateraintile)
+                                {
+                                    //！遍历当前省份下 computer中的所有app路径，在路径下找到exec.bat文件，替换其中的out值
+                                    if (dbTableConfigs[keyString].Count > 0)
+                                    {
+                                        int appnum = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count;
+                                        for (int a = 0; a < appnum; ++a)
+                                        {
+                                            //!当前路径
+                                            string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                                            string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                                            //execbat路径
+                                            string execpath = apppath + "exec.bat";
+                                            if (apppath.EndsWith("/"))
+                                            {
+                                                execpath = apppath + "exec.bat";
+                                            }
+                                            else
+                                            {
+                                                execpath = apppath + "\\" + "exec.bat";
+                                            }
+
+
+                                            string outpath = HookHelper.rainTileDirectory;
+
+                                            // 更新execpath的值
+                                            bool isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                            //！覆盖更新通过模板文件
+                                            if (HookHelper.updatebyfile)
+                                            {
+                                                isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
+                                            }
+                                            if (isUpExec)
+                                            {
+                                                Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
+                                            }
+                                        }
+                                        if (dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows.Count > 0)
+                                        {
+                                            string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
+                                            DirectoryInfo info = new DirectoryInfo(apppath);
+                                            String batRootPath = info.Parent.FullName;
+                                            bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                            if (isStartsucess)
+                                            {
+                                                Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
+                                            }
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(string.Format("{0}区域更新exec.bat失败  ", keyString) + DateTime.Now);
+                                    }
+                                }
+
+
                                 //12、写出bat，执行,传入bat批量启动全路径
                                 if (dbTableConfigs[keyString].Count > 0)
                                 {
@@ -85,21 +295,23 @@ namespace GridControl
                                         string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
                                         DirectoryInfo info = new DirectoryInfo(apppath);
                                         String batRootPath = info.Parent.FullName;
-                                        isGenTilesucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
-                                        if (isGenTilesucess)
+                                        bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                        if (isStartsucess)
                                         {
                                             Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
-                                        }else
+                                        }
+                                        else
                                         {
                                             Console.WriteLine(string.Format("{0}区域所有单元批量{1}执行失败  ", keyString, batRootPath) + DateTime.Now);
                                         }
-                                        
+
                                     }
-                                }else
+                                }
+                                else
                                 {
                                     Console.WriteLine(string.Format("{0}区域所有单元批量执行失败  ", keyString) + DateTime.Now);
                                 }
-                                
+
                             }
 
 
@@ -112,6 +324,8 @@ namespace GridControl
                     Console.WriteLine(string.Format("{0}台风场所有省份计算完成  ", curDatFullname) + DateTime.Now);
                     Console.WriteLine(string.Format("*****************************{0}场次END**************************", curDatFullname) + DateTime.Now);
                 }
+
+                
 
                 /////执行插入日志
                 WriteLog.WriteLogMethod(HookHelper.Log);
@@ -143,19 +357,46 @@ namespace GridControl
         static void argsPrase(string[] args)
         {
             //！程序功能控制参数
-            //HookHelper.rainSourceForecast = "random";
-            //if (args.Contains("-rsf"))
-            //{
-            //    int index = args.ToList().IndexOf("-rsf");
+            HookHelper.isgenraintile = true;
+            if (args.Contains("-isgenraintile"))
+            {
+                int index = args.ToList().IndexOf("-isgenraintile");
 
-            //    //！ 参数标识符 后放的有值，才更新初始控制参数
-            //    if (index + 1 <= args.Length - 1)
-            //    {
-            //        HookHelper.rainSourceForecast = args[index + 1];
-            //    }
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.isgenraintile = bool.Parse(args[index + 1]);
+                }
 
-            //}
+            }
+
+            HookHelper.updatebyfile = false;
+            if (args.Contains("-updatebyfile"))
+            {
+                int index = args.ToList().IndexOf("-updatebyfile");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.updatebyfile = bool.Parse(args[index + 1]);
+                }
+
+            }
             
+
+            HookHelper.updateraintile = true;
+            if (args.Contains("-updateraintile"))
+            {
+                int index = args.ToList().IndexOf("-updateraintile");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.updateraintile = bool.Parse(args[index + 1]);
+                }
+
+            }
+
         }
 
     }

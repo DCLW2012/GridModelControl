@@ -28,6 +28,12 @@ namespace Common
 
         //bat文件名称
         public static string rubbatForDOS { get; set; }
-        
+
+
+        //bool控制变量
+        public static bool updateraintile { get; set; }
+        public static bool isgenraintile { get; set; }
+        public static bool updatebyfile { get; set; }
+
     }
 }

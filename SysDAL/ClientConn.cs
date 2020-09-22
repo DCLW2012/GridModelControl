@@ -108,7 +108,7 @@ namespace SysDAL
                     }
                     else if (tableTypeName == "HSFX_ComputeUnit")
                     {
-                        sql = String.Format("select * from {0} where ComputeUnit > 100", tbnames[i]);
+                        sql = String.Format("select * from {0} where ComputeUnit > 100 ORDER BY ComputeUnit", tbnames[i]);
                     }
                     DataTable value = Dal_Rain.GetDataBySql(keyString, sql);
                     tableTypes.Add(tableTypeName, value);
