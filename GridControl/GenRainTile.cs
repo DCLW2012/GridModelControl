@@ -41,12 +41,11 @@ namespace GridControl
         public static bool CreateTile(string datFullname, string ouput)
         {
             //！写出bat调用python脚本
-            //获取应用程序的当前工作目录。 
             string path1 = System.IO.Directory.GetCurrentDirectory();
             #region 生成执行文件
             string p = System.IO.Directory.GetDirectoryRoot(path1);
-            string Contents = p.Substring(0, p.Length - 1) + "\r\ncd " + path1 + "\\script\r\n" + "python " + HookHelper.raindataForPython;
-            string path = path1 + "//script//tile.bat";
+            string Contents = p.Substring(0, p.Length - 1) + "\r\ncd " + path1 + "//script\r\n" + path1 + "//script//tile.bat";
+            string path = path1 + "//script//Execution.bat";
             if (File.Exists(path))
             {
                 File.Delete(path);
@@ -60,36 +59,15 @@ namespace GridControl
 
             #endregion
 
-            try
-            {
-                #region window专用
-                Process myProcess = new Process();
-                string fileName = path1 + "//script//tile.bat";
-                ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-                myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
-                myProcess.StartInfo = myProcessStartInfo;
-                bool isStart = myProcess.Start();
-                myProcess.WaitForExit();
-                #endregion
-            }
-            catch (Exception exp)
-            {
-                //MessageBox.Show(exp.Message, exp.Source, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-
-            //Process p = new Process();
-            //string path1 = System.IO.Directory.GetCurrentDirectory();
-            //string path = path1 + "\\script\\" + HookHelper.raindataForPython;
-            //string sArguments = path;
-            //p.StartInfo.FileName = @"C:\Users\wly\AppData\Local\Programs\Python\Python37\python.exe";
-            //p.StartInfo.Arguments = sArguments;//python命令的参数
-            //p.StartInfo.UseShellExecute = false;
-            //p.StartInfo.RedirectStandardOutput = true;
-            //p.StartInfo.RedirectStandardInput = true;
-            //p.StartInfo.RedirectStandardError = true;
-            //p.StartInfo.CreateNoWindow = true;
-            //bool isStart = p.Start();
+            #region window专用
+            Process myProcess = new Process();
+            string fileName = path1 + "//script//Execution.bat";
+            ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
+            myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
+            myProcess.StartInfo = myProcessStartInfo;
+            myProcess.Start();
+            myProcess.WaitForExit();
+            #endregion
 
             return true;
         }
@@ -136,18 +114,51 @@ namespace GridControl
                 }
             }else
             {
-                Process myProcess = new Process();
-                string fileName = batRootPath + "\\" + HookHelper.rubbatForDOS;
+                //Process myProcess = new Process();
+                //string fileName = batRootPath + "\\" + HookHelper.rubbatForDOS;
 
-                if (!File.Exists(fileName)) {
+                //if (!File.Exists(fileName)) {
+                //    return false;
+                //}
+
+                //ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
+                //myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
+                //myProcess.StartInfo = myProcessStartInfo;
+                //bool isStart = myProcess.Start();
+                //myProcess.WaitForExit();
+
+                string path1 = batRootPath;
+                if (!Directory.Exists(batRootPath))
+                {
                     return false;
                 }
 
+                #region 生成执行文件
+                string p = System.IO.Directory.GetDirectoryRoot(path1);
+                string Contents = p.Substring(0, p.Length - 1) + "\r\ncd " + path1 + "\r\n" + path1 + "//" + HookHelper.rubbatForDOS;
+                string path = path1 + "//Execution.bat";
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+                FileStream fs2 = new FileStream(path, FileMode.CreateNew, FileAccess.Write);
+                StreamWriter sw2 = new StreamWriter(fs2, System.Text.Encoding.GetEncoding("GB2312"));
+                //sw2.Write(Contents);
+                sw2.WriteLine(Contents);
+                sw2.Close();
+                fs2.Close();
+
+                #endregion
+
+                #region window专用
+                Process myProcess = new Process();
+                string fileName = path1 + "//Execution.bat";
                 ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
                 myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
                 myProcess.StartInfo = myProcessStartInfo;
-                bool isStart = myProcess.Start();
+                myProcess.Start();
                 myProcess.WaitForExit();
+                #endregion
             }
 
             return true;
