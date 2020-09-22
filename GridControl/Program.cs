@@ -85,7 +85,7 @@ namespace GridControl
                                     }
 
                                     //! 启动bat前是否执行exec.bat文件的更新--仅更新降雨目录
-                                    if (HookHelper.updateraintile && d == 0)
+                                    if (d == 0)
                                     {
                                         //！遍历当前省份下 computer中的所有app路径，在路径下找到exec.bat文件，替换其中的out值
                                         if (dbTableConfigs[keyString].Count > 0)
@@ -111,12 +111,18 @@ namespace GridControl
                                                 string outpath = HookHelper.rainTileDirectory;
 
                                                 // 更新execpath的值
-                                                bool isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                                bool isUpExec = false;
                                                 //！覆盖更新通过模板文件
                                                 if (HookHelper.updatebyfile)
                                                 {
                                                     isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
                                                 }
+
+                                                if (HookHelper.updateraintile)
+                                                {
+                                                    isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                                }
+
                                                 if (isUpExec)
                                                 {
                                                     Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
@@ -211,7 +217,7 @@ namespace GridControl
                                 }
 
                                 //! 启动bat前是否执行exec.bat文件的更新--仅更新降雨目录
-                                if (HookHelper.updateraintile)
+                                
                                 {
                                     //！遍历当前省份下 computer中的所有app路径，在路径下找到exec.bat文件，替换其中的out值
                                     if (dbTableConfigs[keyString].Count > 0)
@@ -237,22 +243,24 @@ namespace GridControl
                                             string outpath = HookHelper.rainTileDirectory;
 
                                             // 更新execpath的值
-                                            bool isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                            bool isUpExec = false;
                                             //！覆盖更新通过模板文件
                                             if (HookHelper.updatebyfile)
                                             {
                                                 isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
                                             }
+
+                                            if (HookHelper.updateraintile)
+                                            {
+                                                isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                            }
+
                                             if (isUpExec)
                                             {
                                                 Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
                                             }
                                         }
                                        
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine(string.Format("{0}区域更新exec.bat失败  ", keyString) + DateTime.Now);
                                     }
                                 }
 
@@ -353,10 +361,22 @@ namespace GridControl
                 }
 
             }
+
+            HookHelper.updatebyfile = true;
+            if (args.Contains("-updatebyfile"))
+            {
+                int index = args.ToList().IndexOf("-updatebyfile");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.updatebyfile = bool.Parse(args[index + 1]);
+                }
+
+            }
             
 
-            
-            
+
 
             HookHelper.updateraintile = true;
             if (args.Contains("-updateraintile"))

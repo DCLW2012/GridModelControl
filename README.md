@@ -10,3 +10,7 @@
 3、-updatebyfile true 根据指定的模板文件更新exec.bat
 
 模板文件标准3行
+
+
+
+4、isstartbat false  是否启动bat 所有的单元
