@@ -179,6 +179,7 @@ namespace GridControl
             return true;
         }
 
+        
         public static bool UpdateExecBatFileByTemplate(string fileName, string ComputeUnit)
         {
             DirectoryInfo info = new DirectoryInfo(fileName);

@@ -14,3 +14,7 @@
 
 
 4、isstartbat false  是否启动bat 所有的单元
+
+
+
+5、 -isCalcPerRegion true  屏蔽其他参数，启动单个exec。bat通过进程记录等待

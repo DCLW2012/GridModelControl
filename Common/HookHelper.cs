@@ -35,6 +35,6 @@ namespace Common
         public static bool isgenraintile { get; set; }
         public static bool updatebyfile { get; set; }
         public static bool isstartbat { get; set; }
-        
+        public static bool isCalcPerRegion { get; set; }
     }
 }
