@@ -18,3 +18,9 @@
 
 
 5、 -isCalcPerRegion true  屏蔽其他参数，启动单个exec。bat通过进程记录等待
+
+
+
+6、 isshowcmd true 是否显示cmd串口
+
+7、isSingleCC   边切降雨边计算的话，需要单个启动的时候更新写出execsingle.bat

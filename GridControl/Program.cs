@@ -307,13 +307,24 @@ namespace GridControl
                     }
                 }else
                 {
-                    CalcOneByOne.run();
+                    if (HookHelper.isSingleCC)
+                    {
+                        CalcOneByOne.runBySingleCC();
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    }
+                    else
+                    {
+                        CalcOneByOne.run();
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
+                    }
+
+                    //! 阻塞程序不关闭
+                    Console.Read();
                 }
-                
 
-                
-
-                /////执行插入日志
+                //执行插入日志
                 WriteLog.WriteLogMethod(HookHelper.Log);
             }
             catch (Exception ex){
@@ -395,6 +406,20 @@ namespace GridControl
                 }
 
             }
+
+            HookHelper.isSingleCC = false;
+            if (args.Contains("-isSingleCC"))
+            {
+                int index = args.ToList().IndexOf("-isSingleCC");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.isSingleCC = bool.Parse(args[index + 1]);
+                }
+
+            }
+            
 
             HookHelper.isshowcmd = true;
             if (args.Contains("-isshowcmd"))

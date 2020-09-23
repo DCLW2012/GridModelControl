@@ -37,6 +37,7 @@ namespace Common
         public static bool isstartbat { get; set; }
         public static bool isCalcPerRegion { get; set; }
         public static bool isshowcmd { get; set; }
+        public static bool isSingleCC { get; set; }
         
     }
 }
