@@ -28,7 +28,15 @@ namespace GridControl
             ClientConn.PraseTableTypeConfig(); //解析数据库对应要解析的表类型链接
 
             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
-            ClientConn.PraseGridUnitConfig();
+            if (HookHelper.method.Equals("wata"))
+            {
+                ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
+            }
+            else
+            {
+                ClientConn.PraseGridUnitConfig();
+            }
+            
 
             // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
             Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
@@ -307,18 +315,39 @@ namespace GridControl
                     }
                 }else
                 {
-                    if (HookHelper.isSingleCC)
+                    if(HookHelper.method == "province")
                     {
-                        CalcOneByOne.runBySingleCC();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                        if (HookHelper.isSingleCC)
+                        {
+                            CalcOneByOne.runBySingleCC();
+                            //执行插入日志
+                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                        }
+                        else
+                        {
+                            CalcOneByOne.run();
+                            //执行插入日志
+                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
+                        }
                     }
-                    else
+
+                    if(HookHelper.method == "wata")
                     {
-                        CalcOneByOne.run();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
+                        if (HookHelper.isSingleCC)
+                        {
+                            //CalcOneByOne.runBySingleCC();
+                            //执行插入日志
+                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                        }
+                        else
+                        {
+                            CalcOneByOneWata.run();
+                            //执行插入日志
+                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
+                        }
                     }
+
+                    
 
                     //! 阻塞程序不关闭
                     Console.Read();
@@ -345,7 +374,9 @@ namespace GridControl
             HookHelper.raindataForPython = ConfigurationManager.AppSettings["raindataForPython"].ToString();
 
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
+            HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
             
+
             //! 2.根据命令行中的值，初始化hook
             //! 2、解析参数,更新初始值
             argsPrase(args);
@@ -367,6 +398,20 @@ namespace GridControl
 
             }
 
+            //--wata
+            HookHelper.method = "province";
+            if (args.Contains("-method"))
+            {
+                int index = args.ToList().IndexOf("-method");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.method = args[index + 1];
+                }
+
+            }
+            
 
             HookHelper.isstartbat = false;
             if (args.Contains("-isstartbat"))

@@ -119,5 +119,49 @@ namespace SysDAL
             }
 
         }
+
+        //解析存储全国区域网格表
+        public static void PraseGridUnitConfigAllChina(string computernode)
+        {
+            //！！取出当前key值
+            string keyString = "china";
+
+            //! 数据库表类型对应的表名
+            //！2\创建个map容器，key:value（表类型：数据库表名）
+            Dictionary<string, DataTable> tableTypes = new Dictionary<string, DataTable>();
+
+            //！遍历table，存储起来
+            string[] tbnames = { "GRID_HSFX_UNIT", "HSFX_ComputeUnit" };
+            int tableNum = tbnames.Length;
+            for (int i = 0; i != tableNum; ++i)
+            {
+                //!当前表名类型
+                string tableTypeName = tbnames[i];
+
+                string sql = String.Format("SELECT *  from {0}", tbnames[i]);
+                if (tableTypeName == "GRID_HSFX_UNIT")
+                {
+                    sql = String.Format("SELECT *  from {0} order by ID", tbnames[i]);
+                }
+                else if (tableTypeName == "HSFX_ComputeUnit")
+                {
+                    sql = String.Format(@"SELECT
+                                                *
+                                        FROM
+                                                {0}
+                                        WHERE
+                                                ComputeNode = '{1}'
+                                        AND ComputeUnit > 100
+                                        ORDER BY
+                                                ComputeUnit ", tbnames[i], computernode);
+                }
+                DataTable value = Dal_Rain.GetDataBySql(keyString, sql);
+                tableTypes.Add(tableTypeName, value);
+            }
+
+            //! 存储
+            m_dbTableConfig.Add(keyString, tableTypes);
+
+        }
     }
 }
