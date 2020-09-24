@@ -24,3 +24,5 @@
 6、 isshowcmd true 是否显示cmd串口
 
 7、isSingleCC   边切降雨边计算的话，需要单个启动的时候更新写出execsingle.bat
+
+8、-method wata \ province 按流域还是省份执行计算，流域的话使用多个computernode
