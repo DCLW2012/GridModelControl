@@ -333,6 +333,9 @@ namespace GridControl
 
                     if(HookHelper.method == "wata")
                     {
+                        WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+
+
                         if (HookHelper.isSingleCC)
                         {
                             CalcOneByOneWata.runBySingleCC();
