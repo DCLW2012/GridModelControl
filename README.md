@@ -26,3 +26,5 @@
 7、isSingleCC   边切降雨边计算的话，需要单个启动的时候更新写出execsingle.bat
 
 8、-method wata \ province 按流域还是省份执行计算，流域的话使用多个computernode
+
+9、-processnum  30    最多一次启动的进程个数。只有在当前查出的个数大于这个数值才生效

@@ -22,46 +22,130 @@ namespace GridControl
             int num = dbValues.Count;
 
 
-            //! 遍历全国表中computernode指定的所有单元
-            //12、写出bat，执行,传入bat批量启动全路径
+            //! 启动bat前由于流域模式的 unit id和 省模式下id不一样，要更新
             if (dbTableConfigs["china"].Count > 0)
             {
-                //！每个省下的所有app
                 int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
-                for (int a = 0; a < appnum; ++a)
+
+                //!判断appnum 是否超过了processnum，是则部分启动，等待
+                //!先根据个数分组，分组后，则循环，则可以等待了
+                int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
+
+                for (int g = 0; g < processGroup; ++g)
                 {
-                    //!当前路径
-                    string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
-                    string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                    //execbat路径
-                    string execpath = apppath + "exec.bat";
-                    if (apppath.EndsWith("/"))
+                    //!循环每个组，pid存在，则执行等待
+                    while (pids.Count > 0)
                     {
-                        execpath = apppath + "exec.bat";
+                        //! 执行等待，然后查询更新pids列表.等待1分钟
+                        Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中...") + DateTime.Now);
+                        System.Threading.Thread.Sleep(1000 * 60 * 1);
+
+                        //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
+                        int pidnum = pids.Count;
+                        foreach (var item in pids.ToList())
+                        {
+                            int curPID = item.Value;
+                            Process curProcss = null;
+                            try
+                            {
+                                curProcss = Process.GetProcessById(curPID);
+                            }
+                            catch (Exception ex)
+                            {
+                                curProcss = null;
+                            }
+                            bool isInProcess = curProcss == null ? false : true;
+                            if (!isInProcess)
+                            {
+                                pids.Remove(item.Key);
+                            }
+                        }
+
+                        if (pids.Count == 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    //当前分组的起始值，和end值
+                    int start = g * HookHelper.processnum;
+                    int end = (g + 1) * HookHelper.processnum;
+                    if (g == processGroup - 1)
+                    {
+                        end = appnum;
+                    }
+
+                    for (int a = start; a < end; ++a)
+                    {
+                        //!当前路径
+                        string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                        string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                        string provinceName = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["province"].ToString();
+
+                        //execbat路径
+                        string execpath = apppath + "execcctable.bat";
+                        if (apppath.EndsWith("/"))
+                        {
+                            execpath = apppath + "execcctable.bat";
+                        }
+                        else
+                        {
+                            execpath = apppath + "\\" + "execcctable.bat";
+                        }
+
+                        string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
+                        bool isUpExec = false;
+                        //！execcctable.bat文件
+                        isUpExec = GenRainTile.UpdateexeccctableBatFileByWATAChina(execpath, ComputeUnit, outrainTilepath);
+
+                        if (isUpExec)
+                        {
+                            Console.WriteLine(string.Format("{0}区域{1}execcctable.bat更新成功  ", "china", apppath) + DateTime.Now);
+                        }
+                    }
+
+                    if (dbTableConfigs["china"].Count > 0)
+                    {
+                        //！分组所有app
+                        for (int a = start; a < end; ++a)
+                        {
+                            //!当前路径
+                            string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                            string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                            //execbat路径
+                            string execpath = apppath + "execcctable.bat";
+                            if (apppath.EndsWith("/"))
+                            {
+                                execpath = apppath + "execcctable.bat";
+                            }
+                            else
+                            {
+                                execpath = apppath + "\\" + "execcctable.bat";
+                            }
+
+
+                            //! 启动该exec.bat
+                            bool isOneStart = StartOneByOneExec(execpath, ComputeUnit);
+                            if (isOneStart)
+                            {
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                            }
+                            else
+                            {
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                            }
+
+                        }
                     }
                     else
                     {
-                        execpath = apppath + "\\" + "exec.bat";
+                        Console.WriteLine(string.Format("{0}区域所有单元执行失败  ", HookHelper.computerNode) + DateTime.Now);
                     }
-
-
-                    //! 启动该exec.bat
-                    bool isOneStart = StartOneByOneExec(execpath, ComputeUnit);
-                    if (isOneStart)
-                    {
-                        Console.WriteLine(string.Format("{0}区域{1}执行成功  ", HookHelper.computerNode, execpath) + DateTime.Now);
-                    }
-                    else
-                    {
-                        Console.WriteLine(string.Format("{0}区域{1}执行失败  ", HookHelper.computerNode, execpath) + DateTime.Now);
-                    }
-
                 }
+
+
             }
-            else
-            {
-                Console.WriteLine(string.Format("{0}区域所有单元执行失败  ", HookHelper.computerNode) + DateTime.Now);
-            }
+            
 
 
             return true;
@@ -277,46 +361,84 @@ namespace GridControl
                         }
                     }
 
-                }
+                    //!判断appnum 是否超过了processnum，是则部分启动，等待
+                    //!先根据个数分组，分组后，则循环，则可以等待了
+                    int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
 
-                //12、遍历一个个启动
-                if (dbTableConfigs["china"].Count > 0)
-                {
-                    //！每个省下的所有app
-                    int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
-                    for (int a = 0; a < appnum; ++a)
+                    for (int g = 0; g < processGroup; ++g)
                     {
-                        //!当前路径
-                        string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
-                        string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                        //execbat路径
-                        string execpath = apppath + "execsingle.bat";
-                        if (apppath.EndsWith("/"))
+                        //!循环每个组，pid存在，则执行等待
+                        while (pids.Count > 0)
                         {
-                            execpath = apppath + "execsingle.bat";
-                        }
-                        else
-                        {
-                            execpath = apppath + "\\" + "execsingle.bat";
+                            //! 执行等待，然后查询更新pids列表.等待1分钟
+                            Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中...") + DateTime.Now);
+                            System.Threading.Thread.Sleep(1000 * 60 * 1);
+
+                            //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
+                            int pidnum = pids.Count;
+                            foreach (var item in pids.ToList())
+                            {
+                                int curPID = item.Value;
+                                Process curProcss = null;
+                                try
+                                {
+                                    curProcss = Process.GetProcessById(curPID);
+                                }
+                                catch (Exception ex)
+                                {
+                                    curProcss = null;
+                                }
+                                bool isInProcess = curProcss == null ? false : true;
+                                if (!isInProcess)
+                                {
+                                    pids.Remove(item.Key);
+                                }
+                            }
+
+                            if (pids.Count == 0)
+                            {
+                                break;
+                            }
                         }
 
-
-                        //! 启动该exec.bat
-                        bool isOneStart = StartOneByOneExecsingle(execpath, ComputeUnit);
-                        if (isOneStart)
+                        //当前分组的起始值，和end值
+                        int start = g * HookHelper.processnum;
+                        int end = (g + 1) * HookHelper.processnum;
+                        if (g == processGroup - 1)
                         {
-                            Console.WriteLine(string.Format("{0}区域{1}执行成功  ", HookHelper.computerNode, execpath) + DateTime.Now);
-                        }
-                        else
-                        {
-                            Console.WriteLine(string.Format("{0}区域{1}执行失败  ", HookHelper.computerNode, execpath) + DateTime.Now);
+                            end = appnum;
                         }
 
+                        for (int a = 0; a < appnum; ++a)
+                        {
+                            //!当前路径
+                            string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                            string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                            //execbat路径
+                            string execpath = apppath + "execsingle.bat";
+                            if (apppath.EndsWith("/"))
+                            {
+                                execpath = apppath + "execsingle.bat";
+                            }
+                            else
+                            {
+                                execpath = apppath + "\\" + "execsingle.bat";
+                            }
+
+
+                            //! 启动该exec.bat
+                            bool isOneStart = StartOneByOneExecsingle(execpath, ComputeUnit);
+                            if (isOneStart)
+                            {
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                            }
+                            else
+                            {
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                            }
+
+                        }
                     }
-                }
-                else
-                {
-                    Console.WriteLine(string.Format("{0}区域所有单元执行bat启动失败  ", HookHelper.computerNode) + DateTime.Now);
                 }
 
                 Console.WriteLine(string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now);

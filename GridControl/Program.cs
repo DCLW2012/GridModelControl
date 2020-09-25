@@ -481,6 +481,19 @@ namespace GridControl
                 }
 
             }
+
+            HookHelper.processnum = 64;
+            if (args.Contains("-processnum"))
+            {
+                int index = args.ToList().IndexOf("-processnum");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.processnum = int.Parse(args[index + 1]);
+                }
+
+            }
             
 
             HookHelper.updateraintile = true;

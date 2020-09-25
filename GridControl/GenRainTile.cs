@@ -265,8 +265,42 @@ namespace GridControl
 
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
-            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -s {0} -c {1} -datTimes {2} -curDatGridName {3} -gridRainRoot {4} -gridFBCRoot {5}",
+            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -s {0} -c {1} -datTimes {2} -curDatGridName {3} -gridRainRoot {4} -gridFBCRoot {5}",
                                              start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
+
+            streamWriter.WriteLine(newLine + parasLine);
+            //! 结束----
+            //! 结束读取流
+            streamWriter.Close();
+            fileStreamWriter.Close();
+
+            return true;
+        }
+
+        public static bool UpdateexeccctableBatFileByWATAChina(string fileName, string ComputeUnit, string outrainTilepath)
+        {
+            DirectoryInfo info = new DirectoryInfo(fileName);
+            String apppath = info.Parent.FullName;
+
+            if (!Directory.Exists(apppath))
+            {
+                return false;
+            }
+
+
+            //！ 写之前先创建
+            FileStream fileStreamWriter = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+            StreamWriter streamWriter = new StreamWriter(fileStreamWriter, Encoding.GetEncoding("GB2312"));
+
+            string p = System.IO.Directory.GetDirectoryRoot(fileName);
+            string Contents = p.Substring(0, p.Length - 1) + "\r\ncd " + apppath;
+            //! 写出到输出文件流中。
+            streamWriter.WriteLine(Contents);
+
+            //! 写参数
+            string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
+            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -cctable true -gridRainRoot {0} -gridFBCRoot {1}",
+                                             outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----
