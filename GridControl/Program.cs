@@ -335,7 +335,7 @@ namespace GridControl
                     {
                         if (HookHelper.isSingleCC)
                         {
-                            //CalcOneByOne.runBySingleCC();
+                            CalcOneByOneWata.runBySingleCC();
                             //执行插入日志
                             WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                         }
