@@ -334,7 +334,7 @@ namespace GridControl
                                     string datnums = "95";
 
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                    isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName);
+                                    isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory);
 
                                     if (isUpExec)
                                     {

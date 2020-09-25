@@ -229,7 +229,7 @@ namespace GridControl
                         }
 
 
-                        string outpath = HookHelper.rainTileDirectory;
+                        string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
 
                         // 更新execpath的值
                         //二进制的形式读取dat文件，获取文件头内容
@@ -279,7 +279,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName);
+                        isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath);
 
                         if (isUpExec)
                         {

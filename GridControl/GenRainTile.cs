@@ -243,7 +243,7 @@ namespace GridControl
             return true;
         }
 
-        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName)
+        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName, string outrainTilepath)
         {
             DirectoryInfo info = new DirectoryInfo(fileName);
             String apppath = info.Parent.FullName;
@@ -266,7 +266,7 @@ namespace GridControl
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
             string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -s {0} -c {1} -datTimes {2} -curDatGridName {3} -gridRainRoot {4} -gridFBCRoot {5}",
-                                             start, end, timeNums, datName, HookHelper.rainTileDirectory, HookHelper.rainSRCDirectory.Replace('\\', '/'));
+                                             start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----
