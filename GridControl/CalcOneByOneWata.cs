@@ -179,16 +179,6 @@ namespace GridControl
 
                 Console.WriteLine(string.Format("*****************************{0}场次Start**************************", curDatFullname) + DateTime.Now);
                 //！ 遍历每个流域的网格模型
-                ////! 只有配置了raintile目录才执行计算
-                //string keyTableType = curTBType.Key;
-                //string folderPath = curTBType.Value;
-                //HookHelper.rainTileDirectory = "";
-                //if (keyTableType.ToUpper() == "RAINTILEFOLDER")
-                //{
-                    
-
-                //}
-                //HookHelper.rainTileDirectory = folderPath;
                 //！执行python切片
                 //!1、执行切片，调用python执行
                 if (HookHelper.isgenraintile)
