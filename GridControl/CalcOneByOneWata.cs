@@ -273,8 +273,12 @@ namespace GridControl
                 //!1、执行切片，调用python执行
                 if (HookHelper.isgenraintile)
                 {
+                    //! 设置计时器，当前场次时间
+                    Stopwatch perChangci = new Stopwatch();
+                    perChangci.Start();
                     bool isGenTilesucess = GenRainTile.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
-
+                    perChangci.Stop();
+                    TimeSpan perChangciTime = perChangci.Elapsed;
                     if (!isGenTilesucess)
                     {
                         Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
@@ -282,6 +286,7 @@ namespace GridControl
                     }
                     else
                     {
+                        Console.WriteLine(string.Format("网格{0}场次集计算耗时：{1}", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
                         Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
                     }
                 }

@@ -302,6 +302,11 @@ namespace GridControl
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
 
+            if (!Directory.Exists(unitOutdir))
+            {
+                Directory.CreateDirectory(unitOutdir);
+            }
+
             for (int t = 0; t < dStruct.headerone[2]; ++t)
             {
                 dStruct.curRainIndex = t;
