@@ -313,10 +313,13 @@ namespace GridControl
                 double xa1 = dStruct.Lons[dStruct.curRainIndex]; double ya1 = dStruct.Lats[dStruct.curRainIndex];
                 double xa2 = xa1 + dStruct.fbl * (dStruct.col - 1); double ya2 = ya1 + dStruct.fbl * (dStruct.row - 1);
 
-                /*float outStLon = params.left.toFloat();
-                float outStLat = params.bottom.toFloat();*/
+                int NODATA_value = -9999;
                 double xb1 = double.Parse(paramsUnitDT["left"].ToString());
                 double yb1 = double.Parse(paramsUnitDT["bottom"].ToString());
+
+                double xllcorner = double.Parse(paramsUnitDT["xllcorner"].ToString());
+                double yllcorner = double.Parse(paramsUnitDT["yllcorner"].ToString());
+                double cellsize = double.Parse(paramsUnitDT["cellsize"].ToString());
 
                 int unitCols = int.Parse(paramsUnitDT["ncols"].ToString());
                 int unitRows = int.Parse(paramsUnitDT["nrows"].ToString());
@@ -333,32 +336,25 @@ namespace GridControl
                 }
 
                 //写出数据
-                //QFile file(fileName);
-                //if (!file.open(QFile::WriteOnly | QFile::Truncate))
-                //{
-                //    return false;
-                //}
-                //QTextStream stream(&file);
-                ////设置格式控制
-                //stream.setRealNumberNotation(QTextStream::FixedNotation);
-                //stream.setRealNumberPrecision(6);
+                FileStream fs = new FileStream(curWriteFileName, FileMode.Create, FileAccess.Write);//定义写入方式
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding("GB2312"));//写入文件格式
 
                 //! 1、先写出文件头，起点投影坐标xy以及行列号
-                //ncols         25
-                //nrows         16
-                //xllcorner     2093613.7816920
-                //yllcorner     311816.2681279
-                //cellsize      1086.3543389
-                //NODATA_value - 9999 
                 //stream << "ncols" << " " << params.ncols.toInt() << "\n";
                 //stream << "nrows" << " " << params.nrows.toInt() << "\n";
                 //stream << "xllcorner" << " " << params.xllcorner << "\n";
                 //stream << "yllcorner" << " " << params.yllcorner << "\n";
                 //stream << "cellsize" << " " << params.cellsize << "\n";
                 //stream << "NODATA_value" << " " << QString("%1").arg(-9999, 0, 10) << "\n";
+
+                sw.Write(String.Format("ncols {0}\n", unitCols));
+                sw.Write(String.Format("nrows {0}\n", unitCols));
+                sw.Write(String.Format("xllcorner {0}\n", xllcorner));
+                sw.Write(String.Format("yllcorner {0}\n", yllcorner));
+                sw.Write(String.Format("cellsize {0}\n", cellsize));
+                sw.Write(String.Format("NODATA_value {0}\n", NODATA_value));
                 //1 根据每个单元的参数记录的起点经纬度，行列数，遍历计算当前点在台风场数据中的索引号，从中取出对应的值
                 //! 如果计算出来的索引号行或者列为负值，则说明不在范围内，赋值为0
-                int NODATA_value = -9999;
                 int outRow = unitRows;
                 int outCol = unitCols;
                 float outStLon = (float)(xb1);
@@ -369,11 +365,11 @@ namespace GridControl
                 float stLat = (float)dStruct.Lats[dStruct.curRainIndex];
 
                 //! 先写出一行，再写一行
-                //QString lines;
+                string lines = "";
                 //! 由于asc中文件的参数信息是做下脚，但是数据是先存左上开始
                 for (int r = outRow - 1; r >= 0; --r)
                 {
-                    //QString line;
+                    string line = "";
 
                     for (int c = 0; c < outCol; ++c)
                     {
@@ -396,23 +392,24 @@ namespace GridControl
                             }
                         }
 
-                        //line.append(QString("%1").arg(curRain, 0, 'f', 3));
+                        line += String.Format("{0}", curRain);
                         if (c == outCol - 1)
                         {
-                            //line.append("\n"); //添加分隔符
+                            line += "\n"; //添加分隔符
                         }
                         else
                         {
-                            //line.append(" "); //添加分隔符
+                            line += " "; //添加分隔符
                         }
 
 
                     }
-                    //lines += line;
+                    lines += line;
                 }
 
-                //stream << lines;
-                //file.close();
+                sw.Write(lines);
+                sw.Close();
+                fs.Close();
             }
 
             return true;
