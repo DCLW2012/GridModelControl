@@ -302,10 +302,7 @@ namespace GridControl
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
 
-            if (!Directory.Exists(unitOutdir))
-            {
-                Directory.CreateDirectory(unitOutdir);
-            }
+            
 
             for (int t = 0; t < dStruct.headerone[2]; ++t)
             {
@@ -338,6 +335,12 @@ namespace GridControl
                 {
                     Console.WriteLine(string.Format("{0}不存在有效的降雨数据！！！", curWriteFileName) + DateTime.Now);
                     return false;
+                }
+
+                //! 有数据才创建目录
+                if (!Directory.Exists(unitOutdir))
+                {
+                    Directory.CreateDirectory(unitOutdir);
                 }
 
                 //写出数据
