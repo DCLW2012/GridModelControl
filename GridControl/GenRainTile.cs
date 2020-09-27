@@ -309,6 +309,12 @@ namespace GridControl
                 dStruct.curRainIndex = t;
                 //!当前文件名
                 string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, startTimeCurDat, t);
+
+                if (curWriteFileName.Contains("WHF66_3_4"))
+                {
+                    int a = 0;
+                }
+
                 //! 使用c#写出
                 //@ 判断当前时段的降雨数据是否 对 当前传入的计算单元有降雨，有则写出，无则跳过；
                 // 模型在执行计算的时候会搜索对应的降雨，找不到则自动跳过计算
@@ -334,7 +340,7 @@ namespace GridControl
                 if (ret == 0)
                 {
                     Console.WriteLine(string.Format("{0}不存在有效的降雨数据！！！", curWriteFileName) + DateTime.Now);
-                    return false;
+                    continue;
                 }
 
                 //! 有数据才创建目录
@@ -356,7 +362,7 @@ namespace GridControl
                 //stream << "NODATA_value" << " " << QString("%1").arg(-9999, 0, 10) << "\n";
 
                 sw.Write(String.Format("ncols {0}\n", unitCols));
-                sw.Write(String.Format("nrows {0}\n", unitCols));
+                sw.Write(String.Format("nrows {0}\n", unitRows));
                 sw.Write(String.Format("xllcorner {0}\n", xllcorner));
                 sw.Write(String.Format("yllcorner {0}\n", yllcorner));
                 sw.Write(String.Format("cellsize {0}\n", cellsize));
