@@ -19,7 +19,7 @@ namespace GridControl
             if (dbTableConfigs["china"].Count > 0)
             {
                 //！每个省下的所有app
-                dt_unit = dbTableConfigs["china"]["GRID_HSFX_UNIT"];
+                dt_unit = dbTableConfigs["china"]["GRID_HSFX_UNIT"].Copy();
                 int unitnum = dbTableConfigs["china"]["GRID_HSFX_UNIT"].Rows.Count;
             }
 

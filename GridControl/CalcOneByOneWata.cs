@@ -247,6 +247,12 @@ namespace GridControl
 
         public static bool runBySingleCC()
         {
+            //!! 场次信息回传
+            // 更新execpath的值
+            string start = "2003-11-15T13:00";
+            string end = "2003-11-15T13:00";
+            string datnums = "95";
+
             //! 遍历指定目录下的降雨数据
             if (!Directory.Exists(HookHelper.rainSRCDirectory))
             {
@@ -267,7 +273,7 @@ namespace GridControl
                 //!1、执行切片，调用python执行
                 if (HookHelper.isgenraintile)
                 {
-                    bool isGenTilesucess = GenRainTile.CreateTileByWATA(curDatFullname);
+                    bool isGenTilesucess = GenRainTile.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
 
                     if (!isGenTilesucess)
                     {
@@ -306,49 +312,6 @@ namespace GridControl
                         string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
 
                         // 更新execpath的值
-                        //二进制的形式读取dat文件，获取文件头内容
-                        // 读取文件
-                        BinaryReader br;
-                        string start = "2003-11-15T13:00";
-                        string end = "2003-11-15T13:00";
-                        string datnums = "95";
-                        try
-                        {
-                            br = new BinaryReader(new FileStream(curDatFullname,
-                                            FileMode.Open));
-                        }
-                        catch (IOException e)
-                        {
-                            Console.WriteLine(string.Format("{0}台风场文件解析场次信息失败，继续下一个", curDatFullname) + DateTime.Now);
-                            continue;
-                        }
-                        try
-                        {
-                            //! 第一部分数据 年(year)、月日时(mdh)、该台风总时次(times) 均为整型  3 * 4 个字节
-                            //inFile.read((char*)&datStruct.headerone[0], 3 * sizeof(int));
-                            int year = br.ReadInt32();
-                            int mdh = br.ReadInt32();
-                            int times = br.ReadInt32();
-
-                            string mdhSt = mdh.ToString();
-                            if (mdhSt.Length == 5)
-                            {
-                                mdhSt = String.Format("0{0}", mdhSt);
-                            }
-
-                            string ymdhstr = String.Format("{0}{1}", year, mdhSt);
-                            DateTime dt = Convert.ToDateTime(ymdhstr.Substring(0, 4) + "-" + ymdhstr.Substring(4, 2) + "-" + ymdhstr.Substring(6, 2) + " " + ymdhstr.Substring(8, 2) + ":00:00");
-                            start = dt.ToString("yyyy-MM-ddThh:mm");
-                            end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddThh:mm");
-                            datnums = times.ToString();
-                        }
-                        catch (IOException e)
-                        {
-                            Console.WriteLine(string.Format("{0}台风场文件解析场次信息失败，继续下一个", curDatFullname) + DateTime.Now);
-                            continue;
-                        }
-                        br.Close();
-
                         bool isUpExec = false;
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
@@ -358,6 +321,9 @@ namespace GridControl
                         if (isUpExec)
                         {
                             Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", "china", apppath) + DateTime.Now);
+                        }else
+                        {
+                            Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新失败  ", "china", apppath) + DateTime.Now);
                         }
                     }
 
@@ -402,11 +368,11 @@ namespace GridControl
                         }
 
                         //当前分组的起始值，和end值
-                        int start = g * HookHelper.processnum;
-                        int end = (g + 1) * HookHelper.processnum;
+                        int startPROCESS = g * HookHelper.processnum;
+                        int endPROCESS = (g + 1) * HookHelper.processnum;
                         if (g == processGroup - 1)
                         {
-                            end = appnum;
+                            endPROCESS = appnum;
                         }
 
                         for (int a = 0; a < appnum; ++a)
