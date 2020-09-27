@@ -207,8 +207,19 @@ namespace GridControl
             return true;
         }
 
-        public static bool WriteAscFileByParams(string fileName, DatFileStruct dStruct, DataTable paramsUnitDT)
+        public static bool WriteAscFileByParams(string datPureName, string provinceName, string groovyName, string startTimeCurDat, DatFileStruct datStruct, DataTable paramsUnitDT)
         {
+            //当前单元输出路径
+            string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
+            string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
+
+            for (int t = 0; t < datStruct.headerone[2]; ++t)
+            {
+                //!当前文件名
+                string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, startTimeCurDat, t);
+                //! 使用c#写出
+
+            }
             //@ 判断当前时段的降雨数据是否 对 当前传入的计算单元有降雨，有则写出，无则跳过；
             // 模型在执行计算的时候会搜索对应的降雨，找不到则自动跳过计算
             /*float fbl = dStruct.fbl;
@@ -416,20 +427,15 @@ namespace GridControl
                 string provinceName = grid_unit_tables.Rows[i]["province"].ToString();
                 string groovyName = grid_unit_tables.Rows[i]["GroovyName"].ToString();
 
-                //!遍历n个场次，把当前单元所有场次数据写出
-                for (int t = 0; t < datStruct.headerone[2]; ++t)
+                //!当前场次下某个单元的所有时间文件写出
+                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, startTimeCurDat, datStruct, grid_unit_tables);
+                if (status)
                 {
-                    //当前单元输出路径
-                    string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
-
-                    string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
-                    //isDirExist(dlg.GetOutPutDir() + "\\" + basefilename);
-                    //isDirExist(unitOutdir);
-                    string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, startTimeCurDat, t);
-                    //! 使用c#写出
-                    bool status = WriteAscFileByParams(curWriteFileName, datStruct, grid_unit_tables);
+                    Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片成功", curDatFullname, provinceName, groovyName) + DateTime.Now);
+                }else
+                {
+                    Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片失败", curDatFullname, provinceName, groovyName) + DateTime.Now);
                 }
-
             }
 
             datStruct.headerone = null;
