@@ -207,121 +207,213 @@ namespace GridControl
             return true;
         }
 
-        public static bool WriteAscFileByParams(string datPureName, string provinceName, string groovyName, string startTimeCurDat, DatFileStruct datStruct, DataTable paramsUnitDT)
+        public static int between(double d1, double d2, double d3)
+        {
+
+            if (d1 < d2)
+            {
+                if (d1 <= d3 && d3 <= d2)
+                {
+                    return 1;
+                }else
+                {
+                    return 0;
+                }
+                    
+
+            }
+            else
+            {
+                if (d2 <= d3 && d3 <= d1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+
+            }
+
+            return 0;
+
+        }
+
+        public static int overlap(double xa1, double ya1, double xa2, double ya2, double xb1, double yb1, double xb2, double yb2)
+        {
+
+            /* 1 */
+
+            if (between(xa1, xa2, xb1) > 0 && between(ya1, ya2, yb1) > 0)
+
+                return 1;
+
+            if (between(xa1, xa2, xb2) > 0 && between(ya1, ya2, yb2) > 0)
+
+                return 1;
+
+            if (between(xa1, xa2, xb1) > 0 && between(ya1, ya2, yb2) > 0)
+
+                return 1;
+
+            if (between(xa1, xa2, xb2) > 0 && between(ya1, ya2, yb1) > 0)
+
+                return 1;
+
+            /* 2 */
+
+            if (between(xb1, xb2, xa1) > 0 && between(yb1, yb2, ya1) > 0)
+
+                return 1;
+
+            if (between(xb1, xb2, xa2) > 0 && between(yb1, yb2, ya2) > 0)
+
+                return 1;
+
+
+
+            /* 3 */
+
+            if ((between(ya1, ya2, yb1) > 0 && between(ya1, ya2, yb2) > 0)
+
+                && (between(xb1, xb2, xa1) > 0 && between(xb1, xb2, xa2) > 0))
+
+                return 1;
+
+
+
+            /* 4 */
+
+            if ((between(xa1, xa2, xb1) > 0 && between(xa1, xa2, xb2) > 0)
+
+                && (between(yb1, yb2, ya1) > 0 && between(yb1, yb2, ya2) > 0))
+
+                return 1;
+
+
+
+            return 0;
+
+        }
+
+        public static bool WriteAscFileByParams(string datPureName, string provinceName, string groovyName, string startTimeCurDat, DatFileStruct dStruct, DataRow paramsUnitDT)
         {
             //当前单元输出路径
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
 
-            for (int t = 0; t < datStruct.headerone[2]; ++t)
+            for (int t = 0; t < dStruct.headerone[2]; ++t)
             {
+                dStruct.curRainIndex = t;
                 //!当前文件名
                 string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, startTimeCurDat, t);
                 //! 使用c#写出
+                //@ 判断当前时段的降雨数据是否 对 当前传入的计算单元有降雨，有则写出，无则跳过；
+                // 模型在执行计算的时候会搜索对应的降雨，找不到则自动跳过计算
+                double xa1 = dStruct.Lons[dStruct.curRainIndex]; double ya1 = dStruct.Lats[dStruct.curRainIndex];
+                double xa2 = xa1 + dStruct.fbl * (dStruct.col - 1); double ya2 = ya1 + dStruct.fbl * (dStruct.row - 1);
 
+                /*float outStLon = params.left.toFloat();
+                float outStLat = params.bottom.toFloat();*/
+                double xb1 = double.Parse(paramsUnitDT["left"].ToString());
+                double yb1 = double.Parse(paramsUnitDT["bottom"].ToString());
+
+                int unitCols = int.Parse(paramsUnitDT["ncols"].ToString());
+                int unitRows = int.Parse(paramsUnitDT["nrows"].ToString());
+
+                double xb2 = xb1 + dStruct.fbl * (unitCols - 1);
+                double yb2 = yb1 + dStruct.fbl * (unitRows - 1);
+
+                int ret = overlap(xa1, ya1, xa2, ya2, xb1, yb1, xb2, yb2);
+
+                if (ret == 0)
+                {
+                    Console.WriteLine(string.Format("{0}不存在有效的降雨数据！！！", curWriteFileName) + DateTime.Now);
+                    return false;
+                }
+
+                //写出数据
+                //QFile file(fileName);
+                //if (!file.open(QFile::WriteOnly | QFile::Truncate))
+                //{
+                //    return false;
+                //}
+                //QTextStream stream(&file);
+                ////设置格式控制
+                //stream.setRealNumberNotation(QTextStream::FixedNotation);
+                //stream.setRealNumberPrecision(6);
+
+                //! 1、先写出文件头，起点投影坐标xy以及行列号
+                //ncols         25
+                //nrows         16
+                //xllcorner     2093613.7816920
+                //yllcorner     311816.2681279
+                //cellsize      1086.3543389
+                //NODATA_value - 9999 
+                //stream << "ncols" << " " << params.ncols.toInt() << "\n";
+                //stream << "nrows" << " " << params.nrows.toInt() << "\n";
+                //stream << "xllcorner" << " " << params.xllcorner << "\n";
+                //stream << "yllcorner" << " " << params.yllcorner << "\n";
+                //stream << "cellsize" << " " << params.cellsize << "\n";
+                //stream << "NODATA_value" << " " << QString("%1").arg(-9999, 0, 10) << "\n";
+                //1 根据每个单元的参数记录的起点经纬度，行列数，遍历计算当前点在台风场数据中的索引号，从中取出对应的值
+                //! 如果计算出来的索引号行或者列为负值，则说明不在范围内，赋值为0
+                int NODATA_value = -9999;
+                int outRow = unitRows;
+                int outCol = unitCols;
+                float outStLon = (float)(xb1);
+                float outStLat = (float)(yb1); ;
+
+                float fbl = (float)dStruct.fbl;
+                float stLon = (float)dStruct.Lons[dStruct.curRainIndex];
+                float stLat = (float)dStruct.Lats[dStruct.curRainIndex];
+
+                //! 先写出一行，再写一行
+                //QString lines;
+                //! 由于asc中文件的参数信息是做下脚，但是数据是先存左上开始
+                for (int r = outRow - 1; r >= 0; --r)
+                {
+                    //QString line;
+
+                    for (int c = 0; c < outCol; ++c)
+                    {
+                        //! 坐标索引转换，根据起点坐标 分辨率，行列号，计算当前点位经纬度，根据台风场的经纬度值，计算在台风场中的行列号 ，赋值即可
+                        //! 当前坐标
+                        float curLon = outStLon + fbl * c;
+                        float curLat = outStLat + fbl * r;
+
+                        //! 在台风场中的索引号
+                        int originRow = (int)Math.Ceiling((curLat - stLat) * (1 / fbl)); ;
+                        int originCol = (int)Math.Ceiling((curLon - stLon) * (1 / fbl));
+
+                        float curRain = 0.0f;
+                        if (originRow >= 0 && originCol >= 0 && originRow <= dStruct.row - 1 && originCol <= dStruct.col - 1)
+                        {
+                            curRain = dStruct.rain[t, originRow, originCol];
+                            if (curRain < 0 || curRain == NODATA_value)
+                            {
+                                curRain = NODATA_value;
+                            }
+                        }
+
+                        //line.append(QString("%1").arg(curRain, 0, 'f', 3));
+                        if (c == outCol - 1)
+                        {
+                            //line.append("\n"); //添加分隔符
+                        }
+                        else
+                        {
+                            //line.append(" "); //添加分隔符
+                        }
+
+
+                    }
+                    //lines += line;
+                }
+
+                //stream << lines;
+                //file.close();
             }
-            //@ 判断当前时段的降雨数据是否 对 当前传入的计算单元有降雨，有则写出，无则跳过；
-            // 模型在执行计算的时候会搜索对应的降雨，找不到则自动跳过计算
-            /*float fbl = dStruct.fbl;
-            float stLon = dStruct.Lons[dStruct.curRainIndex];
-            float stLat = dStruct.Lats[dStruct.curRainIndex];*/
-            //double xa1 = dStruct.Lons[dStruct.curRainIndex]; double ya1 = dStruct.Lats[dStruct.curRainIndex];
-            //double xa2 = xa1 + dStruct.fbl * (dStruct.col - 1); double ya2 = ya1 + dStruct.fbl * (dStruct.row - 1);
-
-            ///*float outStLon = params.left.toFloat();
-            //float outStLat = params.bottom.toFloat();*/
-            //double xb1 = params.left.toDouble(); double yb1 = params.bottom.toDouble();
-            //double xb2 = xb1 + dStruct.fbl * (params.ncols.toInt() - 1); double yb2 = yb1 + dStruct.fbl * (params.nrows.toInt() - 1);
-
-            //bool ret = overlap(xa1, ya1, xa2, ya2, xb1, yb1, xb2, yb2);
-
-            //if (ret == 0)
-            //{
-            //    Logger::Message(QStringLiteral("不存在有效的降雨数据！！！"));
-            //    return false;
-            //}
-
-            ////写出数据
-            //QFile file(fileName);
-            //if (!file.open(QFile::WriteOnly | QFile::Truncate))
-            //{
-            //    return false;
-            //}
-            //QTextStream stream(&file);
-            ////设置格式控制
-            //stream.setRealNumberNotation(QTextStream::FixedNotation);
-            //stream.setRealNumberPrecision(6);
-
-            ////! 1、先写出文件头，起点投影坐标xy以及行列号
-            ////ncols         25
-            ////nrows         16
-            ////xllcorner     2093613.7816920
-            ////yllcorner     311816.2681279
-            ////cellsize      1086.3543389
-            ////NODATA_value - 9999 
-            //stream << "ncols" << " " << params.ncols.toInt() << "\n";
-            //stream << "nrows" << " " << params.nrows.toInt() << "\n";
-            //stream << "xllcorner" << " " << params.xllcorner << "\n";
-            //stream << "yllcorner" << " " << params.yllcorner << "\n";
-            //stream << "cellsize" << " " << params.cellsize << "\n";
-            //stream << "NODATA_value" << " " << QString("%1").arg(-9999, 0, 10) << "\n";
-            ////1 根据每个单元的参数记录的起点经纬度，行列数，遍历计算当前点在台风场数据中的索引号，从中取出对应的值
-            ////! 如果计算出来的索引号行或者列为负值，则说明不在范围内，赋值为0
-            //int NODATA_value = -9999;
-            //int outRow = params.nrows.toInt();
-            //int outCol = params.ncols.toInt();
-            //float outStLon = params.left.toFloat();
-            //float outStLat = params.bottom.toFloat();
-
-            //float fbl = dStruct.fbl;
-            //float stLon = dStruct.Lons[dStruct.curRainIndex];
-            //float stLat = dStruct.Lats[dStruct.curRainIndex];
-
-            ////! 先写出一行，再写一行
-            //QString lines;
-            ////! 由于asc中文件的参数信息是做下脚，但是数据是先存左上开始
-            //for (int r = outRow - 1; r >= 0; --r)
-            //{
-            //    QString line;
-
-            //    for (int c = 0; c < outCol; ++c)
-            //    {
-            //        //! 坐标索引转换，根据起点坐标 分辨率，行列号，计算当前点位经纬度，根据台风场的经纬度值，计算在台风场中的行列号 ，赋值即可
-            //        //! 当前坐标
-            //        float curLon = outStLon + fbl * c;
-            //        float curLat = outStLat + fbl * r;
-
-            //        //! 在台风场中的索引号
-            //        int originRow = ceil((curLat - stLat) * (1 / fbl)); ;
-            //        int originCol = ceil((curLon - stLon) * (1 / fbl));
-
-            //        float curRain = 0.0;
-            //        if (originRow >= 0 && originCol >= 0 && originRow <= dStruct.row - 1 && originCol <= dStruct.col - 1)
-            //        {
-            //            curRain = dStruct.rain[originRow * dStruct.col + originCol];
-            //            if (curRain < 0 || curRain == NODATA_value)
-            //            {
-            //                curRain = NODATA_value;
-            //            }
-            //        }
-
-            //        line.append(QString("%1").arg(curRain, 0, 'f', 3));
-            //        if (c == outCol - 1)
-            //        {
-            //            line.append("\n"); //添加分隔符
-            //        }
-            //        else
-            //        {
-            //            line.append(" "); //添加分隔符
-            //        }
-
-
-            //    }
-            //    lines += line;
-            //}
-
-            //stream << lines;
-            //file.close();
 
             return true;
         }
@@ -428,7 +520,7 @@ namespace GridControl
                 string groovyName = grid_unit_tables.Rows[i]["GroovyName"].ToString();
 
                 //!当前场次下某个单元的所有时间文件写出
-                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, startTimeCurDat, datStruct, grid_unit_tables);
+                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, startTimeCurDat, datStruct, grid_unit_tables.Rows[i]);
                 if (status)
                 {
                     Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片成功", curDatFullname, provinceName, groovyName) + DateTime.Now);
