@@ -288,12 +288,13 @@ namespace GridControl
                     TimeSpan perChangciTime = perChangci.Elapsed;
                     if (!isGenTilesucess)
                     {
-                        Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
+                        //Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
                         continue;
                     }
                     else
                     {
                         Console.WriteLine(string.Format("网格{0}场次降雨切片执行耗时：{1}", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
+                        HookHelper.Log += string.Format("网格{0}场次降雨切片执行耗时：{1}", curDatFullname, perChangciTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
                         Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
                     }
                 }
@@ -462,6 +463,7 @@ namespace GridControl
                 oneDat.Stop();
                 TimeSpan oneDatTime = oneDat.Elapsed;
                 Console.WriteLine(string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
+                HookHelper.Log += string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}", curDatFullname, oneDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);
