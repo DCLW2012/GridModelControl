@@ -153,10 +153,10 @@ namespace SysDAL
                                                         HSFX_ComputeUnit a
                                                 LEFT JOIN HSFX_Computer b ON a.ComputeNode = b.ComputeNode
                                                 WHERE
-                                                        a.ComputeNode = 'ComputeNode1'
+                                                        a.ComputeNode = '{1}'
                                         ) T2 ON T1.GroupID = T2.ComputeUnit
                                         AND T1.bswatacd = T2.bswatacd
-                                        ORDER BY province asc", tbnames[i]);
+                                        ORDER BY province asc", tbnames[i], computernode);
                 }
                 else if (tableTypeName == "HSFX_ComputeUnit")
                 {
