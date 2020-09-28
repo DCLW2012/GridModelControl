@@ -265,6 +265,9 @@ namespace GridControl
             for (int d = 0; d < datnum; ++d)
             {
                 //! 当前dat文件全路径
+                //! 设置计时器，当前场次时间
+                Stopwatch oneDat = new Stopwatch();
+                oneDat.Start();
                 string curDatFullname = fInfo[d].FullName;
 
                 Console.WriteLine(string.Format("*****************************{0}场次Start**************************", curDatFullname) + DateTime.Now);
@@ -415,6 +418,9 @@ namespace GridControl
                 Console.WriteLine(string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now);
                 HookHelper.Log += string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now + ";\r\n";
                 Console.WriteLine(string.Format("*****************************{0}场次END**************************", curDatFullname) + DateTime.Now);
+                oneDat.Stop();
+                TimeSpan oneDatTime = oneDat.Elapsed;
+                Console.WriteLine(string.Format("网格{0}场次降雨切片到bat信息更新到网格流域计算，单场次全流程耗时：{1}", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);
