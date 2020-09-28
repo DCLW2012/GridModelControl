@@ -449,7 +449,7 @@ namespace GridControl
             try
             {
                 br = new BinaryReader(new FileStream(curDatFullname,
-                                FileMode.Open));
+                                FileMode.Open, FileAccess.Read, FileShare.Read));
             }
             catch (IOException e)
             {
