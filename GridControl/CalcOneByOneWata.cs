@@ -37,7 +37,7 @@ namespace GridControl
                     while (pids.Count > 0)
                     {
                         //! 执行等待，然后查询更新pids列表.等待1分钟
-                        Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中...") + DateTime.Now);
+                        Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中，等待时长60秒...") + DateTime.Now);
                         System.Threading.Thread.Sleep(1000 * 60 * 1);
 
                         //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
@@ -342,7 +342,7 @@ namespace GridControl
                         while (pids.Count > 0)
                         {
                             //! 执行等待，然后查询更新pids列表.等待1分钟
-                            Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中...") + DateTime.Now);
+                            Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中，等待时长60秒...") + DateTime.Now);
                             System.Threading.Thread.Sleep(1000 * 60 * 1);
 
                             //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
