@@ -83,10 +83,10 @@ namespace GridControl
 
             //！输出排序后信息到文件中
             string sortLog = "";
-            sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22}", "id", "UNITCD", "UNITNM",
+            sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22};{23}", "id", "UNITCD", "UNITNM",
                      "FCD", "OCD", "BSCD", "ONDCD", "Remark", "NDX",
                      "NDY", "GroupID", "GroovyName", "left", "bottom", "top",
-                     "right", "ncols", "nrows", "xllcorner", "yllcorner", "cellsize", "degfbl", "province") + "\r\n";
+                     "right", "ncols", "nrows", "xllcorner", "yllcorner", "cellsize", "degfbl", "province", "bswatacd") + "\r\n";
             int count = 0;
 
             //@当前组所属的省
@@ -107,17 +107,17 @@ namespace GridControl
                     cruGroupProvince = curPro;
                     count++;
                     groupID = 101 + count;
-                    sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22}", dt_unitSort.Rows[i]["id"], dt_unitSort.Rows[i]["UNITCD"], dt_unitSort.Rows[i]["UNITNM"],
+                    sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22};{23}", dt_unitSort.Rows[i]["id"], dt_unitSort.Rows[i]["UNITCD"], dt_unitSort.Rows[i]["UNITNM"],
                     dt_unitSort.Rows[i]["FCD"], dt_unitSort.Rows[i]["OCD"], dt_unitSort.Rows[i]["BSCD"], dt_unitSort.Rows[i]["ONDCD"], dt_unitSort.Rows[i]["Remark"], dt_unitSort.Rows[i]["NDX"],
                     dt_unitSort.Rows[i]["NDY"], groupID, dt_unitSort.Rows[i]["GroovyName"], dt_unitSort.Rows[i]["left"], dt_unitSort.Rows[i]["bottom"], dt_unitSort.Rows[i]["top"],
-                    dt_unitSort.Rows[i]["right"], dt_unitSort.Rows[i]["ncols"], dt_unitSort.Rows[i]["nrows"], dt_unitSort.Rows[i]["xllcorner"], dt_unitSort.Rows[i]["yllcorner"], dt_unitSort.Rows[i]["cellsize"], dt_unitSort.Rows[i]["degfbl"], dt_unitSort.Rows[i]["province"]) + "\r\n";
+                    dt_unitSort.Rows[i]["right"], dt_unitSort.Rows[i]["ncols"], dt_unitSort.Rows[i]["nrows"], dt_unitSort.Rows[i]["xllcorner"], dt_unitSort.Rows[i]["yllcorner"], dt_unitSort.Rows[i]["cellsize"], dt_unitSort.Rows[i]["degfbl"], dt_unitSort.Rows[i]["province"], dt_unitSort.Rows[i]["bswatacd"]) + "\r\n";
                     continue;
                 }else
                 {
-                    sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22}", dt_unitSort.Rows[i]["id"], dt_unitSort.Rows[i]["UNITCD"], dt_unitSort.Rows[i]["UNITNM"],
+                    sortLog += String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};{17};{18};{19};{20};{21};{22};{23}", dt_unitSort.Rows[i]["id"], dt_unitSort.Rows[i]["UNITCD"], dt_unitSort.Rows[i]["UNITNM"],
                     dt_unitSort.Rows[i]["FCD"], dt_unitSort.Rows[i]["OCD"], dt_unitSort.Rows[i]["BSCD"], dt_unitSort.Rows[i]["ONDCD"], dt_unitSort.Rows[i]["Remark"], dt_unitSort.Rows[i]["NDX"],
                     dt_unitSort.Rows[i]["NDY"], groupID, dt_unitSort.Rows[i]["GroovyName"], dt_unitSort.Rows[i]["left"], dt_unitSort.Rows[i]["bottom"], dt_unitSort.Rows[i]["top"],
-                    dt_unitSort.Rows[i]["right"], dt_unitSort.Rows[i]["ncols"], dt_unitSort.Rows[i]["nrows"], dt_unitSort.Rows[i]["xllcorner"], dt_unitSort.Rows[i]["yllcorner"], dt_unitSort.Rows[i]["cellsize"], dt_unitSort.Rows[i]["degfbl"], dt_unitSort.Rows[i]["province"]) + "\r\n";
+                    dt_unitSort.Rows[i]["right"], dt_unitSort.Rows[i]["ncols"], dt_unitSort.Rows[i]["nrows"], dt_unitSort.Rows[i]["xllcorner"], dt_unitSort.Rows[i]["yllcorner"], dt_unitSort.Rows[i]["cellsize"], dt_unitSort.Rows[i]["degfbl"], dt_unitSort.Rows[i]["province"], dt_unitSort.Rows[i]["bswatacd"]) + "\r\n";
                 }
 
                 
