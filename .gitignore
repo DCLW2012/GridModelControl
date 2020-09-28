@@ -18,3 +18,4 @@ GridControl/bin/
 GridControl/Lib/
 GridControl/obj/
 packages/
+/GridControl/Properties/app.manifest

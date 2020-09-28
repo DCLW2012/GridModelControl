@@ -51,7 +51,7 @@ namespace GridControl
                     //! 遍历指定目录下的降雨数据
                     if (HookHelper.isgenraintile)
                     {
-                        FileInfo[] fInfo = GenRainTile.GetRaindatList();
+                        FileInfo[] fInfo = GenRainTileByPython.GetRaindatList();
                         int datnum = fInfo.Length;
                         for (int d = 0; d < datnum; ++d)
                         {
@@ -81,7 +81,7 @@ namespace GridControl
                                         //!1、执行切片，调用python执行
                                         if (HookHelper.isgenraintile)
                                         {
-                                            bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
+                                            bool isGenTilesucess = GenRainTileByPython.CreateTile(curDatFullname, folderPath);
 
                                             if (!isGenTilesucess)
                                             {
@@ -125,12 +125,12 @@ namespace GridControl
                                                     //！覆盖更新通过模板文件
                                                     if (HookHelper.updatebyfile)
                                                     {
-                                                        isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
+                                                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
                                                     }
 
                                                     if (HookHelper.updateraintile)
                                                     {
-                                                        isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                                        isUpExec = WriteExecBatFile.UpdateExecBatFile(execpath, outpath);
                                                     }
 
                                                     if (isUpExec)
@@ -155,7 +155,7 @@ namespace GridControl
                                                 string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[0]["AppPath"].ToString();
                                                 DirectoryInfo info = new DirectoryInfo(apppath);
                                                 String batRootPath = info.Parent.FullName;
-                                                bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                                bool isStartsucess = GenRainTileByPython.StartCurDBBatGroup(batRootPath, false);
                                                 if (isStartsucess)
                                                 {
                                                     Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);
@@ -213,7 +213,7 @@ namespace GridControl
                                     //!1、执行切片，调用python执行
                                     if (HookHelper.isgenraintile)
                                     {
-                                        bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
+                                        bool isGenTilesucess = GenRainTileByPython.CreateTile(curDatFullname, folderPath);
 
                                         if (!isGenTilesucess)
                                         {
@@ -257,12 +257,12 @@ namespace GridControl
                                                 //！覆盖更新通过模板文件
                                                 if (HookHelper.updatebyfile)
                                                 {
-                                                    isUpExec = GenRainTile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
+                                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplate(execpath, ComputeUnit);
                                                 }
 
                                                 if (HookHelper.updateraintile)
                                                 {
-                                                    isUpExec = GenRainTile.UpdateExecBatFile(execpath, outpath);
+                                                    isUpExec = WriteExecBatFile.UpdateExecBatFile(execpath, outpath);
                                                 }
 
                                                 if (isUpExec)
@@ -284,7 +284,7 @@ namespace GridControl
                                             DirectoryInfo info = new DirectoryInfo(apppath);
                                             String batRootPath = info.Parent.FullName;
 
-                                            bool isStartsucess = GenRainTile.StartCurDBBatGroup(batRootPath, false);
+                                            bool isStartsucess = GenRainTileByPython.StartCurDBBatGroup(batRootPath, false);
                                             if (isStartsucess)
                                             {
                                                 Console.WriteLine(string.Format("{0}区域所有单元批量执行成功  ", keyString) + DateTime.Now);

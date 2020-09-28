@@ -96,7 +96,7 @@ namespace GridControl
                         string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
                         bool isUpExec = false;
                         //！execcctable.bat文件
-                        isUpExec = GenRainTile.UpdateexeccctableBatFileByWATAChina(execpath, ComputeUnit, outrainTilepath);
+                        isUpExec = WriteExecBatFile.UpdateexeccctableBatFileByWATAChina(execpath, ComputeUnit, outrainTilepath);
 
                         if (isUpExec)
                         {
@@ -260,7 +260,7 @@ namespace GridControl
                 return false;
             }
 
-            FileInfo[] fInfo = GenRainTile.GetRaindatList();
+            FileInfo[] fInfo = GenRainTileByCSharp.GetRaindatList();
             int datnum = fInfo.Length;
             for (int d = 0; d < datnum; ++d)
             {
@@ -283,7 +283,7 @@ namespace GridControl
                     //! 设置计时器，当前场次时间
                     Stopwatch perChangci = new Stopwatch();
                     perChangci.Start();
-                    bool isGenTilesucess = GenRainTile.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
+                    bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
                     perChangci.Stop();
                     TimeSpan perChangciTime = perChangci.Elapsed;
                     if (!isGenTilesucess)
@@ -328,7 +328,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath);
+                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath);
 
                         if (isUpExec)
                         {
@@ -419,6 +419,39 @@ namespace GridControl
                     }
                 }
 
+                //!循环每个组，pid存在，则执行等待，直至继续运行到下一步，代表一个场次计算结束
+                while (pids.Count > 0)
+                {
+                    //! 执行等待，然后查询更新pids列表.等待1分钟
+                    Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中，等待时长60秒...") + DateTime.Now);
+                    System.Threading.Thread.Sleep(1000 * 60 * 1);
+
+                    //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
+                    int pidnum = pids.Count;
+                    foreach (var item in pids.ToList())
+                    {
+                        int curPID = item.Value;
+                        Process curProcss = null;
+                        try
+                        {
+                            curProcss = Process.GetProcessById(curPID);
+                        }
+                        catch (Exception ex)
+                        {
+                            curProcss = null;
+                        }
+                        bool isInProcess = curProcss == null ? false : true;
+                        if (!isInProcess)
+                        {
+                            pids.Remove(item.Key);
+                        }
+                    }
+
+                    if (pids.Count == 0)
+                    {
+                        break;
+                    }
+                }
                 Console.WriteLine(string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now);
                 HookHelper.Log += string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now + ";\r\n";
                 Console.WriteLine(string.Format("*****************************{0}场次End*************A************", curDatFullname) + DateTime.Now);
@@ -428,7 +461,7 @@ namespace GridControl
                 Console.WriteLine(string.Format("*****************************{0}场次End*********AAAAAAAAA********", curDatFullname) + DateTime.Now);
                 oneDat.Stop();
                 TimeSpan oneDatTime = oneDat.Elapsed;
-                Console.WriteLine(string.Format("网格{0}场次降雨切片到bat信息更新到网格流域计算，单场次全流程耗时：{1}", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
+                Console.WriteLine(string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);

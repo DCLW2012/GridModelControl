@@ -225,7 +225,7 @@ namespace GridControl
                 return false;
             }
 
-            FileInfo[] fInfo = GenRainTile.GetRaindatList();
+            FileInfo[] fInfo = GenRainTileByPython.GetRaindatList();
             int datnum = fInfo.Length;
             for (int d = 0; d < datnum; ++d)
             {
@@ -290,7 +290,7 @@ namespace GridControl
                             //!1、执行切片，调用python执行
                             if (HookHelper.isgenraintile)
                             {
-                                bool isGenTilesucess = GenRainTile.CreateTile(curDatFullname, folderPath);
+                                bool isGenTilesucess = GenRainTileByPython.CreateTile(curDatFullname, folderPath);
 
                                 if (!isGenTilesucess)
                                 {
@@ -334,7 +334,7 @@ namespace GridControl
                                     string datnums = "95";
 
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                    isUpExec = GenRainTile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory);
+                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory);
 
                                     if (isUpExec)
                                     {

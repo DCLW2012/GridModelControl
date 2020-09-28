@@ -4,6 +4,6 @@
     <StartArguments>-isCalcPerRegion true -method wata -processnum 30 -isSingleCC true</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <StartArguments>8 60 60 1 1  -r 100 -m hec -u DDA80-1</StartArguments>
+    <StartArguments>-isCalcPerRegion true -method wata -processnum 61 -isSingleCC true</StartArguments>
   </PropertyGroup>
 </Project>
