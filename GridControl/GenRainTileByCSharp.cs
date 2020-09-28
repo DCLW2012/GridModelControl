@@ -198,7 +198,7 @@ namespace GridControl
             //当前单元输出路径
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
-
+            bool isHaveRainCurUnit = false;
 
 
             for (int t = 0; t < dStruct.headerone[2]; ++t)
@@ -236,7 +236,7 @@ namespace GridControl
 
                 if (ret == 0)
                 {
-                    Console.WriteLine(string.Format("{0}不存在有效的降雨数据！！！", curWriteFileName) + DateTime.Now);
+                    //Console.WriteLine(string.Format("{0}不存在有效的降雨数据！！！", curWriteFileName) + DateTime.Now);
                     continue;
                 }
 
@@ -318,12 +318,13 @@ namespace GridControl
                     lines += line;
                 }
 
+                isHaveRainCurUnit = true;
                 sw.Write(lines);
                 sw.Close();
                 fs.Close();
             }
 
-            return true;
+            return isHaveRainCurUnit;
         }
 
 
@@ -421,6 +422,7 @@ namespace GridControl
             //unit 表
             DataTable grid_unit_tables = dbTableConfigs["china"]["GRID_HSFX_UNIT"];
 
+            int countOfHaveRain = 0;
             for (int i = 0; i < unitNUM; ++i)
             {
                 //！单元的信息
@@ -431,6 +433,7 @@ namespace GridControl
                 bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, startTimeCurDat, datStruct, grid_unit_tables.Rows[i]);
                 if (status)
                 {
+                    countOfHaveRain++;
                     Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片成功", curDatFullname, provinceName, groovyName) + DateTime.Now);
                 }
                 else
@@ -439,6 +442,7 @@ namespace GridControl
                 }
             }
 
+            Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curDatFullname, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
             datStruct.headerone = null;
             datStruct.rain = null;
             datStruct.Lons = null;
