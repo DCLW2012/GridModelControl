@@ -670,8 +670,8 @@ namespace GridControl
 
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
-            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -s {0} -c {1} -datTimes {2} -curDatGridName {3} -gridRainRoot {4} -gridFBCRoot {5}",
-                                             start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
+            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -s {1} -c {2} -datTimes {3} -curDatGridName {4} -gridRainRoot {5} -gridFBCRoot {6}",
+                                             HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----
@@ -704,8 +704,8 @@ namespace GridControl
 
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
-            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -cctable true -gridRainRoot {0} -gridFBCRoot {1}",
-                                             outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
+            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -cctable true -gridRainRoot {1} -gridFBCRoot {2}",
+                                             HookHelper.computerNode, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----

@@ -350,9 +350,10 @@ namespace GridControl
                         }
                     }
 
-                    
+
 
                     //! 阻塞程序不关闭
+                    Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
                     Console.Read();
                 }
 
