@@ -477,8 +477,8 @@ namespace GridControl
                 string ymdhstr = String.Format("{0}{1}", year, mdhSt);
                 DateTime dt = Convert.ToDateTime(ymdhstr.Substring(0, 4) + "-" + ymdhstr.Substring(4, 2) + "-" + ymdhstr.Substring(6, 2) + " " + ymdhstr.Substring(8, 2) + ":00:00");
                 startTimeCurDat = ymdhstr.Substring(0, 4) + ymdhstr.Substring(4, 2) + ymdhstr.Substring(6, 2) + ymdhstr.Substring(8, 2);
-                start = dt.ToString("yyyy-MM-ddThh:mm");
-                end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddThh:mm");
+                start = dt.ToString("yyyy-MM-ddTHH:mm");
+                end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");
                 datnums = times.ToString();
 
                 //！2、第二部分，是各个场次经纬度列表
