@@ -286,7 +286,7 @@ namespace GridControl
                     }
                     else
                     {
-                        Console.WriteLine(string.Format("网格{0}场次集计算耗时：{1}", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
+                        Console.WriteLine(string.Format("网格{0}场次降雨切片执行耗时：{1}", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
                         Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
                     }
                 }
