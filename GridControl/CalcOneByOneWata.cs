@@ -270,11 +270,11 @@ namespace GridControl
                 oneDat.Start();
                 string curDatFullname = fInfo[d].FullName;
 
-                Console.WriteLine(string.Format("*****************************{0}场次Start*************A************", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次Start************AAA***********", curDatFullname) + DateTime.Now);
+                Console.WriteLine(string.Format("******************************************************A************") + DateTime.Now);
+                Console.WriteLine(string.Format("*****************************************************AAA***********") + DateTime.Now);
                 Console.WriteLine(string.Format("*****************************{0}场次Start***********AAAAA**********", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次Start**********AAAAAAA*********", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次Start*********AAAAAAAAA********", curDatFullname) + DateTime.Now);
+                Console.WriteLine(string.Format("***************************************************AAAAAAA*********") + DateTime.Now);
+                Console.WriteLine(string.Format("**************************************************AAAAAAAAA********") + DateTime.Now);
                 //！ 遍历每个流域的网格模型
                 //！执行python切片
                 //!1、执行切片，调用python执行
@@ -455,11 +455,11 @@ namespace GridControl
                 }
                 Console.WriteLine(string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now);
                 HookHelper.Log += string.Format("{0}台风场所有流域计算完成  ", curDatFullname) + DateTime.Now + ";\r\n";
-                Console.WriteLine(string.Format("*****************************{0}场次End*************A************", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次End************AAA***********", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次End***********AAAAA**********", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次End**********AAAAAAA*********", curDatFullname) + DateTime.Now);
-                Console.WriteLine(string.Format("*****************************{0}场次End*********AAAAAAAAA********", curDatFullname) + DateTime.Now);
+                Console.WriteLine(string.Format("******************************************************A************") + DateTime.Now);
+                Console.WriteLine(string.Format("*****************************************************AAA***********") + DateTime.Now);
+                Console.WriteLine(string.Format("*****************************{0}场次END*************AAAAA**********", curDatFullname) + DateTime.Now);
+                Console.WriteLine(string.Format("***************************************************AAAAAAA*********") + DateTime.Now);
+                Console.WriteLine(string.Format("**************************************************AAAAAAAAA********") + DateTime.Now);
                 oneDat.Stop();
                 TimeSpan oneDatTime = oneDat.Elapsed;
                 Console.WriteLine(string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}秒", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
