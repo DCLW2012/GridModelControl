@@ -254,6 +254,9 @@ namespace GridControl
             string datnums = "95";
 
             //! 遍历指定目录下的降雨数据
+            //! 设置计时器，当前场次时间
+            Stopwatch totalFolderDat = new Stopwatch();
+            totalFolderDat.Start();
             if (!Directory.Exists(HookHelper.rainSRCDirectory))
             {
                 Console.WriteLine(string.Format("{0}台风场dat降雨目录不存在  ", HookHelper.rainSRCDirectory) + DateTime.Now);
@@ -475,6 +478,10 @@ namespace GridControl
             Console.WriteLine(string.Format("********(-_-) **************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
             Console.WriteLine(string.Format("********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..*********", datnum) + DateTime.Now);
             Console.WriteLine(string.Format("********(-_-) ****************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
+            totalFolderDat.Stop();
+            TimeSpan totalFolderDatTime = totalFolderDat.Elapsed;
+            Console.WriteLine(string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000));
+            HookHelper.Log += string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
             return true;
         }
 
