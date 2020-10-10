@@ -273,7 +273,7 @@ namespace GridControl
                 oneDat.Start();
                 string curDatFullname = fInfo[d].FullName;
 
-                Console.WriteLine(string.Format("****************************降雨目录下第{0}场*********A************", d) + DateTime.Now);
+                Console.WriteLine(string.Format("****************************降雨目录下第{0}场*********A************", d+1) + DateTime.Now);
                 Console.WriteLine(string.Format("*****************************************************AAA***********") + DateTime.Now);
                 Console.WriteLine(string.Format("*****************************{0}场次Start***********AAAAA**********", curDatFullname) + DateTime.Now);
                 Console.WriteLine(string.Format("***************************************************AAAAAAA*********") + DateTime.Now);
@@ -463,7 +463,7 @@ namespace GridControl
                 Console.WriteLine(string.Format("*****************************{0}场次END*************AAAAA**********", curDatFullname) + DateTime.Now);
                 Console.WriteLine(string.Format("***************************************************AAAAAAA*********") + DateTime.Now);
                 Console.WriteLine(string.Format("**************************************************AAAAAAAAA********") + DateTime.Now);
-                Console.WriteLine(string.Format("****************************降雨目录下第{0}场结束******************", d) + DateTime.Now);
+                Console.WriteLine(string.Format("****************************降雨目录下第{0}场结束******************", d+1) + DateTime.Now);
                 oneDat.Stop();
                 TimeSpan oneDatTime = oneDat.Elapsed;
                 Console.WriteLine(string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}秒", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
