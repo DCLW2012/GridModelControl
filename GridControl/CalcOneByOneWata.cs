@@ -306,6 +306,7 @@ namespace GridControl
                 if (dbTableConfigs["china"].Count > 0)
                 {
                     int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
+                    int appValidCount = 0;
                     for (int a = 0; a < appnum; ++a)
                     {
                         //!当前路径
@@ -336,13 +337,14 @@ namespace GridControl
 
                         if (isUpExec)
                         {
-                            Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", "china", apppath) + DateTime.Now);
+                            appValidCount++;
+                            //Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", "china", apppath) + DateTime.Now);
                         }else
                         {
-                            Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新失败  ", "china", apppath) + DateTime.Now);
+                            //Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新失败  ", "china", apppath) + DateTime.Now);
                         }
                     }
-
+                    Console.WriteLine(string.Format("{0}区域{1}个有效单元的exec.bat更新成功  ", "china", appValidCount) + DateTime.Now);
                     //!判断appnum 是否超过了processnum，是则部分启动，等待
                     //!先根据个数分组，分组后，则循环，则可以等待了
                     int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
@@ -391,6 +393,7 @@ namespace GridControl
                             endPROCESS = appnum;
                         }
 
+                        int validStartUnitModel = 0;
                         for (int a = 0; a < appnum; ++a)
                         {
                             //!当前路径
@@ -412,14 +415,16 @@ namespace GridControl
                             bool isOneStart = StartOneByOneExecsingle(execpath, ComputeUnit);
                             if (isOneStart)
                             {
-                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                validStartUnitModel++;
+                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                             }
                             else
                             {
-                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                             }
 
                         }
+                        Console.WriteLine(string.Format("{0}节点{1}个有效单元启动命令执行成功  ", HookHelper.computerNode, validStartUnitModel) + DateTime.Now);
                     }
                 }
 
@@ -468,6 +473,10 @@ namespace GridControl
                 TimeSpan oneDatTime = oneDat.Elapsed;
                 Console.WriteLine(string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}秒", curDatFullname, oneDatTime.TotalMilliseconds / 1000));
                 HookHelper.Log += string.Format("网格{0}场次降雨切片->bat信息更新->等待网格流域计算，单场次全流程耗时：{1}秒", curDatFullname, oneDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
+                Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
+                Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);
