@@ -195,6 +195,9 @@ namespace GridControl
 
         public static bool WriteAscFileByParams(string datPureName, string provinceName, string groovyName, string startTimeCurDat, DatFileStruct dStruct, DataRow paramsUnitDT)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             //当前单元输出路径
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
@@ -247,9 +250,7 @@ namespace GridControl
                 }
 
                 //写出数据
-                FileStream fs = new FileStream(curWriteFileName, FileMode.Create, FileAccess.Write);//定义写入方式
-                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding("GB2312"));//写入文件格式
-
+                StringBuilder lines = new StringBuilder();
                 //! 1、先写出文件头，起点投影坐标xy以及行列号
                 //stream << "ncols" << " " << params.ncols.toInt() << "\n";
                 //stream << "nrows" << " " << params.nrows.toInt() << "\n";
@@ -258,12 +259,12 @@ namespace GridControl
                 //stream << "cellsize" << " " << params.cellsize << "\n";
                 //stream << "NODATA_value" << " " << QString("%1").arg(-9999, 0, 10) << "\n";
 
-                sw.Write(String.Format("ncols {0}\n", unitCols));
-                sw.Write(String.Format("nrows {0}\n", unitRows));
-                sw.Write(String.Format("xllcorner {0}\n", xllcorner));
-                sw.Write(String.Format("yllcorner {0}\n", yllcorner));
-                sw.Write(String.Format("cellsize {0}\n", cellsize));
-                sw.Write(String.Format("NODATA_value {0}\n", NODATA_value));
+                lines.Append(String.Format("ncols {0}\n", unitCols));
+                lines.Append(String.Format("nrows {0}\n", unitRows));
+                lines.Append(String.Format("xllcorner {0}\n", xllcorner));
+                lines.Append(String.Format("yllcorner {0}\n", yllcorner));
+                lines.Append(String.Format("cellsize {0}\n", cellsize));
+                lines.Append(String.Format("NODATA_value {0}\n", NODATA_value));
                 //1 根据每个单元的参数记录的起点经纬度，行列数，遍历计算当前点在台风场数据中的索引号，从中取出对应的值
                 //! 如果计算出来的索引号行或者列为负值，则说明不在范围内，赋值为0
                 int outRow = unitRows;
@@ -276,12 +277,9 @@ namespace GridControl
                 float stLat = (float)dStruct.Lats[dStruct.curRainIndex];
 
                 //! 先写出一行，再写一行
-                string lines = "";
                 //! 由于asc中文件的参数信息是做下脚，但是数据是先存左上开始
                 for (int r = outRow - 1; r >= 0; --r)
                 {
-                    string line = "";
-
                     for (int c = 0; c < outCol; ++c)
                     {
                         //! 坐标索引转换，根据起点坐标 分辨率，行列号，计算当前点位经纬度，根据台风场的经纬度值，计算在台风场中的行列号 ，赋值即可
@@ -303,25 +301,35 @@ namespace GridControl
                             }
                         }
 
-                        line += String.Format("{0}", curRain);
+                        lines.Append(curRain);
                         if (c == outCol - 1)
                         {
-                            line += "\n"; //添加分隔符
+                            lines.Append("\n"); //添加分隔符
                         }
                         else
                         {
-                            line += " "; //添加分隔符
+                            lines.Append(" "); //添加分隔符
                         }
-
-
                     }
-                    lines += line;
                 }
 
                 isHaveRainCurUnit = true;
-                sw.Write(lines);
+
+                //stopwatch.Stop();
+                //Console.WriteLine("--计算" + stopwatch.ElapsedMilliseconds);
+                //stopwatch.Restart();
+
+                FileStream fs = new FileStream(curWriteFileName, FileMode.Create, FileAccess.Write);//定义写入方式
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding("GB2312"));//写入文件格式
+
+                sw.Write(lines.ToString());
                 sw.Close();
                 fs.Close();
+
+                //stopwatch.Stop();
+                //Console.WriteLine("--写入" + stopwatch.ElapsedMilliseconds);
+                //stopwatch.Restart();
+
             }
 
             return isHaveRainCurUnit;
@@ -330,6 +338,9 @@ namespace GridControl
 
         public static bool CreateTileByWATAByCSharp(string curDatFullname, ref string start, ref string end, ref string datnums)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
 
             //！解析当前dat文件
@@ -396,12 +407,15 @@ namespace GridControl
                 {
                     datStruct.curRainIndex = tindex;
 
+                    byte[] datbytes = br.ReadBytes(datStruct.row * datStruct.col * 4);
+
                     for (int r = 0; r < datStruct.row; ++r)
                     {
                         for (int c = 0; c < datStruct.col; ++c)
                         {
-                            float val = br.ReadSingle();
-                            datStruct.rain[tindex, r, c] = val;
+                            //float val = br.ReadSingle();
+                            //datStruct.rain[tindex, r, c] = val;
+                            datStruct.rain[tindex, r, c] = BitConverter.ToSingle(datbytes, (r * datStruct.row + c) * 4);
                         }
                     }
                 }
@@ -414,6 +428,9 @@ namespace GridControl
                 return false;
             }
             br.Close();
+            stopwatch.Stop();
+            Console.WriteLine(string.Format("读取{0}台风场文件耗时{1}", curDatFullname, stopwatch.ElapsedMilliseconds));
+            stopwatch.Restart();
 
             //！22 数据读取完成，则需要插值到各个计算单元，然后写出
             //! 遍历所有的计算单元信息表，写出数据
@@ -440,7 +457,12 @@ namespace GridControl
                 {
                     //Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片失败", curDatFullname, provinceName, groovyName) + DateTime.Now);
                 }
+                //stopwatch.Stop();
+                //Console.WriteLine(string.Format("写入{0}台风场第{1}个计算单元耗时{2}", curDatFullname, i, stopwatch.ElapsedMilliseconds));
+                //stopwatch.Restart();
             }
+            stopwatch.Stop();
+            Console.WriteLine(string.Format("写入{0}台风场文件耗时{1}", curDatFullname, stopwatch.ElapsedMilliseconds));
 
             Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curDatFullname, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
             datStruct.headerone = null;
