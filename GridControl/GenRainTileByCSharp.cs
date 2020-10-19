@@ -199,6 +199,10 @@ namespace GridControl
             stopwatch.Start();
 
             //当前单元输出路径
+            if (!dbValues.ContainsKey(provinceName))
+            {
+                return false;
+            }
             string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
             bool isHaveRainCurUnit = false;
