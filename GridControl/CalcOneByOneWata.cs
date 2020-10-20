@@ -93,6 +93,10 @@ namespace GridControl
                             execpath = apppath + "\\" + "execcctable.bat";
                         }
 
+                        if (!dbValues.ContainsKey(provinceName))
+                        {
+                            continue;
+                        }
                         string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
                         bool isUpExec = false;
                         //！execcctable.bat文件
@@ -325,7 +329,10 @@ namespace GridControl
                             execpath = apppath + "\\" + "execsingle.bat";
                         }
 
-
+                        if (!dbValues.ContainsKey(provinceName))
+                        {
+                            continue;
+                        }
                         string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
 
                         // 更新execpath的值
