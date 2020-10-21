@@ -9,6 +9,8 @@ using Common;
 using System.IO;
 using System.Configuration;
 using System.Diagnostics;
+using System.Net;
+
 namespace GridControl
 {
     class Program
@@ -41,7 +43,7 @@ namespace GridControl
             // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
             Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
             Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
-
+            
             //testEXEListening();
 
             try
@@ -370,8 +372,37 @@ namespace GridControl
             }
         }
 
+
+        static string GetLocalIP(string ipPrefix)
+        {
+            try
+            {
+                string HostName = Dns.GetHostName(); //得到主机名
+                IPHostEntry IpEntry = Dns.GetHostEntry(HostName);
+                for (int i = 0; i < IpEntry.AddressList.Length; i++)
+                {
+                    //从IP地址列表中筛选出IPv4类型的IP地址
+                    //AddressFamily.InterNetwork表示此IP为IPv4,
+                    //AddressFamily.InterNetworkV6表示此地址为IPv6类型
+                    if (IpEntry.AddressList[i].AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    {
+                        string ip = IpEntry.AddressList[i].ToString();
+                        if (ip.StartsWith(ipPrefix))
+                            return ip;
+                    }
+                }
+                return "";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
         static void InitHookHelper(string[] args)
         {
+            Dictionary<string, string> computerValues = ClientConn.m_computerValues;
+
             //! 台风数据文件目录
             HookHelper.rainSRCDirectory = ConfigurationManager.AppSettings["rainSRC"].ToString();
 
@@ -379,7 +410,23 @@ namespace GridControl
 
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
             HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
-            
+            //!根据数据库中配置的当前ip对应的node值，更新该选项
+            string localIP = GetLocalIP("172.16");
+            if (!string.IsNullOrWhiteSpace(localIP))
+            {
+                string curNode = computerValues[localIP];
+                if (!string.IsNullOrWhiteSpace(curNode))
+                {
+                    HookHelper.computerNode = curNode;
+                }else
+                {
+                    Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}  ", localIP, curNode) + DateTime.Now);
+                }
+
+            }else
+            {
+                Console.WriteLine(string.Format("当前主机节点{0}无效  ", localIP) + DateTime.Now);
+            }
 
             //! 2.根据命令行中的值，初始化hook
             //! 2、解析参数,更新初始值

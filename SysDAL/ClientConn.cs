@@ -24,6 +24,10 @@ namespace SysDAL
         public static Dictionary<string, Dictionary<string, string>> m_dbTableTypes = new Dictionary<string, Dictionary<string, string> >();
 
         public static Dictionary<string, Dictionary<string, DataTable>> m_dbTableConfig = new Dictionary<string, Dictionary<string, DataTable>>();
+
+        //每个计算机ip对应的computernode值
+        public static Dictionary<string, string> m_computerValues = new Dictionary<string, string>();
+        
         //! 根据config中的数据库链接，取出name，建立链接，存储到map中
         public static void PraseDataBaseConfig()
         {
