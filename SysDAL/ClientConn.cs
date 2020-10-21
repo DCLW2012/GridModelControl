@@ -182,5 +182,25 @@ namespace SysDAL
             m_dbTableConfig.Add(keyString, tableTypes);
 
         }
+
+
+        public static void PraseComputerTableConfig()
+        {
+            //！！取出当前key值
+            string keyString = "china";
+
+            string tableTypeName = "HSFX_COMPUTER_Group";
+            string sql = String.Format("SELECT *  from {0}", tableTypeName);
+
+            DataTable value = Dal_Rain.GetDataBySql(keyString, sql);
+            //! 遍历DataTable存储
+            for (int i = 0; i < value.Rows.Count; ++i)
+            {
+                string ip = value.Rows[i]["ComputerIP"].ToString();
+                string node = value.Rows[i]["ComputeNode"].ToString();
+                m_computerValues.Add(ip, node);
+            }
+            
+        }
     }
 }

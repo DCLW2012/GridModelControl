@@ -20,14 +20,16 @@ namespace GridControl
 
             //!!删除指定目录下的所有的txt文件日志文件
             WriteLog.DeleteLog();
-            
-
-            //！1、 为默认的全局控制参数设定初始值
-            InitHookHelper(args);
 
             //! 2、初始化数据库链接信息
             ClientConn.PraseDataBaseConfig();  //解析配置文件，并建立数据库连接。
             ClientConn.PraseTableTypeConfig(); //解析数据库对应要解析的表类型链接
+            ClientConn.PraseComputerTableConfig();
+
+            //！1、 为默认的全局控制参数设定初始值
+            InitHookHelper(args);
+
+            
 
             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
             if (HookHelper.method.Equals("wata"))
@@ -418,7 +420,9 @@ namespace GridControl
                 if (!string.IsNullOrWhiteSpace(curNode))
                 {
                     HookHelper.computerNode = curNode;
-                }else
+                    Console.WriteLine(string.Format("当前主机节点{0}的computernode值为{1}  ", localIP, curNode) + DateTime.Now);
+                }
+                else
                 {
                     Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}  ", localIP, curNode) + DateTime.Now);
                 }
