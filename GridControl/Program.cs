@@ -414,7 +414,7 @@ namespace GridControl
             HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
             //!根据数据库中配置的当前ip对应的node值，更新该选项
             string localIP = GetLocalIP("172.16");
-            if (!string.IsNullOrWhiteSpace(localIP))
+            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP))
             {
                 string curNode = computerValues[localIP];
                 if (!string.IsNullOrWhiteSpace(curNode))
@@ -429,7 +429,7 @@ namespace GridControl
 
             }else
             {
-                Console.WriteLine(string.Format("当前主机节点{0}无效  ", localIP) + DateTime.Now);
+                Console.WriteLine(string.Format("当前主机节点{0}没有在数据库中配置node编号，将使用默认值  ", localIP) + DateTime.Now);
             }
 
             //! 2.根据命令行中的值，初始化hook
