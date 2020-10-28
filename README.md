@@ -27,4 +27,8 @@
 
 8、-method wata \ province 按流域还是省份执行计算，流域的话使用多个computernode
 
-9、-processnum  30    最多一次启动的进程个数。只有在当前查出的个数大于这个数值才生效
+9、-processnum  30    最多一次启动的进程个数。只有在当前查出的个数大于这个数值才生效张翔:
+10、GridControl.exe.config文件中新增了一个配置项，如下：
+    <!--//CSVLog-->
+      <add key="CSVLogPath" value="\\192.168.100.100\s1-cpfs1\GridControlLog" />
+表示会把程序计算时间统计起来，输出到这个文件夹下面
