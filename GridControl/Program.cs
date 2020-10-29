@@ -246,7 +246,7 @@ namespace GridControl
 
             }
 
-            HookHelper.isSingleCC = false;
+            HookHelper.isSingleCC = true;
             if (args.Contains("-isSingleCC"))
             {
                 int index = args.ToList().IndexOf("-isSingleCC");
