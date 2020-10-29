@@ -100,7 +100,7 @@ namespace GridControl
     {
         // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
         public static Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
-        public static Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
+        public static Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig; //可以得到计算单元数
 
 
         public static int between(double d1, double d2, double d3)
@@ -376,7 +376,25 @@ namespace GridControl
                 int year = br.ReadInt32();
                 int mdh = br.ReadInt32();
                 int times = br.ReadInt32();
-
+                //////
+                string yearStr = year.ToString();
+                switch (yearStr.Length)
+                {
+                    case 3:
+                        yearStr = String.Format("0{0}", yearStr);
+                        break;
+                    case 2:
+                        yearStr = String.Format("00{0}", yearStr);
+                        break;
+                    case 1:
+                        yearStr = String.Format("000{0}", yearStr);
+                        break;
+                    default:
+                        Console.WriteLine("year 长度错误");
+                        break;
+                }
+                year = int.Parse(yearStr);
+                ///////
                 datStruct.headerone[0] = year;
                 datStruct.headerone[1] = mdh;
                 datStruct.headerone[2] = times;
@@ -386,8 +404,9 @@ namespace GridControl
                 {
                     mdhSt = String.Format("0{0}", mdhSt);
                 }
+                //System.String.Substring(Int32 startIndex, Int32 length)
+                string ymdhstr = String.Format("{0}{1}", yearStr, mdhSt);
 
-                string ymdhstr = String.Format("{0}{1}", year, mdhSt);
                 DateTime dt = Convert.ToDateTime(ymdhstr.Substring(0, 4) + "-" + ymdhstr.Substring(4, 2) + "-" + ymdhstr.Substring(6, 2) + " " + ymdhstr.Substring(8, 2) + ":00:00");
                 startTimeCurDat = ymdhstr.Substring(0, 4) + ymdhstr.Substring(4, 2) + ymdhstr.Substring(6, 2) + ymdhstr.Substring(8, 2);
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
@@ -469,6 +488,19 @@ namespace GridControl
             Console.WriteLine(string.Format("写入{0}台风场文件耗时{1}", curDatFullname, stopwatch.ElapsedMilliseconds));
 
             Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curDatFullname, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
+
+            //CSVLog
+            CSVData.addData(CSVData.GetRowNumber(), "HostName", System.Net.Dns.GetHostName());
+            var serverIP = Program.GetLocalIP("192.168");
+            CSVData.addData(CSVData.GetRowNumber(), "服务器IP", serverIP);
+            CSVData.addData(CSVData.GetRowNumber(), "计算节点", HookHelper.computerNode);
+            CSVData.addData(CSVData.GetRowNumber(), "eventId", Path.GetFileNameWithoutExtension(curDatFullname));
+            CSVData.addData(CSVData.GetRowNumber(), "计算单元个数", unitNUM);
+            CSVData.addData(CSVData.GetRowNumber(), "有效降雨单元个数", countOfHaveRain);
+            
+
+
+
             datStruct.headerone = null;
             datStruct.rain = null;
             datStruct.Lons = null;

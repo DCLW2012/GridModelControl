@@ -287,10 +287,15 @@ namespace GridControl
                 //!1、执行切片，调用python执行
                 if (HookHelper.isgenraintile)
                 {
+                    //CSVLog
+                    CSVData.addRow();
+
                     //! 设置计时器，当前场次时间
                     Stopwatch perChangci = new Stopwatch();
                     perChangci.Start();
                     bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
+
+
                     perChangci.Stop();
                     TimeSpan perChangciTime = perChangci.Elapsed;
                     if (!isGenTilesucess)
@@ -303,6 +308,9 @@ namespace GridControl
                         Console.WriteLine(string.Format("网格{0}场次降雨切片执行耗时：{1}秒", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
                         HookHelper.Log += string.Format("网格{0}场次降雨切片执行耗时：{1}秒", curDatFullname, perChangciTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
                         Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
+
+                        //CSVLog
+                        CSVData.addData(CSVData.GetRowNumber(), "切片时长", perChangciTime.TotalMilliseconds / 1000);
                     }
                 }
 
@@ -484,6 +492,11 @@ namespace GridControl
                 Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
                 Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
                 Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
+
+                //CSVLog
+                CSVData.addData(CSVData.GetRowNumber(), "单场台风时长", oneDatTime.TotalMilliseconds / 1000);
+                CSVData.addData(CSVData.GetRowNumber(), "单场计算时长", oneDatTime.TotalMilliseconds / 1000 - 
+                    (double)CSVData.LogDataTable.Rows[CSVData.GetRowNumber()]["切片时长"]);
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);

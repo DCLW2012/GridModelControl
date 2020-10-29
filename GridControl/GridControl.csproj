@@ -88,6 +88,8 @@
     <Compile Include="GenRainTileByCSharp.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CSVData.cs" />
+    <Compile Include="CSVFile.cs" />
     <Compile Include="WriteExecBatFile.cs" />
     <Compile Include="WriteUnitInfo.cs" />
   </ItemGroup>
