@@ -378,6 +378,13 @@ namespace GridControl
                 int times = br.ReadInt32();
                 //////
                 string yearStr = year.ToString();
+
+                if(yearStr.Length >= 5)
+                {
+                    HookHelper.Log += string.Format("{0}台风场文件解析场次信息失败，年数大于五位数了，继续下一个", curDatFullname) + DateTime.Now + ";\r\n";
+                    return false;
+                }
+
                 switch (yearStr.Length)
                 {
                     case 4:

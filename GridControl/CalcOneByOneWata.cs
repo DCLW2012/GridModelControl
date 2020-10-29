@@ -301,6 +301,7 @@ namespace GridControl
                     if (!isGenTilesucess)
                     {
                         //Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
+                        HookHelper.Log += string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now + ";\r\n";
                         continue;
                     }
                     else
