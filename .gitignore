@@ -19,3 +19,5 @@ GridControl/Lib/
 GridControl/obj/
 packages/
 /GridControl/Properties/app.manifest
+/DBSupport/App.config
+/DBSupport/packages.config
