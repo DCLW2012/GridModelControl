@@ -380,6 +380,9 @@ namespace GridControl
                 string yearStr = year.ToString();
                 switch (yearStr.Length)
                 {
+                    case 4:
+                        yearStr = String.Format("{0}", yearStr);
+                        break;
                     case 3:
                         yearStr = String.Format("0{0}", yearStr);
                         break;
