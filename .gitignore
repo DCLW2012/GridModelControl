@@ -21,3 +21,7 @@ packages/
 /GridControl/Properties/app.manifest
 /DBSupport/App.config
 /DBSupport/packages.config
+GridModelControl.sln
+DBSupport/DBSupport.csproj
+GridControl/GridControl.csproj
+SysDAL/SysDAL.csproj
