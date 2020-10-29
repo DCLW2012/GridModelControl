@@ -218,6 +218,11 @@ namespace GridControl
         
         public static bool runBySingleCC()
         {
+            // 更新execpath的值
+            string start = "2003-11-15T13:00";
+            string end = "2003-11-15T13:00";
+            string datnums = "95";
+
             //! 遍历指定目录下的降雨数据
             if (!Directory.Exists(HookHelper.rainSRCDirectory))
             {
@@ -290,16 +295,25 @@ namespace GridControl
                             //!1、执行切片，调用python执行
                             if (HookHelper.isgenraintile)
                             {
-                                bool isGenTilesucess = GenRainTileByPython.CreateTile(curDatFullname, folderPath);
+                                //! 设置计时器，当前场次时间
+                                Stopwatch perChangci = new Stopwatch();
+                                perChangci.Start();
 
+                                bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
+
+
+                                perChangci.Stop();
+                                TimeSpan perChangciTime = perChangci.Elapsed;
                                 if (!isGenTilesucess)
                                 {
-                                    Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", keyString) + DateTime.Now);
+                                    //Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
                                     continue;
                                 }
                                 else
                                 {
-                                    Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", keyString) + DateTime.Now);
+                                    Console.WriteLine(string.Format("网格{0}场次降雨切片执行耗时：{1}秒", curDatFullname, perChangciTime.TotalMilliseconds / 1000));
+                                    HookHelper.Log += string.Format("网格{0}场次降雨切片执行耗时：{1}秒", curDatFullname, perChangciTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
+                                    Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
                                 }
                             }
 
@@ -328,11 +342,6 @@ namespace GridControl
 
                                     // 更新execpath的值
                                     bool isUpExec = false;
-                                    //！覆盖更新通过模板文件
-                                    string start = "2003-11-15T13:00";
-                                    string end = "2003-11-15T13:00";
-                                    string datnums = "95";
-
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
                                     isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory);
 
