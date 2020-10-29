@@ -410,11 +410,17 @@ namespace GridControl
                 //System.String.Substring(Int32 startIndex, Int32 length)
                 string ymdhstr = String.Format("{0}{1}", yearStr, mdhSt);
 
-                DateTime dt = Convert.ToDateTime(ymdhstr.Substring(0, 4) + "-" + ymdhstr.Substring(4, 2) + "-" + ymdhstr.Substring(6, 2) + " " + ymdhstr.Substring(8, 2) + ":00:00");
-                startTimeCurDat = ymdhstr.Substring(0, 4) + ymdhstr.Substring(4, 2) + ymdhstr.Substring(6, 2) + ymdhstr.Substring(8, 2);
+                //1,2,3位的year前边必须补0，不然会识别错误， 5位的不识别
+                DateTime dt = Convert.ToDateTime(yearStr + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
+
+                //! 传入到模型中的时间值，用来计算该时间段的水文结果
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
                 end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");
                 datnums = times.ToString();
+
+                //该变量是根据时间值组合是数字串，后续作为降雨及计算结果的输出文件名称前缀，year前自动补0，与模型计算中更新rainfile中规则一致
+                //startTimeCurDat = yearStr + mdhSt.Substring(0, 2) + mdhSt.Substring(2, 2) + mdhSt.Substring(4, 2);
+                startTimeCurDat = dt.ToString("yyyyMMddHH");
 
                 //！2、第二部分，是各个场次经纬度列表
                 datStruct.Lats = new double[times];
