@@ -212,7 +212,7 @@ namespace GridControl
             {
                 dStruct.curRainIndex = t;
                 //!当前文件名
-                string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, startTimeCurDat, t);
+                string curWriteFileName = String.Format("{0}\\{1}-{2}.asc", unitOutdir, datPureName, t);
 
                 if (curWriteFileName.Contains("WHF66_3_4"))
                 {
@@ -395,8 +395,8 @@ namespace GridControl
 
                 //1,2,3位的year前边必须补0，不然会识别错误， 5位的不识别.传入程序的时间以4位为准，统一从2000年开始，追加，模型输出时候纠正时间
                 string yearStrForCalc = "2020";
-                DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
-
+                //DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
+                DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + "01" + "-" + "01" + " " + "00" + ":00:00");
                 //! 传入到模型中的时间值，用来计算该时间段的水文结果
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
                 end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");

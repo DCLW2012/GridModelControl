@@ -253,11 +253,11 @@ namespace GridControl
         {
             //!! 场次信息回传
             // 更新execpath的值
-            string start = "2003-11-15T13:00";
-            string end = "2003-11-15T13:00";
+            string start = "2000-01-01T00:00";
+            string end = "2000-01-01T08:00";
             string datnums = "95";
 
-            string yearmmddForID = "2013111513";
+            string yearmmddForID = "2000010100";
 
             //! 遍历指定目录下的降雨数据
             //! 设置计时器，当前场次时间
