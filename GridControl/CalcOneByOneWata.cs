@@ -257,6 +257,8 @@ namespace GridControl
             string end = "2003-11-15T13:00";
             string datnums = "95";
 
+            string yearmmddForID = "2013111513";
+
             //! 遍历指定目录下的降雨数据
             //! 设置计时器，当前场次时间
             Stopwatch totalFolderDat = new Stopwatch();
@@ -293,7 +295,7 @@ namespace GridControl
                     //! 设置计时器，当前场次时间
                     Stopwatch perChangci = new Stopwatch();
                     perChangci.Start();
-                    bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
+                    bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
 
 
                     perChangci.Stop();
@@ -349,7 +351,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath);
+                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID);
 
                         if (isUpExec)
                         {

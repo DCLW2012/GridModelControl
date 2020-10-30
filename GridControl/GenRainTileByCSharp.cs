@@ -340,7 +340,7 @@ namespace GridControl
         }
 
 
-        public static bool CreateTileByWATAByCSharp(string curDatFullname, ref string start, ref string end, ref string datnums)
+        public static bool CreateTileByWATAByCSharp(string curDatFullname, ref string start, ref string end, ref string datnums, ref string yearmmddForID)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -357,7 +357,6 @@ namespace GridControl
 
             // 读取文件
             BinaryReader br;
-            string startTimeCurDat = "2013111513";
 
             try
             {
@@ -379,30 +378,7 @@ namespace GridControl
                 //////
                 string yearStr = year.ToString();
 
-                if(yearStr.Length >= 5)
-                {
-                    HookHelper.Log += string.Format("{0}台风场文件解析场次信息失败，年数大于五位数了，继续下一个", curDatFullname) + DateTime.Now + ";\r\n";
-                    return false;
-                }
 
-                switch (yearStr.Length)
-                {
-                    case 4:
-                        yearStr = String.Format("{0}", yearStr);
-                        break;
-                    case 3:
-                        yearStr = String.Format("0{0}", yearStr);
-                        break;
-                    case 2:
-                        yearStr = String.Format("00{0}", yearStr);
-                        break;
-                    case 1:
-                        yearStr = String.Format("000{0}", yearStr);
-                        break;
-                    default:
-                        Console.WriteLine("year 长度错误");
-                        break;
-                }
                 year = int.Parse(yearStr);
                 ///////
                 datStruct.headerone[0] = year;
@@ -417,8 +393,9 @@ namespace GridControl
                 //System.String.Substring(Int32 startIndex, Int32 length)
                 string ymdhstr = String.Format("{0}{1}", yearStr, mdhSt);
 
-                //1,2,3位的year前边必须补0，不然会识别错误， 5位的不识别
-                DateTime dt = Convert.ToDateTime(yearStr + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
+                //1,2,3位的year前边必须补0，不然会识别错误， 5位的不识别.传入程序的时间以4位为准，统一从2000年开始，追加，模型输出时候纠正时间
+                string yearStrForCalc = "2020";
+                DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
 
                 //! 传入到模型中的时间值，用来计算该时间段的水文结果
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
@@ -426,8 +403,7 @@ namespace GridControl
                 datnums = times.ToString();
 
                 //该变量是根据时间值组合是数字串，后续作为降雨及计算结果的输出文件名称前缀，year前自动补0，与模型计算中更新rainfile中规则一致
-                //startTimeCurDat = yearStr + mdhSt.Substring(0, 2) + mdhSt.Substring(2, 2) + mdhSt.Substring(4, 2);
-                startTimeCurDat = dt.ToString("yyyyMMddHH");
+                yearmmddForID = yearStr + mdhSt.Substring(0, 2) + mdhSt.Substring(2, 2) + mdhSt.Substring(4, 2);
 
                 //！2、第二部分，是各个场次经纬度列表
                 datStruct.Lats = new double[times];
@@ -486,7 +462,7 @@ namespace GridControl
                 string groovyName = grid_unit_tables.Rows[i]["GroovyName"].ToString();
 
                 //!当前场次下某个单元的所有时间文件写出
-                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, startTimeCurDat, datStruct, grid_unit_tables.Rows[i]);
+                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, yearmmddForID, datStruct, grid_unit_tables.Rows[i]);
                 if (status)
                 {
                     countOfHaveRain++;

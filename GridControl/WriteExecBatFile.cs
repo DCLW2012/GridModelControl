@@ -12,7 +12,7 @@ namespace GridControl
 {
     public class WriteExecBatFile
     {
-        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName, string outrainTilepath)
+        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName, string outrainTilepath, string yearmmddForID)
         {
             DirectoryInfo info = new DirectoryInfo(fileName);
             String apppath = info.Parent.FullName;
@@ -34,8 +34,8 @@ namespace GridControl
 
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
-            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -s {1} -c {2} -datTimes {3} -curDatGridName {4} -gridRainRoot {5} -gridFBCRoot {6}",
-                                             HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'));
+            string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -s {1} -c {2} -datTimes {3} -curDatGridName {4} -gridRainRoot {5} -gridFBCRoot {6} -yearid {7}",
+                                             HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID);
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----

@@ -222,7 +222,7 @@ namespace GridControl
             string start = "2003-11-15T13:00";
             string end = "2003-11-15T13:00";
             string datnums = "95";
-
+            string yearmmddForID = "2013111513";
             //! 遍历指定目录下的降雨数据
             if (!Directory.Exists(HookHelper.rainSRCDirectory))
             {
@@ -299,7 +299,7 @@ namespace GridControl
                                 Stopwatch perChangci = new Stopwatch();
                                 perChangci.Start();
 
-                                bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums);
+                                bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
 
 
                                 perChangci.Stop();
@@ -343,7 +343,7 @@ namespace GridControl
                                     // 更新execpath的值
                                     bool isUpExec = false;
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory);
+                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory, yearmmddForID);
 
                                     if (isUpExec)
                                     {
