@@ -29,6 +29,23 @@ namespace Common
             // 删除上次已经生成的OUT文件
         }
 
+
+        public static void AppendLogMethod(string content, string fileBaseName = "gridControl")
+        {
+            string sysPath = System.IO.Directory.GetCurrentDirectory();
+            string basepath = sysPath + "//Log//";//文件存放地址
+            string name = DateTime.Now.ToString().Replace("/", "-").Replace(":", "").Replace(" ", "").Trim() + "-" + fileBaseName + ".txt";//组装的文件名称
+            string Contents = content;
+            string path = basepath + name;//地址全称
+
+            FileStream fs = new FileStream(path, FileMode.Truncate, FileAccess.Write);//定义写入方式
+            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding("GB2312"));//写入文件格式
+            sw.Write(Contents);//写入文件
+            sw.Close();
+            fs.Close();
+            // 删除上次已经生成的OUT文件
+        }
+
         //！ 日志过期处理
         public static void DeleteLog()
         {
