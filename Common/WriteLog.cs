@@ -38,7 +38,7 @@ namespace Common
             string Contents = content;
             string path = basepath + name;//地址全称
 
-            FileStream fs = new FileStream(path, FileMode.Truncate, FileAccess.Write);//定义写入方式
+            FileStream fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);//定义写入方式
             StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding("GB2312"));//写入文件格式
             sw.Write(Contents);//写入文件
             sw.Close();
