@@ -34,7 +34,7 @@ namespace Common
         {
             string sysPath = System.IO.Directory.GetCurrentDirectory();
             string basepath = sysPath + "//Log//";//文件存放地址
-            string name = DateTime.Now.ToString().Replace("/", "-").Replace(":", "").Replace(" ", "").Trim() + "-" + fileBaseName + ".txt";//组装的文件名称
+            string name = fileBaseName + ".txt";//组装的文件名称
             string Contents = content;
             string path = basepath + name;//地址全称
 

@@ -367,14 +367,42 @@ namespace GridControl
                     //!先根据个数分组，分组后，则循环，则可以等待了
                     int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
 
+                    
                     for (int g = 0; g < processGroup; ++g)
                     {
                         //!循环每个组，pid存在，则执行等待
+                        int perGroupCount = 0;
                         while (pids.Count > 0)
                         {
                             //! 执行等待，然后查询更新pids列表.等待1分钟
                             Console.WriteLine(string.Format("等待第{0}场{1}文件的第{2}进程组计算完成并关闭，pid进程查询更新等待中，等待时长60秒...", d+1, curDatFullname, g+1) + DateTime.Now);
                             System.Threading.Thread.Sleep(1000 * 60 * 1);
+
+                            //kill
+                            perGroupCount++;
+                            Console.WriteLine(string.Format("已经等待次数{0}次", perGroupCount) + DateTime.Now);
+                            if (perGroupCount >= 60)
+                            {
+                                //遍历强制关闭当前场次的所有pid程序
+                                foreach (var item in pids.ToList())
+                                {
+                                    int curPID = item.Value;
+                                    Process curProcss = null;
+                                    try
+                                    {
+                                        curProcss = Process.GetProcessById(curPID);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        curProcss = null;
+                                    }
+                                    bool isInProcess = curProcss == null ? false : true;
+                                    if (isInProcess)
+                                    {
+                                        curProcss.Kill();
+                                    }
+                                }
+                            }
 
                             //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
                             int pidnum = pids.Count;
@@ -412,7 +440,7 @@ namespace GridControl
                         }
 
                         int validStartUnitModel = 0;
-                        for (int a = 0; a < appnum; ++a)
+                        for (int a = startPROCESS; a < endPROCESS; ++a)
                         {
                             //!当前路径
                             string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
@@ -451,11 +479,11 @@ namespace GridControl
                 while (pids.Count > 0)
                 {
                     //! 执行等待，然后查询更新pids列表.等待1分钟
-                    Console.WriteLine(string.Format("等待第{0}场{1}文件计算完成并关闭，pid进程查询更新等待中，等待时长60秒...",d+1, curDatFullname) + DateTime.Now);
-                    System.Threading.Thread.Sleep(1000 * 60 * 1);
+                    Console.WriteLine(string.Format("等待第{0}场{1}文件计算完成并关闭，pid进程查询更新等待中，等待时长20秒...",d+1, curDatFullname) + DateTime.Now);
+                    System.Threading.Thread.Sleep(1000 * 10 * 1);
                     perWaitCount++;
-
-                    if (perWaitCount >= 60)
+                    Console.WriteLine(string.Format("已经等待次数{0}次", perWaitCount) + DateTime.Now);
+                    if (perWaitCount >= 360)
                     {
                         //遍历强制关闭当前场次的所有pid程序
                         //将该场次值写出到log文件中
@@ -476,7 +504,7 @@ namespace GridControl
                             bool isInProcess = curProcss == null ? false : true;
                             if (isInProcess)
                             {
-                                curProcss.Close();
+                                curProcss.Kill();
                             }
                         }
                     }
