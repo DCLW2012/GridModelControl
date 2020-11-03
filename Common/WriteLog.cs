@@ -43,7 +43,6 @@ namespace Common
             sw.Write(Contents);//写入文件
             sw.Close();
             fs.Close();
-            // 删除上次已经生成的OUT文件
         }
 
         //！ 日志过期处理
