@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Configuration;
 using System.Data;
+
 namespace SysDAL
 {
     public static class ClientConn
@@ -29,7 +30,7 @@ namespace SysDAL
         public static Dictionary<string, string> m_computerValues = new Dictionary<string, string>();
         
         //! 根据config中的数据库链接，取出name，建立链接，存储到map中
-        public static void PraseDataBaseConfig()
+        public static void PraseDataBaseConfig(bool isAllConnect)
         {
             int num = System.Configuration.ConfigurationManager.ConnectionStrings.Count;
             for(int i = 1; i != num; ++i)
@@ -39,8 +40,13 @@ namespace SysDAL
 
                 //！2.建立链接(根据数据库类型，建立链接，目前默认为sqlserver)
                 string oledbclient = System.Configuration.ConfigurationManager.ConnectionStrings[dbName].ToString();
-                IDataAccess DataAccess;
-                DataAccess = DataAccessFactory.CreateDataAccess(DataAccessFactory.DBType.SqlServer, oledbclient);
+                IDataAccess DataAccess = null;
+
+                if (isAllConnect || dbName.Equals("china"))
+                {
+                    DataAccess = DataAccessFactory.CreateDataAccess(DataAccessFactory.DBType.SqlServer, oledbclient);
+                }
+                
 
                 //3.存储到map容器中
                 m_dataBaseConnects.Add(dbName, DataAccess);

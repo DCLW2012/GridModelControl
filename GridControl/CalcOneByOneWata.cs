@@ -356,13 +356,14 @@ namespace GridControl
                         if (isUpExec)
                         {
                             appValidCount++;
-                            //Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", "china", apppath) + DateTime.Now);
-                        }else
+                            //Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新成功  ", "china", apppath) + DateTime.Now);
+                        }
+                        else
                         {
-                            //Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新失败  ", "china", apppath) + DateTime.Now);
+                            //Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新失败  ", "china", apppath) + DateTime.Now);
                         }
                     }
-                    Console.WriteLine(string.Format("{0}区域{1}个有效单元的exec.bat更新成功  ", "china", appValidCount) + DateTime.Now);
+                    Console.WriteLine(string.Format("{0}区域{1}个有效单元的execsingle.bat更新成功  ", "china", appValidCount) + DateTime.Now);
                     //!判断appnum 是否超过了processnum，是则部分启动，等待
                     //!先根据个数分组，分组后，则循环，则可以等待了
                     int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);

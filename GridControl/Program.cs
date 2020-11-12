@@ -22,12 +22,16 @@ namespace GridControl
             //!!删除指定目录下的所有的txt文件日志文件
             WriteLog.DeleteLog();
 
+            //! 1.根据命令行中的值，初始化hook
+            //! 1、解析参数,更新初始值
+            argsPrase(args);
+
             //! 2、初始化数据库链接信息
-            ClientConn.PraseDataBaseConfig();  //解析配置文件，并建立数据库连接。
+            ClientConn.PraseDataBaseConfig(!HookHelper.method.Equals("wata"));  //解析配置文件，并建立数据库连接。
             ClientConn.PraseTableTypeConfig(); //解析数据库对应要解析的表类型链接
             ClientConn.PraseComputerTableConfig();
 
-            //！1、 为默认的全局控制参数设定初始值
+            //！3、 初始化与数据库相关的hookhelper变量
             InitHookHelper(args);
 
             
@@ -171,9 +175,7 @@ namespace GridControl
                 Console.WriteLine(string.Format("当前主机节点{0}没有在数据库中配置node编号，将使用默认值  ", localIP) + DateTime.Now);
             }
 
-            //! 2.根据命令行中的值，初始化hook
-            //! 2、解析参数,更新初始值
-            argsPrase(args);
+            
         }
 
         static void argsPrase(string[] args)
