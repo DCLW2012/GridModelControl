@@ -37,6 +37,12 @@ namespace GridControl
             string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -s {1} -c {2} -datTimes {3} -curDatGridName {4} -gridRainRoot {5} -gridFBCRoot {6} -yearid {7}",
                                              HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID);
 
+            if (HookHelper.isGridout)
+            {
+                parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo wata -computernode {0} -s {1} -c {2} -datTimes {3} -curDatGridName {4} -gridRainRoot {5} -gridFBCRoot {6} -yearid {7} -isGridout {8}",
+                                             HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID, true);
+            }
+
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----
             //! 结束读取流

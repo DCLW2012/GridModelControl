@@ -40,7 +40,7 @@ namespace Common
         public static bool isSingleCC { get; set; }
 
         public static int processnum { get; set; }
-        
 
+        public static bool isGridout { get; set; }
     }
 }

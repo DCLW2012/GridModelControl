@@ -287,7 +287,22 @@ namespace GridControl
                 }
 
             }
-            
+
+
+            HookHelper.isGridout = false;
+            if (args.Contains("-isGridout"))
+            {
+                int index = args.ToList().IndexOf("-isGridout");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    bool pa = bool.Parse(args[index + 1]);
+                    HookHelper.isGridout = pa;
+                }
+
+            }
+
 
             HookHelper.updateraintile = true;
             if (args.Contains("-updateraintile"))
