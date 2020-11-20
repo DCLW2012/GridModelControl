@@ -15,147 +15,10 @@ namespace GridControl
         // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
         public static Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
         public static Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
-        //！ pid列表，通过定时查询用来判断是否清空
-        public static Dictionary<int, int> pids = new Dictionary<int, int>();
-        public static bool run()
-        {
-            int num = dbValues.Count;
+        //！ pid列表，通过定时查询用来判断是否清空key 是pid value是单元信息
+        public static Dictionary<int, string> pids = new Dictionary<int, string>();
 
-
-            //! 启动bat前由于流域模式的 unit id和 省模式下id不一样，要更新
-            if (dbTableConfigs["china"].Count > 0)
-            {
-                int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
-
-                //!判断appnum 是否超过了processnum，是则部分启动，等待
-                //!先根据个数分组，分组后，则循环，则可以等待了
-                int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
-
-                for (int g = 0; g < processGroup; ++g)
-                {
-                    //!循环每个组，pid存在，则执行等待
-                    while (pids.Count > 0)
-                    {
-                        //! 执行等待，然后查询更新pids列表.等待1分钟
-                        Console.WriteLine(string.Format("等待前一个流域进程组计算完成并关闭，pid进程查询更新等待中，等待时长10秒...") + DateTime.Now);
-                        System.Threading.Thread.Sleep(1000 * 10 * 1);
-
-                        //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
-                        int pidnum = pids.Count;
-                        foreach (var item in pids.ToList())
-                        {
-                            int curPID = item.Value;
-                            Process curProcss = null;
-                            try
-                            {
-                                curProcss = Process.GetProcessById(curPID);
-                            }
-                            catch (Exception ex)
-                            {
-                                curProcss = null;
-                            }
-                            bool isInProcess = curProcss == null ? false : true;
-                            if (!isInProcess)
-                            {
-                                pids.Remove(item.Key);
-                            }
-                        }
-
-                        if (pids.Count == 0)
-                        {
-                            break;
-                        }
-                    }
-
-                    //当前分组的起始值，和end值
-                    int start = g * HookHelper.processnum;
-                    int end = (g + 1) * HookHelper.processnum;
-                    if (g == processGroup - 1)
-                    {
-                        end = appnum;
-                    }
-
-                    for (int a = start; a < end; ++a)
-                    {
-                        //!当前路径
-                        string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
-                        string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                        string provinceName = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["province"].ToString();
-
-                        //execbat路径
-                        string execpath = apppath + "execcctable.bat";
-                        if (apppath.EndsWith("/"))
-                        {
-                            execpath = apppath + "execcctable.bat";
-                        }
-                        else
-                        {
-                            execpath = apppath + "\\" + "execcctable.bat";
-                        }
-
-                        if (!dbValues.ContainsKey(provinceName))
-                        {
-                            continue;
-                        }
-                        string outrainTilepath = dbValues[provinceName]["rainTileFolder"];
-                        bool isUpExec = false;
-                        //！execcctable.bat文件
-                        isUpExec = WriteExecBatFile.UpdateexeccctableBatFileByWATAChina(execpath, ComputeUnit, outrainTilepath);
-
-                        if (isUpExec)
-                        {
-                            Console.WriteLine(string.Format("{0}区域{1}execcctable.bat更新成功  ", "china", apppath) + DateTime.Now);
-                        }
-                    }
-
-                    if (dbTableConfigs["china"].Count > 0)
-                    {
-                        //！分组所有app
-                        for (int a = start; a < end; ++a)
-                        {
-                            //!当前路径
-                            string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
-                            string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                            //execbat路径
-                            string execpath = apppath + "execcctable.bat";
-                            if (apppath.EndsWith("/"))
-                            {
-                                execpath = apppath + "execcctable.bat";
-                            }
-                            else
-                            {
-                                execpath = apppath + "\\" + "execcctable.bat";
-                            }
-
-
-                            //! 启动该exec.bat
-                            bool isOneStart = StartOneByOneExec(execpath, ComputeUnit);
-                            if (isOneStart)
-                            {
-                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
-                            }
-                            else
-                            {
-                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
-                            }
-
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(string.Format("{0}区域所有单元执行失败  ", HookHelper.computerNode) + DateTime.Now);
-                    }
-                }
-
-
-            }
-            
-
-
-            return true;
-        }
-
-        public static bool StartOneByOneExec(string appPath, string computerunit)
+        public static bool StartOneByOneExecsingle(string appPath, string appunitInfo)
         {
             if (!File.Exists(appPath))
             {
@@ -180,54 +43,7 @@ namespace GridControl
 
                 if (isStart)
                 {
-                    pids.Add(int.Parse(computerunit), myProcess.Id);
-                }
-                else
-                {
-                    Console.WriteLine(string.Format("{0}启动文件通过process执行start异常  ", appPath) + DateTime.Now);
-                    return false;
-                }
-
-
-                //myProcess.WaitForExit();
-                #endregion
-            }
-            catch (Exception exp)
-            {
-                //MessageBox.Show(exp.Message, exp.Source, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Console.WriteLine(string.Format("{0}启动文件通过process执行start异常  ", appPath) + DateTime.Now);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static bool StartOneByOneExecsingle(string appPath, string computerunit)
-        {
-            if (!File.Exists(appPath))
-            {
-                Console.WriteLine(string.Format("{0}启动文件不存在  ", appPath) + DateTime.Now);
-                return false;
-            }
-
-            try
-            {
-                #region window专用
-                Process myProcess = new Process();
-                string fileName = appPath;
-                ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-                if (!HookHelper.isshowcmd)
-                {
-                    myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
-                }
-
-                myProcess.StartInfo = myProcessStartInfo;
-                myProcess.StartInfo.Arguments = appPath;
-                bool isStart = myProcess.Start();
-
-                if (isStart)
-                {
-                    pids.Add(int.Parse(computerunit), myProcess.Id);
+                    pids.Add(myProcess.Id, appunitInfo);
                 }
                 else
                 {
@@ -387,7 +203,7 @@ namespace GridControl
                                 //遍历强制关闭当前场次的所有pid程序
                                 foreach (var item in pids.ToList())
                                 {
-                                    int curPID = item.Value;
+                                    int curPID = item.Key;
                                     Process curProcss = null;
                                     try
                                     {
@@ -409,7 +225,7 @@ namespace GridControl
                             int pidnum = pids.Count;
                             foreach (var item in pids.ToList())
                             {
-                                int curPID = item.Value;
+                                int curPID = item.Key;
                                 Process curProcss = null;
                                 try
                                 {
@@ -423,6 +239,9 @@ namespace GridControl
                                 if (!isInProcess)
                                 {
                                     pids.Remove(item.Key);
+                                }else
+                                {
+                                    Console.WriteLine(string.Format("单元{0}所在分组{1}计算进行中......需继续等待......", item.Value, processGroup) + DateTime.Now);
                                 }
                             }
 
@@ -446,6 +265,7 @@ namespace GridControl
                             //!当前路径
                             string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                             string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                            string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
                             //execbat路径
                             string execpath = apppath + "execsingle.bat";
                             if (apppath.EndsWith("/"))
@@ -459,6 +279,8 @@ namespace GridControl
 
 
                             //! 启动该exec.bat
+                            //! 单元信息
+                            string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
                             bool isOneStart = StartOneByOneExecsingle(execpath, ComputeUnit);
                             if (isOneStart)
                             {
@@ -492,7 +314,7 @@ namespace GridControl
                         WriteLog.AppendLogMethod(ignoreCCName, "datIgnore");
                         foreach (var item in pids.ToList())
                         {
-                            int curPID = item.Value;
+                            int curPID = item.Key;
                             Process curProcss = null;
                             try
                             {
@@ -507,6 +329,10 @@ namespace GridControl
                             {
                                 curProcss.Kill();
                             }
+                            else
+                            {
+                                Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
+                            }
                         }
                     }
 
@@ -514,7 +340,7 @@ namespace GridControl
                     int pidnum = pids.Count;
                     foreach (var item in pids.ToList())
                     {
-                        int curPID = item.Value;
+                        int curPID = item.Key;
                         Process curProcss = null;
                         try
                         {
@@ -528,6 +354,10 @@ namespace GridControl
                         if (!isInProcess)
                         {
                             pids.Remove(item.Key);
+                        }
+                        else
+                        {
+                            Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
                         }
                     }
 

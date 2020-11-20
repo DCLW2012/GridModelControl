@@ -76,18 +76,9 @@ namespace GridControl
                     WriteUnitInfo.GetAllHsfxUnitTableByWATA();
 
 
-                    if (HookHelper.isSingleCC)
-                    {
-                        CalcOneByOneWata.runBySingleCC();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
-                    }
-                    else
-                    {
-                        CalcOneByOneWata.run();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
-                    }
+                    CalcOneByOneWata.runBySingleCC();
+                    //执行插入日志
+                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                 }
 
                 //! 阻塞程序不关闭
