@@ -376,7 +376,7 @@ namespace GridControl
                         while (pids.Count > 0)
                         {
                             //! 执行等待，然后查询更新pids列表.等待1分钟
-                            Console.WriteLine(string.Format("等待第{0}场{1}文件的第{2}进程组计算完成并关闭，pid进程查询更新等待中，等待时长10秒...", d+1, curDatFullname, g+1) + DateTime.Now);
+                            Console.WriteLine(string.Format("等待第{0}场{1}文件的第{2}进程组计算完成并关闭，pid进程查询更新等待中，等待时长10秒...", d+1, curDatFullname, g) + DateTime.Now);
                             System.Threading.Thread.Sleep(1000 * 10 * 1);
 
                             //kill
