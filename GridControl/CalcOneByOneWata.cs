@@ -265,7 +265,7 @@ namespace GridControl
                             //!当前路径
                             string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                             string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                            string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                            string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                             //execbat路径
                             string execpath = apppath + "execsingle.bat";
                             if (apppath.EndsWith("/"))
@@ -281,7 +281,7 @@ namespace GridControl
                             //! 启动该exec.bat
                             //! 单元信息
                             string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
-                            bool isOneStart = StartOneByOneExecsingle(execpath, ComputeUnit);
+                            bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
                             if (isOneStart)
                             {
                                 validStartUnitModel++;
