@@ -345,13 +345,23 @@ namespace GridControl
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            string[] gridlist = HookHelper.gridsize.Split(',');
+
+            int gridrow = 1001;
+            int gridcol = 1001;
+            if (gridlist.Count() >= 2 )
+            {
+                gridrow = int.Parse(gridlist[0]);
+                gridcol = int.Parse(gridlist[1]);
+            }
+            
             string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
 
             //！解析当前dat文件
             //！创建数据存储结构
             DatFileStruct datStruct = new DatFileStruct();
-            datStruct.col = 1001;
-            datStruct.row = 1001;
+            datStruct.col = gridcol;
+            datStruct.row = gridrow;
             datStruct.fbl = 0.01;
 
 

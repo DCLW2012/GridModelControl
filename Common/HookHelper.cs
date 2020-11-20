@@ -42,5 +42,8 @@ namespace Common
         public static int processnum { get; set; }
 
         public static bool isGridout { get; set; }
+
+        public static string serachIP { get; set; }
+        public static string gridsize { get; set; }
     }
 }

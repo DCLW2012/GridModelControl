@@ -153,10 +153,14 @@ namespace GridControl
 
             HookHelper.raindataForPython = ConfigurationManager.AppSettings["raindataForPython"].ToString();
 
+            HookHelper.gridsize = ConfigurationManager.AppSettings["gridsize"].ToString();
+            
+
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
             HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
             //!根据数据库中配置的当前ip对应的node值，更新该选项
-            string localIP = GetLocalIP("172.16");
+            HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
+            string localIP = GetLocalIP(HookHelper.serachIP);
             if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP))
             {
                 string curNode = computerValues[localIP];
