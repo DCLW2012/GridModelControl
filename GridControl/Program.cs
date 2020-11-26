@@ -102,7 +102,7 @@ namespace GridControl
                 //throw;
             }
             //CSVLog
-            var serverIP = Program.GetLocalIP("172.16");
+            var serverIP = Program.GetLocalIP(HookHelper.serachIP);
             var hostName = Dns.GetHostName();
             string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString() + "\\" + hostName.ToString() + "_" + serverIP.ToString() + ".csv";
             CSVFile.SaveCSV(CSVData.GetDataTable(), path);

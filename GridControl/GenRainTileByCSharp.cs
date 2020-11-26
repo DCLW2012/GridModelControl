@@ -493,7 +493,7 @@ namespace GridControl
 
             //CSVLog
             CSVData.addData(CSVData.GetRowNumber(), "HostName", System.Net.Dns.GetHostName());
-            var serverIP = Program.GetLocalIP("192.168");
+            var serverIP = Program.GetLocalIP(HookHelper.serachIP);
             CSVData.addData(CSVData.GetRowNumber(), "服务器IP", serverIP);
             CSVData.addData(CSVData.GetRowNumber(), "计算节点", HookHelper.computerNode);
             CSVData.addData(CSVData.GetRowNumber(), "eventId", Path.GetFileNameWithoutExtension(curDatFullname));
