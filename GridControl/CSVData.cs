@@ -11,9 +11,12 @@ namespace GridControl
     {
         public static DataTable LogDataTable = new DataTable();
         public static int RowNumber = -1;
+        public static string CSVFilePath;
 
-        public static void CSVInit()
+        public static void CSVInit(string path)
         {
+            CSVFilePath = path;
+
             LogDataTable.Columns.Add("HostName", System.Type.GetType("System.String"));
             LogDataTable.Columns.Add("服务器IP", System.Type.GetType("System.String"));
             LogDataTable.Columns.Add("计算节点", System.Type.GetType("System.String"));
@@ -26,6 +29,7 @@ namespace GridControl
         }
         public static void addRow()
         {
+            CSVFile.SaveCSV(LogDataTable, CSVFilePath);
             LogDataTable.Rows.Add();
             RowNumber++;
         }
