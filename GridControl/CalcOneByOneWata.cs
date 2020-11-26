@@ -241,7 +241,7 @@ namespace GridControl
                                     pids.Remove(item.Key);
                                 }else
                                 {
-                                    Console.WriteLine(string.Format("单元{0}所在分组{1}计算进行中......需继续等待......", item.Value, processGroup) + DateTime.Now);
+                                    Console.WriteLine(string.Format("单元{0}所在分组{1}计算进行中......需继续等待......", item.Value, g) + DateTime.Now);
                                 }
                             }
 
