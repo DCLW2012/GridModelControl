@@ -17,12 +17,6 @@ namespace GridControl
     {
         static void Main(string[] args)
         {
-            //CSVLog
-            string serverIP = Program.GetLocalIP(HookHelper.serachIP);
-            string hostName = Dns.GetHostName();
-            string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString()
-                + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now + ".csv";
-            CSVData.CSVInit(path);
             //!!删除指定目录下的所有的txt文件日志文件
             WriteLog.DeleteLog();
 
@@ -38,7 +32,13 @@ namespace GridControl
             //！3、 初始化与数据库相关的hookhelper变量
             InitHookHelper(args);
 
-            
+
+            //CSVLog
+            string serverIP = Program.GetLocalIP(HookHelper.serachIP);
+            string hostName = Dns.GetHostName();
+            string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString()
+                + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".csv";
+            CSVData.CSVInit(path);
 
             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
             if (HookHelper.method.Equals("wata"))
