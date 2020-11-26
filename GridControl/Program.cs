@@ -18,7 +18,11 @@ namespace GridControl
         static void Main(string[] args)
         {
             //CSVLog
-            CSVData.CSVInit();
+            string serverIP = Program.GetLocalIP(HookHelper.serachIP);
+            string hostName = Dns.GetHostName();
+            string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString()
+                + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now + ".csv";
+            CSVData.CSVInit(path);
             //!!删除指定目录下的所有的txt文件日志文件
             WriteLog.DeleteLog();
 
@@ -102,9 +106,6 @@ namespace GridControl
                 //throw;
             }
             //CSVLog
-            var serverIP = Program.GetLocalIP(HookHelper.serachIP);
-            var hostName = Dns.GetHostName();
-            string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString() + "\\" + hostName.ToString() + "_" + serverIP.ToString() + ".csv";
             CSVFile.SaveCSV(CSVData.GetDataTable(), path);
         }
 
