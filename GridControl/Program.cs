@@ -271,7 +271,7 @@ namespace GridControl
 
             }
 
-            HookHelper.processnum = 64;
+            HookHelper.processnum = 32;
             if (args.Contains("-processnum"))
             {
                 int index = args.ToList().IndexOf("-processnum");
