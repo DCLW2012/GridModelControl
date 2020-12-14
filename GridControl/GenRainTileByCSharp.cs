@@ -492,13 +492,18 @@ namespace GridControl
             Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curDatFullname, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
 
             //CSVLog
-            CSVData.addData(CSVData.GetRowNumber(), "HostName", System.Net.Dns.GetHostName());
-            var serverIP = Program.GetLocalIP(HookHelper.serachIP);
-            CSVData.addData(CSVData.GetRowNumber(), "服务器IP", serverIP);
-            CSVData.addData(CSVData.GetRowNumber(), "计算节点", HookHelper.computerNode);
-            CSVData.addData(CSVData.GetRowNumber(), "eventId", Path.GetFileNameWithoutExtension(curDatFullname));
-            CSVData.addData(CSVData.GetRowNumber(), "计算单元个数", unitNUM);
-            CSVData.addData(CSVData.GetRowNumber(), "有效降雨单元个数", countOfHaveRain);
+            if (HookHelper.useCSVLOG.Equals("true"))
+            {
+                CSVData.addData(CSVData.GetRowNumber(), "HostName", System.Net.Dns.GetHostName());
+                var serverIP = Program.GetLocalIP(HookHelper.serachIP);
+                CSVData.addData(CSVData.GetRowNumber(), "服务器IP", serverIP);
+                CSVData.addData(CSVData.GetRowNumber(), "计算节点", HookHelper.computerNode);
+                CSVData.addData(CSVData.GetRowNumber(), "eventId", Path.GetFileNameWithoutExtension(curDatFullname));
+                CSVData.addData(CSVData.GetRowNumber(), "计算单元个数", unitNUM);
+                CSVData.addData(CSVData.GetRowNumber(), "有效降雨单元个数", countOfHaveRain);
+
+            }
+                
             
 
 

@@ -106,7 +106,7 @@ namespace GridControl
                 if (HookHelper.isgenraintile)
                 {
                     //CSVLog
-                    CSVData.addRow();
+                    //CSVData.addRow();
 
                     //! 设置计时器，当前场次时间
                     Stopwatch perChangci = new Stopwatch();
@@ -129,7 +129,11 @@ namespace GridControl
                         Console.WriteLine(string.Format("{0}区域降雨切片执行成功  ", HookHelper.computerNode) + DateTime.Now);
 
                         //CSVLog
-                        CSVData.addData(CSVData.GetRowNumber(), "切片时长", perChangciTime.TotalMilliseconds / 1000);
+                        if (HookHelper.useCSVLOG.Equals("true"))
+                        {
+                            CSVData.addData(CSVData.GetRowNumber(), "切片时长", perChangciTime.TotalMilliseconds / 1000);
+                        }
+                            
                     }
                 }
 
@@ -385,9 +389,13 @@ namespace GridControl
                 Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
 
                 //CSVLog
-                CSVData.addData(CSVData.GetRowNumber(), "单场台风时长", oneDatTime.TotalMilliseconds / 1000);
-                CSVData.addData(CSVData.GetRowNumber(), "单场计算时长", oneDatTime.TotalMilliseconds / 1000 - 
-                    (double)CSVData.LogDataTable.Rows[CSVData.GetRowNumber()]["切片时长"]);
+                if (HookHelper.useCSVLOG.Equals("true"))
+                {
+                    CSVData.addData(CSVData.GetRowNumber(), "单场台风时长", oneDatTime.TotalMilliseconds / 1000);
+                    CSVData.addData(CSVData.GetRowNumber(), "单场计算时长", oneDatTime.TotalMilliseconds / 1000 -
+                        (double)CSVData.LogDataTable.Rows[CSVData.GetRowNumber()]["切片时长"]);
+                }
+                    
             }
 
             Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);

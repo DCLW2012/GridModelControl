@@ -38,7 +38,11 @@ namespace GridControl
             string hostName = Dns.GetHostName();
             string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString()
                 + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".csv";
-            CSVData.CSVInit(path);
+            if (HookHelper.useCSVLOG.Equals("true"))
+            {
+                CSVData.CSVInit(path);
+            }
+                
 
             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
             if (HookHelper.method.Equals("wata"))
@@ -106,7 +110,11 @@ namespace GridControl
                 //throw;
             }
             //CSVLog
-            CSVFile.SaveCSV(CSVData.GetDataTable(), path);
+            if (HookHelper.useCSVLOG.Equals("true"))
+            {
+                CSVFile.SaveCSV(CSVData.GetDataTable(), path);
+            }
+            
         }
 
 
@@ -146,6 +154,7 @@ namespace GridControl
             HookHelper.raindataForPython = ConfigurationManager.AppSettings["raindataForPython"].ToString();
 
             HookHelper.gridsize = ConfigurationManager.AppSettings["gridsize"].ToString();
+            HookHelper.useCSVLOG = ConfigurationManager.AppSettings["useCSVLOG"].ToString();
             
 
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();

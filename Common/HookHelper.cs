@@ -45,5 +45,7 @@ namespace Common
 
         public static string serachIP { get; set; }
         public static string gridsize { get; set; }
+        public static string useCSVLOG { get; set; }
+        
     }
 }
