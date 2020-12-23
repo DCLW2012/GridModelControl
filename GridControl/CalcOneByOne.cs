@@ -122,7 +122,7 @@ namespace GridControl
                                 Stopwatch perChangci = new Stopwatch();
                                 perChangci.Start();
 
-                                bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
+                                bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharpFromProvince(keyString, curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
 
 
                                 perChangci.Stop();
