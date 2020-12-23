@@ -65,18 +65,9 @@ namespace GridControl
             {
                 if (HookHelper.method == "province")
                 {
-                    if (HookHelper.isSingleCC)
-                    {
-                        CalcOneByOne.runBySingleCC();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
-                    }
-                    else
-                    {
-                        CalcOneByOne.run();
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCTable");
-                    }
+                    CalcOneByOne.runBySingleCC();
+                    //执行插入日志
+                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                 }
 
                 if (HookHelper.method == "wata")
@@ -252,20 +243,6 @@ namespace GridControl
                 }
 
             }
-
-            HookHelper.isSingleCC = true;
-            if (args.Contains("-isSingleCC"))
-            {
-                int index = args.ToList().IndexOf("-isSingleCC");
-
-                //！ 参数标识符 后放的有值，才更新初始控制参数
-                if (index + 1 <= args.Length - 1)
-                {
-                    HookHelper.isSingleCC = bool.Parse(args[index + 1]);
-                }
-
-            }
-            
 
             HookHelper.isshowcmd = true;
             if (args.Contains("-isshowcmd"))

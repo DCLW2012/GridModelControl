@@ -37,7 +37,6 @@ namespace Common
         public static bool isstartbat { get; set; }
         public static bool isCloseCMD { get; set; }
         public static bool isshowcmd { get; set; }
-        public static bool isSingleCC { get; set; }
 
         public static int processnum { get; set; }
 
