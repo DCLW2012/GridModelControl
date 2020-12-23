@@ -203,7 +203,20 @@ namespace GridControl
                 }
 
             }
-            
+
+            //--指定某个省
+            HookHelper.curProvince = "";
+            if (args.Contains("-province"))
+            {
+                int index = args.ToList().IndexOf("-province");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.curProvince = args[index + 1];
+                }
+
+            }
 
             HookHelper.isstartbat = false;
             if (args.Contains("-isstartbat"))

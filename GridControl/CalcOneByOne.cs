@@ -94,6 +94,14 @@ namespace GridControl
                     //! key名称，省份的名称
                     string keyString = curDB.Key;
 
+                    if (!String.IsNullOrWhiteSpace(HookHelper.curProvince))
+                    {
+                        if (!keyString.ToUpper().Equals(HookHelper.curProvince.ToUpper()))
+                        {
+                            continue;
+                        } 
+                    }
+                        
                     //！ 每个省的切片目录,对每个省执行两步操作
                     //! 1、根据指定的src降雨目录，执行python切片，输出路径为tile指定的目录
                     //！2、根据数据库中配置的模型存放目录，写出批量启动bat命令，一次性启动当前省份的n个并行程序

@@ -29,6 +29,8 @@ namespace Common
         //bat文件名称
         public static string rubbatForDOS { get; set; }
         public static string method { get; set; }
+        public static string curProvince { get; set; }
+        
         public static string computerNode { get; set; }
         //bool控制变量
         public static bool updateraintile { get; set; }
