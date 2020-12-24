@@ -207,7 +207,7 @@ namespace GridControl
             string unitOutdir = outrainTilepath + "\\" + datPureName + "\\" + groovyName;
             bool isHaveRainCurUnit = false;
 
-
+            float destDegFbl = 0.01f;
             for (int t = 0; t < dStruct.headerone[2]; ++t)
             {
                 dStruct.curRainIndex = t;
@@ -223,7 +223,7 @@ namespace GridControl
                 //@ 判断当前时段的降雨数据是否 对 当前传入的计算单元有降雨，有则写出，无则跳过；
                 // 模型在执行计算的时候会搜索对应的降雨，找不到则自动跳过计算
                 double xa1 = dStruct.Lons[dStruct.curRainIndex]; double ya1 = dStruct.Lats[dStruct.curRainIndex];
-                double xa2 = xa1 + dStruct.fbl * (dStruct.col - 1); double ya2 = ya1 + dStruct.fbl * (dStruct.row - 1);
+                double xa2 = xa1 + dStruct.fbl * (dStruct.col); double ya2 = ya1 + dStruct.fbl * (dStruct.row );
 
                 int NODATA_value = -9999;
                 double xb1 = double.Parse(paramsUnitDT["left"].ToString());
@@ -236,8 +236,8 @@ namespace GridControl
                 int unitCols = int.Parse(paramsUnitDT["ncols"].ToString());
                 int unitRows = int.Parse(paramsUnitDT["nrows"].ToString());
 
-                double xb2 = xb1 + dStruct.fbl * (unitCols - 1);
-                double yb2 = yb1 + dStruct.fbl * (unitRows - 1);
+                double xb2 = xb1 + destDegFbl * (unitCols - 1);
+                double yb2 = yb1 + destDegFbl * (unitRows - 1);
 
                 int ret = overlap(xa1, ya1, xa2, ya2, xb1, yb1, xb2, yb2);
 
@@ -274,9 +274,8 @@ namespace GridControl
                 int outRow = unitRows;
                 int outCol = unitCols;
                 float outStLon = (float)(xb1);
-                float outStLat = (float)(yb1); ;
+                float outStLat = (float)(yb1); 
 
-                float fbl = (float)dStruct.fbl;
                 float stLon = (float)dStruct.Lons[dStruct.curRainIndex];
                 float stLat = (float)dStruct.Lats[dStruct.curRainIndex];
 
@@ -288,12 +287,12 @@ namespace GridControl
                     {
                         //! 坐标索引转换，根据起点坐标 分辨率，行列号，计算当前点位经纬度，根据台风场的经纬度值，计算在台风场中的行列号 ，赋值即可
                         //! 当前坐标
-                        float curLon = outStLon + fbl * c;
-                        float curLat = outStLat + fbl * r;
+                        float curLon = outStLon + destDegFbl * c;
+                        float curLat = outStLat + destDegFbl * r;
 
                         //! 在台风场中的索引号
-                        int originRow = (int)Math.Ceiling((curLat - stLat) * (1 / fbl)); ;
-                        int originCol = (int)Math.Ceiling((curLon - stLon) * (1 / fbl));
+                        int originRow = (int)Math.Ceiling((curLat - stLat) * (1 / dStruct.fbl)); ;
+                        int originCol = (int)Math.Ceiling((curLon - stLon) * (1 / dStruct.fbl));
 
                         float curRain = 0.0f;
                         if (originRow >= 0 && originCol >= 0 && originRow <= dStruct.row - 1 && originCol <= dStruct.col - 1)
@@ -349,12 +348,21 @@ namespace GridControl
 
             int gridrow = 1001;
             int gridcol = 1001;
-            if (gridlist.Count() >= 2 )
+            float rainSRCFBL = 0.01f;
+
+            if (gridlist.Count() == 2)
             {
                 gridrow = int.Parse(gridlist[0]);
                 gridcol = int.Parse(gridlist[1]);
             }
-            
+
+            if (gridlist.Count() == 3)
+            {
+                gridrow = int.Parse(gridlist[0]);
+                gridcol = int.Parse(gridlist[1]);
+                rainSRCFBL = float.Parse(gridlist[2]);
+            }
+
             string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
 
             //！解析当前dat文件
@@ -362,7 +370,7 @@ namespace GridControl
             DatFileStruct datStruct = new DatFileStruct();
             datStruct.col = gridcol;
             datStruct.row = gridrow;
-            datStruct.fbl = 0.01;
+            datStruct.fbl = rainSRCFBL;
 
 
             // 读取文件
@@ -525,10 +533,19 @@ namespace GridControl
 
             int gridrow = 1001;
             int gridcol = 1001;
-            if (gridlist.Count() >= 2)
+            float rainSRCFBL = 0.01f;
+
+            if (gridlist.Count() == 2)
             {
                 gridrow = int.Parse(gridlist[0]);
                 gridcol = int.Parse(gridlist[1]);
+            }
+
+            if (gridlist.Count() == 3)
+            {
+                gridrow = int.Parse(gridlist[0]);
+                gridcol = int.Parse(gridlist[1]);
+                rainSRCFBL = float.Parse(gridlist[2]);
             }
 
             string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
@@ -538,7 +555,7 @@ namespace GridControl
             DatFileStruct datStruct = new DatFileStruct();
             datStruct.col = gridcol;
             datStruct.row = gridrow;
-            datStruct.fbl = 0.01;
+            datStruct.fbl = rainSRCFBL;
 
 
             // 读取文件
