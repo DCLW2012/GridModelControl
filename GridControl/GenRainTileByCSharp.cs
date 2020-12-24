@@ -633,7 +633,7 @@ namespace GridControl
                         {
                             //float val = br.ReadSingle();
                             //datStruct.rain[tindex, r, c] = val;
-                            datStruct.rain[tindex, r, c] = BitConverter.ToSingle(datbytes, (r * datStruct.row + c) * 4);
+                            datStruct.rain[tindex, r, c] = BitConverter.ToSingle(datbytes, (r * datStruct.col + c) * 4);
                         }
                     }
                 }
