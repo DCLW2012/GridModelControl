@@ -32,3 +32,7 @@
     <!--//CSVLog-->
       <add key="CSVLogPath" value="\\192.168.100.100\s1-cpfs1\GridControlLog" />
 表示会把程序计算时间统计起来，输出到这个文件夹下面
+
+
+
+11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等

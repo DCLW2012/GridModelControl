@@ -270,6 +270,20 @@ namespace GridControl
 
             }
 
+            HookHelper.isUpdateParams = false;
+            if (args.Contains("-isUpdateParams"))
+            {
+                int index = args.ToList().IndexOf("-isUpdateParams");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.isUpdateParams = bool.Parse(args[index + 1]);
+                }
+
+            }
+            
+
             HookHelper.processnum = 32;
             if (args.Contains("-processnum"))
             {
