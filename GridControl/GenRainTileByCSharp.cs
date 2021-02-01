@@ -480,6 +480,10 @@ namespace GridControl
                 string groovyName = grid_unit_tables.Rows[i]["GroovyName"].ToString();
 
                 //!当前场次下某个单元的所有时间文件写出
+                if (provinceName.Equals("hainan"))
+                {
+                    int aa = 9;
+                }
                 bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, yearmmddForID, datStruct, grid_unit_tables.Rows[i]);
                 if (status)
                 {
