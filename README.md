@@ -21,7 +21,7 @@
 
 
 
-6、 isshowcmd true 是否显示cmd串口
+6、 isshowchildprocess true 是否显示被管理的子进程cmd窗口
 
 7、isSingleCC   边切降雨边计算的话，需要单个启动的时候更新写出execsingle.bat
 

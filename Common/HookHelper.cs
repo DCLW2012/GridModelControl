@@ -40,7 +40,7 @@ namespace Common
         public static bool updatebyfile { get; set; }
         public static bool isstartbat { get; set; }
         public static bool isCloseCMD { get; set; }
-        public static bool isshowcmd { get; set; }
+        public static bool isshowchildprocess { get; set; }
         public static bool isUpdateParams { get; set; }
         public static int processnum { get; set; }
 

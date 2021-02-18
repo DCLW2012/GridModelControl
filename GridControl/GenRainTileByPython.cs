@@ -43,7 +43,7 @@ namespace GridControl
             Process myProcess = new Process();
             string fileName = path1 + "//script//Execution.bat";
             ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-            if (!HookHelper.isshowcmd)
+            if (!HookHelper.isshowchildprocess)
             {
                 myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
             }
@@ -95,7 +95,7 @@ namespace GridControl
             Process myProcess = new Process();
             string fileName = path1 + "//script//Execution.bat";
             ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-            if (!HookHelper.isshowcmd)
+            if (!HookHelper.isshowchildprocess)
             {
                 myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
             }
@@ -152,7 +152,7 @@ namespace GridControl
                     Process myProcess = new Process();
                     string fileName = path1 + "//script//tile.bat";
                     ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-                    if (!HookHelper.isshowcmd)
+                    if (!HookHelper.isshowchildprocess)
                     {
                         myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
                     }
@@ -209,7 +209,7 @@ namespace GridControl
                 string fileName = path1 + "//Execution.bat";
                 ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
 
-                if(!HookHelper.isshowcmd)
+                if(!HookHelper.isshowchildprocess)
                 {
                     myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
                 }

@@ -32,7 +32,7 @@ namespace GridControl
                 Process myProcess = new Process();
                 string fileName = appPath;
                 ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
-                if (!HookHelper.isshowcmd)
+                if (!HookHelper.isshowchildprocess)
                 {
                     myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
                 }

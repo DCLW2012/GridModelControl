@@ -257,15 +257,15 @@ namespace GridControl
 
             }
 
-            HookHelper.isshowcmd = true;
-            if (args.Contains("-isshowcmd"))
+            HookHelper.isshowchildprocess = true;
+            if (args.Contains("-isshowchildprocess"))
             {
-                int index = args.ToList().IndexOf("-isshowcmd");
+                int index = args.ToList().IndexOf("-isshowchildprocess");
 
                 //！ 参数标识符 后放的有值，才更新初始控制参数
                 if (index + 1 <= args.Length - 1)
                 {
-                    HookHelper.isshowcmd = bool.Parse(args[index + 1]);
+                    HookHelper.isshowchildprocess = bool.Parse(args[index + 1]);
                 }
 
             }
