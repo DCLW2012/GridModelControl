@@ -9,6 +9,8 @@ using System.Collections.ObjectModel;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Xml;
+using System.Management;
+using System.Diagnostics;
 
 namespace Common
 {
@@ -47,6 +49,29 @@ namespace Common
         public static string serachIP { get; set; }
         public static string gridsize { get; set; }
         public static string useCSVLOG { get; set; }
-        
+
+        /**
+ * 传入参数：父进程id
+ * 功能：根据父进程id，杀死与之相关的进程树
+ */
+        public static void KillProcessAndChildren(int pid)
+        {
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
+            ManagementObjectCollection moc = searcher.Get();
+            foreach (ManagementObject mo in moc)
+            {
+                KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+            }
+            try
+            {
+                Process proc = Process.GetProcessById(pid);
+                Console.WriteLine(string.Format("kill process by id {0}!", pid));
+                proc.Kill();
+            }
+            catch (ArgumentException)
+            {
+                /* process already exited */
+            }
+        }
     }
 }

@@ -218,7 +218,8 @@ namespace GridControl
                                                 bool isInProcess = curProcss == null ? false : true;
                                                 if (isInProcess)
                                                 {
-                                                    curProcss.Kill();
+                                                    //curProcss.Kill();
+                                                    HookHelper.KillProcessAndChildren(curPID);
                                                 }
                                             }
                                         }
@@ -329,7 +330,8 @@ namespace GridControl
                                             bool isInProcess = curProcss == null ? false : true;
                                             if (isInProcess)
                                             {
-                                                curProcss.Kill();
+                                                //curProcss.Kill();
+                                                HookHelper.KillProcessAndChildren(curPID);
                                             }
                                             else
                                             {
