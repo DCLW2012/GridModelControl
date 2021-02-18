@@ -38,6 +38,7 @@ namespace GridControl
                                              HookHelper.method, HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID);
             bool isGridoutValue = false;
             bool isUpdateParamsValue = false;
+            bool isUpdateRivlParamsValue = false;
             if (HookHelper.isGridout)
             {
                 isGridoutValue = true;
@@ -47,10 +48,13 @@ namespace GridControl
             {
                 isUpdateParamsValue = true;
             }
+            if (HookHelper.isUpdateRivlParams)
+            {
+                isUpdateRivlParamsValue = true;
+            }
 
-
-            parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo {0} -computernode {1} -s {2} -c {3} -datTimes {4} -curDatGridName {5} -gridRainRoot {6} -gridFBCRoot {7} -yearid {8} -isGridout {9} -isUpdateParams {10}",
-                                             HookHelper.method, HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID, isGridoutValue, isUpdateParamsValue);
+            parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo {0} -computernode {1} -s {2} -c {3} -datTimes {4} -curDatGridName {5} -gridRainRoot {6} -gridFBCRoot {7} -yearid {8} -isGridout {9} -isUpdateParams {10} -isUpdateRivlParams {11}",
+                                             HookHelper.method, HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID, isGridoutValue, isUpdateParamsValue, isUpdateRivlParamsValue);
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----

@@ -36,6 +36,6 @@
 
 
 11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等
-
+12、isUpdateRivlParams更新河道宽度参数
 12、历史命令
 -method wata -isUpdateParams true

@@ -42,6 +42,7 @@ namespace Common
         public static bool isCloseCMD { get; set; }
         public static bool isshowchildprocess { get; set; }
         public static bool isUpdateParams { get; set; }
+        public static bool isUpdateRivlParams { get; set; }
         public static int processnum { get; set; }
 
         public static bool isGridout { get; set; }
