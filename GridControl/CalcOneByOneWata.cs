@@ -89,6 +89,9 @@ namespace GridControl
             int datnum = fInfo.Length;
             for (int d = 0; d < datnum; ++d)
             {
+                //每次计算当前台风前先删除当前节点下，所有单元的公共传递文件inputq.csv\rainfile.txt
+
+
                 //! 当前dat文件全路径
                 //! 设置计时器，当前场次时间
                 Stopwatch oneDat = new Stopwatch();
