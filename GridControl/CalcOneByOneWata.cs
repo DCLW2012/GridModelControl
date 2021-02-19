@@ -141,9 +141,12 @@ namespace GridControl
                 }
 
                 //! 启动bat前每场的时间不同，要更新写出execsingle.bat
+                //初始化一个截止索引号, 当这个值等于appnum-1时候结束
+                int endAppIndex = 0;
+                int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
                 if (dbTableConfigs["china"].Count > 0)
                 {
-                    int appnum = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows.Count;
+                    
                     int appValidCount = 0;
                     for (int a = 0; a < appnum; ++a)
                     {
@@ -191,124 +194,51 @@ namespace GridControl
                     //!先根据个数分组，分组后，则循环，则可以等待了
                     int processGroup = (int)Math.Ceiling((float)appnum / (float)HookHelper.processnum);
 
-                    
-                    for (int g = 0; g < processGroup; ++g)
+                    //每次遍历 HookHelper.processnum 个,算完一个,追加一个,直至appnum为0
+                    int maxNum = appnum > HookHelper.processnum ? HookHelper.processnum : appnum;
+                    int validStartUnitModel = 0;
+
+                    //通过for循环会存在前边几个启动失败，导致所有的都启动失败
+                    for (int a = 0; a < maxNum; ++a)
                     {
-                        //!循环每个组，pid存在，则执行等待
-                        int perGroupCount = 0;
-                        while (pids.Count > 0)
+
+                        //!当前路径
+                        string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
+                        string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                        string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
+                        //execbat路径
+                        string execpath = apppath + "execsingle.bat";
+                        if (apppath.EndsWith("/"))
                         {
-                            //! 执行等待，然后查询更新pids列表.等待1分钟
-                            Console.WriteLine(string.Format("共{0}个分组", processGroup) + DateTime.Now);
-                            Console.WriteLine(string.Format("等待第{0}场{1}文件的第{2}进程组计算完成并关闭，pid进程查询更新等待中，等待时长15秒...", d+1, curDatFullname, g) + DateTime.Now);
-                            System.Threading.Thread.Sleep(1000 * 15 * 1);
-
-                            //kill
-                            perGroupCount++;
-                            Console.WriteLine(string.Format("已经等待次数{0}次", perGroupCount) + DateTime.Now);
-                            if (perGroupCount >= 60)
-                            {
-                                //遍历强制关闭当前场次的所有pid程序
-                                foreach (var item in pids.ToList())
-                                {
-                                    int curPID = item.Key;
-                                    Process curProcss = null;
-                                    try
-                                    {
-                                        curProcss = Process.GetProcessById(curPID);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        curProcss = null;
-                                    }
-                                    bool isInProcess = curProcss == null ? false : true;
-                                    if (isInProcess)
-                                    {
-                                        //curProcss.Kill();
-                                        HookHelper.KillProcessAndChildren(curPID);
-                                    }
-                                }
-                            }
-
-                            //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
-                            int pidnum = pids.Count;
-                            foreach (var item in pids.ToList())
-                            {
-                                int curPID = item.Key;
-                                Process curProcss = null;
-                                try
-                                {
-                                    curProcss = Process.GetProcessById(curPID);
-                                }
-                                catch (Exception ex)
-                                {
-                                    curProcss = null;
-                                }
-                                bool isInProcess = curProcss == null ? false : true;
-                                if (!isInProcess)
-                                {
-                                    pids.Remove(item.Key);
-                                }else
-                                {
-                                    Console.WriteLine(string.Format("单元{0}所在分组{1}计算进行中......需继续等待......", item.Value, g) + DateTime.Now);
-                                }
-                            }
-
-                            if (pids.Count == 0)
-                            {
-                                break;
-                            }
+                            execpath = apppath + "execsingle.bat";
+                        }
+                        else
+                        {
+                            execpath = apppath + "\\" + "execsingle.bat";
                         }
 
-                        //当前分组的起始值，和end值
-                        int startPROCESS = g * HookHelper.processnum;
-                        int endPROCESS = (g + 1) * HookHelper.processnum;
-                        if (g == processGroup - 1)
+
+                        //! 启动该exec.bat
+                        //! 单元信息
+                        string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
+                        bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
+                        if (isOneStart)
                         {
-                            endPROCESS = appnum;
+                            validStartUnitModel++;
+                            HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
+                            //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                         }
-
-                        int validStartUnitModel = 0;
-                        for (int a = startPROCESS; a < endPROCESS; ++a)
+                        else
                         {
-                            //!当前路径
-                            string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
-                            string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                            string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
-                            //execbat路径
-                            string execpath = apppath + "execsingle.bat";
-                            if (apppath.EndsWith("/"))
-                            {
-                                execpath = apppath + "execsingle.bat";
-                            }
-                            else
-                            {
-                                execpath = apppath + "\\" + "execsingle.bat";
-                            }
-
-
-                            //! 启动该exec.bat
-                            //! 单元信息
-                            string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
-                            bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
-                            if (isOneStart)
-                            {
-                                validStartUnitModel++;
-                                HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
-                            }
-                            else
-                            {
-                                HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
-                            }
-
+                            HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
+                            //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                         }
                         Console.WriteLine(string.Format("{0}节点{1}个有效单元启动命令执行成功  ", HookHelper.computerNode, validStartUnitModel) + DateTime.Now);
                     }
+                    endAppIndex = maxNum;
                 }
 
-                //!循环每个组，pid存在，则执行等待，直至继续运行到下一步，代表一个场次计算结束
+                //!已经先启动起来了,后续判断,算完一个追加一个,直至appnum全部完成
                 int perWaitCount = 0;  //如果等待超过1个小时，仍然无法计算，则跳过这个场次，并写出到log中
                 while (pids.Count > 0)
                 {
@@ -366,6 +296,35 @@ namespace GridControl
                         if (!isInProcess)
                         {
                             pids.Remove(item.Key);
+
+                            //在当前记录的appiNdex重新启动一个 ,并更新appindex值
+                            if (endAppIndex != appnum)
+                            {
+                                //重新启动一个 
+                                //!当前路径
+                                string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[endAppIndex]["AppPath"].ToString();
+                                string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[endAppIndex]["ComputeUnit"].ToString();
+                                string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[endAppIndex]["ComputeNode"].ToString();
+                                //execbat路径
+                                string execpath = apppath + "execsingle.bat";
+                                if (apppath.EndsWith("/"))
+                                {
+                                    execpath = apppath + "execsingle.bat";
+                                }
+                                else
+                                {
+                                    execpath = apppath + "\\" + "execsingle.bat";
+                                }
+
+
+                                //! 启动该exec.bat
+                                //! 单元信息
+                                string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
+                                bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
+                                Console.WriteLine(string.Format("追加新的计算单元编号{0}启动成功", appunitInfo) + DateTime.Now);
+                                //更新索引号
+                                endAppIndex = endAppIndex + 1;
+                            }
                         }
                         else
                         {
