@@ -44,47 +44,60 @@ namespace GridControl
             }
                 
 
-            //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
-            if (HookHelper.method.Equals("wata"))
-            {
-                ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
-            }
-            else
-            {
-                ClientConn.PraseGridUnitConfig();
-            }
-            
 
-            // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
-            Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
-            Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
             
             //testEXEListening();
 
             try
             {
-                if (HookHelper.method == "province")
+                string[] nodes = new string[] { HookHelper.computerNode};
+                if (HookHelper.computerNode.ToUpper().Equals("ALLNODE"))
                 {
-                    CalcOneByOne.runBySingleCC();
-                    //执行插入日志
-                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    nodes = new string[] { "ComputeNode1", "ComputeNode2", "ComputeNode3", "ComputeNode4", "ComputeNode5", "ComputeNode6", "ComputeNode7", "ComputeNode8"};  
                 }
 
-                if (HookHelper.method == "wata")
+                for (int i = 0; i < nodes.Length; ++i)
                 {
-                    WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+                    HookHelper.computerNode = nodes[i];
+                    //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
+                    if (HookHelper.method.Equals("wata"))
+                    {
+                        ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
+                    }
+                    else
+                    {
+                        ClientConn.PraseGridUnitConfig();
+                    }
 
 
-                    CalcOneByOneWata.runBySingleCC();
+                    // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
+                    Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
+                    Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
+
+                    if (HookHelper.method == "province")
+                    {
+                        CalcOneByOne.runBySingleCC();
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    }
+
+                    if (HookHelper.method == "wata")
+                    {
+                        WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+
+
+                        CalcOneByOneWata.runBySingleCC();
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    }
+
+                    //! 阻塞程序不关闭
+                    Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
+
                     //执行插入日志
-                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    WriteLog.WriteLogMethod(HookHelper.Log);
                 }
 
-                //! 阻塞程序不关闭
-                Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
-
-                //执行插入日志
-                WriteLog.WriteLogMethod(HookHelper.Log);
 
                 if (!HookHelper.isCloseCMD)
                 {
