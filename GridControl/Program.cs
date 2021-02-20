@@ -96,6 +96,10 @@ namespace GridControl
 
                     //执行插入日志
                     WriteLog.WriteLogMethod(HookHelper.Log);
+                    Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
+                    Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                    Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                    Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
                 }
 
 
