@@ -166,7 +166,7 @@ namespace GridControl
             //!根据数据库中配置的当前ip对应的node值，更新该选项
             HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
-            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP))
+            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) && HookHelper.computerNode.ToUpper() != "ALLNODE")
             {
                 string curNode = computerValues[localIP];
                 if (!string.IsNullOrWhiteSpace(curNode))
