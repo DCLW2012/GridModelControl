@@ -247,36 +247,36 @@ namespace GridControl
                     System.Threading.Thread.Sleep(1000 * 5 * 1);
                     perWaitCount++;
                     Console.WriteLine(string.Format("已经等待次数{0}次", perWaitCount) + DateTime.Now);
-                    if (perWaitCount >= 60)
-                    {
-                        //遍历强制关闭当前场次的所有pid程序
-                        //将该场次值写出到log文件中
-                        string ignoreCCName = curDatFullname;
-                        WriteLog.AppendLogMethod(ignoreCCName, "datIgnore");
-                        foreach (var item in pids.ToList())
-                        {
-                            int curPID = item.Key;
-                            Process curProcss = null;
-                            try
-                            {
-                                curProcss = Process.GetProcessById(curPID);
-                            }
-                            catch (Exception ex)
-                            {
-                                curProcss = null;
-                            }
-                            bool isInProcess = curProcss == null ? false : true;
-                            if (isInProcess)
-                            {
-                                //curProcss.Kill();
-                                HookHelper.KillProcessAndChildren(curPID);
-                            }
-                            else
-                            {
-                                Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
-                            }
-                        }
-                    }
+                    //if (perWaitCount >= 60)
+                    //{
+                    //    //遍历强制关闭当前场次的所有pid程序
+                    //    //将该场次值写出到log文件中
+                    //    string ignoreCCName = curDatFullname;
+                    //    WriteLog.AppendLogMethod(ignoreCCName, "datIgnore");
+                    //    foreach (var item in pids.ToList())
+                    //    {
+                    //        int curPID = item.Key;
+                    //        Process curProcss = null;
+                    //        try
+                    //        {
+                    //            curProcss = Process.GetProcessById(curPID);
+                    //        }
+                    //        catch (Exception ex)
+                    //        {
+                    //            curProcss = null;
+                    //        }
+                    //        bool isInProcess = curProcss == null ? false : true;
+                    //        if (isInProcess)
+                    //        {
+                    //            //curProcss.Kill();
+                    //            HookHelper.KillProcessAndChildren(curPID);
+                    //        }
+                    //        else
+                    //        {
+                    //            Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
+                    //        }
+                    //    }
+                    //}
 
                     //！ 遍历pids，查询windows process中是否存在这个pid，不存在，则移除
                     int pidnum = pids.Count;
