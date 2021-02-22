@@ -56,6 +56,9 @@ namespace GridControl
                     nodes = new string[] { "ComputeNode1", "ComputeNode2", "ComputeNode3", "ComputeNode4", "ComputeNode5", "ComputeNode6", "ComputeNode7", "ComputeNode8"};  
                 }
 
+                //! 设置计时器，所有节点时间累加值
+                Stopwatch totalNodeFolderDat = new Stopwatch();
+                totalNodeFolderDat.Start();
                 for (int i = 0; i < nodes.Length; ++i)
                 {
                     HookHelper.computerNode = nodes[i];
@@ -101,7 +104,10 @@ namespace GridControl
                     Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
                     Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
                 }
-
+                totalNodeFolderDat.Stop();
+                TimeSpan totalNodeFolderDatTime = totalNodeFolderDat.Elapsed;
+                Console.WriteLine(string.Format("{0}个节点调度总耗时：{1}秒", nodes.Length, totalNodeFolderDatTime.TotalMilliseconds / 1000));
+                HookHelper.Log += string.Format("{0}个节点调度总耗时：{1}秒", nodes.Length, totalNodeFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
 
                 if (!HookHelper.isCloseCMD)
                 {
