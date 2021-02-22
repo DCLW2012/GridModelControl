@@ -257,7 +257,7 @@ namespace GridControl
 
             }
 
-            HookHelper.isshowchildprocess = true;
+            HookHelper.isshowchildprocess = false;
             if (args.Contains("-isshowchildprocess"))
             {
                 int index = args.ToList().IndexOf("-isshowchildprocess");
