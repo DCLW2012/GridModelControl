@@ -30,6 +30,7 @@ namespace GridControl
             {
                 #region window专用
                 Process myProcess = new Process();
+                myProcess.StartInfo.RedirectStandardOutput = false;
                 string fileName = appPath;
                 ProcessStartInfo myProcessStartInfo = new ProcessStartInfo(fileName);
                 if (!HookHelper.isshowchildprocess)
