@@ -35,7 +35,16 @@
 
 
 
-11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等
-12、isUpdateRivlParams更新河道宽度参数
+11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等   --- 已废弃
+12、isUpdateRivlParams更新河道宽度参数---  已废弃
 12、历史命令
 -method wata -isUpdateParams true
+
+//按省份计算岚山风险普查区域
+
+GridControl -method province -processnum 32 -isGridout true -province shandong   -按省份计算
+
+//按省份计算海南，台风验证
+
+GridControl -method province -processnum 32 -isGridout true -province hainan
+
