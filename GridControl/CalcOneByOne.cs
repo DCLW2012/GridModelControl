@@ -73,6 +73,10 @@ namespace GridControl
             string datnums = "95";
 
             string yearmmddForID = "2000010100";
+
+            //! 设置计时器，当前场次时间
+            Stopwatch totalFolderDat = new Stopwatch();
+            totalFolderDat.Start();
             //! 遍历指定目录下的降雨数据
             if (!Directory.Exists(HookHelper.rainSRCDirectory))
             {
@@ -385,6 +389,10 @@ namespace GridControl
                 Console.WriteLine(string.Format("*****************************{0}场次END**************************", curDatFullname) + DateTime.Now);
             }
 
+            totalFolderDat.Stop();
+            TimeSpan totalFolderDatTime = totalFolderDat.Elapsed;
+            Console.WriteLine(string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000));
+            HookHelper.Log += string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
             return true;
         }
         
