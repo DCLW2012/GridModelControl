@@ -82,6 +82,7 @@ namespace GridControl
                         CalcOneByOne.runBySingleCC();
                         //执行插入日志
                         WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                        break;
                     }
 
                     if (HookHelper.method == "wata")
