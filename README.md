@@ -48,3 +48,18 @@ GridControl -method province -processnum 32 -isGridout true -province shandong  
 
 GridControl -method province -processnum 32 -isGridout true -province hainan
 
+
+
+//查询省份下某个uinit信息
+
+SELECT DISTINCT
+        T1.UNITCD,
+        T2.ComputeNode,
+        T2.APPPath
+FROM
+        GRID_HSFX_UNIT T1
+LEFT JOIN HSFX_ComputeUnit T2 ON T1.GroupID = T2.ComputeUnit
+WHERE
+         T1.UNITCD IN (
+        'whf60_1_5'
+)
