@@ -298,9 +298,9 @@ namespace GridControl
                         if (originRow >= 0 && originCol >= 0 && originRow <= dStruct.row - 1 && originCol <= dStruct.col - 1)
                         {
                             curRain = dStruct.rain[t, originRow, originCol];
-                            if (curRain < 0 || curRain == NODATA_value)
+                            if (curRain < 0 || curRain == NODATA_value || double.IsNaN(curRain))
                             {
-                                curRain = NODATA_value;
+                                curRain = 0.0;
                             }
                         }
 
