@@ -300,7 +300,7 @@ namespace GridControl
                             curRain = dStruct.rain[t, originRow, originCol];
                             if (curRain < 0 || curRain == NODATA_value || double.IsNaN(curRain))
                             {
-                                curRain = 0.0;
+                                curRain = 0.0f;
                             }
                         }
 
