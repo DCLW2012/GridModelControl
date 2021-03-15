@@ -204,7 +204,7 @@ namespace GridControl
                                         //kill
                                         perGroupCount++;
                                         Console.WriteLine(string.Format("已经等待次数{0}次", perGroupCount) + DateTime.Now);
-                                        if (perGroupCount >= 60)
+                                        if (perGroupCount >= HookHelper.waitcount)
                                         {
                                             //遍历强制关闭当前场次的所有pid程序
                                             foreach (var item in pids.ToList())
@@ -313,7 +313,7 @@ namespace GridControl
                                     System.Threading.Thread.Sleep(1000 * 15 * 1);
                                     perWaitCount++;
                                     Console.WriteLine(string.Format("已经等待次数{0}次", perWaitCount) + DateTime.Now);
-                                    if (perWaitCount >= 60)
+                                    if (perWaitCount >= HookHelper.waitcount)
                                     {
                                         //遍历强制关闭当前场次的所有pid程序
                                         //将该场次值写出到log文件中

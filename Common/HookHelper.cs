@@ -50,6 +50,8 @@ namespace Common
         public static string serachIP { get; set; }
         public static string gridsize { get; set; }
         public static string useCSVLOG { get; set; }
+        public static int waitcount { get; set; }
+        
 
         /**
  * 传入参数：父进程id

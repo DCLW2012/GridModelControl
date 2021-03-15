@@ -146,7 +146,16 @@ namespace GridControl
 
             HookHelper.gridsize = ConfigurationManager.AppSettings["gridsize"].ToString();
             HookHelper.useCSVLOG = ConfigurationManager.AppSettings["useCSVLOG"].ToString();
-            
+
+            //等待次数
+            //HookHelper.waitcount = ConfigurationManager.AppSettings["waitcount"].ToString();
+            if (ConfigurationManager.AppSettings["waitcount"] != null)
+            {
+                HookHelper.waitcount = int.Parse(ConfigurationManager.AppSettings["waitcount"].ToString());
+            }else
+            {
+                HookHelper.waitcount = 60;
+            }
 
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
             HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
