@@ -14,7 +14,13 @@ namespace Common
         {
             string sysPath = System.IO.Directory.GetCurrentDirectory();
             string basepath = sysPath + "//Log//";//文件存放地址
-            string name = DateTime.Now.ToString().Replace("/", "-").Replace(":", "").Replace(" ", "").Trim() + "-" + fileBaseName + ".txt";//组装的文件名称
+
+            if (!Directory.Exists(basepath))
+            {
+                Directory.CreateDirectory(basepath);
+            }
+
+            string name = DateTime.Now.ToString("yyyyMMddHH").Replace("/", "-").Replace(":", "").Replace(" ", "").Trim() + "-" + fileBaseName + ".txt";//组装的文件名称
             string Contents = content;
             string path = basepath + name;//地址全称
             if (File.Exists(path))// 判断文件是否存在
@@ -34,6 +40,11 @@ namespace Common
         {
             string sysPath = System.IO.Directory.GetCurrentDirectory();
             string basepath = sysPath + "//Log//";//文件存放地址
+            if (!Directory.Exists(basepath))
+            {
+                Directory.CreateDirectory(basepath);
+            }
+
             string name = fileBaseName + ".txt";//组装的文件名称
             string Contents = content;
             string path = basepath + name;//地址全称
@@ -55,16 +66,20 @@ namespace Common
             }
 
             string path = Environment.CurrentDirectory + "//Log//";//文件存放地址;
-            string pattern = "*.txt";
-            string[] strFileName = Directory.GetFiles(path, pattern);
-            //! 日志文件个数超过多少条，执行删除
-            if (strFileName.Length > logNumExpire)
+            if (Directory.Exists(path))
             {
-                foreach (var item in strFileName)
+                string pattern = "*.txt";
+                string[] strFileName = Directory.GetFiles(path, pattern);
+                //! 日志文件个数超过多少条，执行删除
+                if (strFileName.Length > logNumExpire)
                 {
-                    File.Delete(item);
+                    foreach (var item in strFileName)
+                    {
+                        File.Delete(item);
+                    }
                 }
             }
+            
         }
     }
 }
