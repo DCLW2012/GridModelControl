@@ -15,6 +15,11 @@ namespace Common
             string sysPath = System.IO.Directory.GetCurrentDirectory();
             string basepath = sysPath + "//Log//";//文件存放地址
             string name = DateTime.Now.ToString().Replace("/", "-").Replace(":", "").Replace(" ", "").Trim() + "-" + fileBaseName + ".txt";//组装的文件名称
+
+            if (!Directory.Exists(basepath)) {
+                Directory.CreateDirectory(basepath);
+            }
+
             string Contents = content;
             string path = basepath + name;//地址全称
             if (File.Exists(path))// 判断文件是否存在
