@@ -228,6 +228,21 @@ namespace GridControl
 
             }
 
+            //降雨dat切片前数组存储方式
+            HookHelper.tilemehtod = "all";
+            if (args.Contains("-tilemehtod"))
+            {
+                int index = args.ToList().IndexOf("-tilemehtod");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.tilemehtod = args[index + 1];
+                }
+
+            }
+            
+
             //--指定某个省
             HookHelper.curProvince = "";
             if (args.Contains("-province"))

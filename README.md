@@ -39,3 +39,7 @@
 12、isUpdateRivlParams更新河道宽度参数
 12、历史命令
 -method wata -isUpdateParams true
+
+13、dat文件如果过大，会超过c#数组内存分配，没办法一次读取所有，然后执行切片，就要一次读取一个时间的栅格数据，当前时间切片完成后再执行下一个时间
+
+-tilemehtod (all | one)  all代表一次加载所有，one代表一次处理一个
