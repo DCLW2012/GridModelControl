@@ -258,7 +258,8 @@ namespace GridControl
             double[] aData = new double[yNum * xNum];
 
             res = NetCDF.nc_get_vara_double(ncid, varid, start, count, aData);
-
+            
+            if (res != 0) return gridData;
             for (i = 0; i < yNum; i++)
             {
                 for (j = 0; j < xNum; j++)
