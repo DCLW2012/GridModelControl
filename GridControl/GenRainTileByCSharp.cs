@@ -608,18 +608,19 @@ namespace GridControl
 
                 //该变量是根据时间值组合是数字串，后续作为降雨及计算结果的输出文件名称前缀，year前自动补0，与模型计算中更新rainfile中规则一致
                 yearmmddForID = yearStr + mdhSt.Substring(0, 2) + mdhSt.Substring(2, 2) + mdhSt.Substring(4, 2);
-
+                datPureName = yearmmddForID;
                 //！2、第二部分，是各个场次经纬度列表，
                 datStruct.Lats = new double[times];
                 datStruct.Lons = new double[times];
 
                 //!3、第三部分，是所有场次的网格数据存储，三维数组存放每个时间的网格数据
-                datStruct.rain = new float[times, datStruct.row, datStruct.col];
+                datStruct.rain = null;
                 //遍历每个nc文件，读取解析存储信息
                 for (int tindex = 0; tindex < datStruct.headerone[2]; ++tindex)
                 {
                     //使用netcdf读取nc文件
-                    bool isReadNCSucess = ReadWriteNCIO.ReadNCFileSingleTime(curNCFFoldername + "//" + fInfo[tindex].ToString());
+                    ReadWriteNCIO readwritencio = new ReadWriteNCIO();
+                    bool isReadNCSucess = readwritencio.ReadNCFileSingleTime(curNCFFoldername + "//" + fInfo[tindex].ToString());
                     if (!isReadNCSucess)
                     {
                         Console.WriteLine(string.Format("{0}的nc文件读取失败，跳过计算", curNCFFoldername + "//" + fInfo[tindex].ToString()) + DateTime.Now);
@@ -627,12 +628,27 @@ namespace GridControl
                     }
 
                     //更新经纬度起点坐标，左下角
-                    double lat = 35.0;
-                    double lon = 110.0;
-                    datStruct.Lats[tindex] = lat;
-                    datStruct.Lons[tindex] = lon;
+                    datStruct.col = readwritencio.XDimension.DimLength;
+                    datStruct.row = readwritencio.YDimension.DimLength;
+                    datStruct.fbl = readwritencio.XDelt;
+                    datStruct.Lats = readwritencio.YDimension.GetValues();
+                    datStruct.Lons = readwritencio.XDimension.GetValues();
+
+                    if (datStruct.rain == null)
+                    {
+                        datStruct.rain = new float[times, datStruct.row, datStruct.col];
+                    }
 
                     //更新栅格值
+                    datStruct.curRainIndex = tindex;
+
+                    for (int r = 0; r < datStruct.row; ++r)
+                    {
+                        for (int c = 0; c < datStruct.col; ++c)
+                        {
+                            datStruct.rain[tindex, r, c] = (float)readwritencio.GRIDData[r,c];
+                        }
+                    }
                 }
 
             }
