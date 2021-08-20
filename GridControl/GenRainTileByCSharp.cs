@@ -725,10 +725,10 @@ namespace GridControl
 
             return ArrayileInfo;
         }
-        public static FileInfo[] GetRainNCList()
+        public static DirectoryInfo[] GetRainNCFolderList()
         {
             DirectoryInfo pDirectoryInfo = new DirectoryInfo(HookHelper.rainSRCDirectory);
-            FileInfo[] ArrayileInfo = pDirectoryInfo.GetFiles("*.nc");
+            DirectoryInfo[] ArrayileInfo = pDirectoryInfo.GetDirectories();
             if (ArrayileInfo.Length < 1)
             {
                 return ArrayileInfo;
