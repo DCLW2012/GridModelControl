@@ -473,7 +473,7 @@ namespace GridControl
                     //! 设置计时器，当前场次时间
                     Stopwatch perChangci = new Stopwatch();
                     perChangci.Start();
-                    bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
+                    bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharpFromNCFolder(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
 
 
                     perChangci.Stop();

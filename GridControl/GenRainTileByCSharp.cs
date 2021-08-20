@@ -527,6 +527,180 @@ namespace GridControl
             return true;
         }
 
+        //根据nc目录，获取起始结束事件等场次信息，并切片到单元上。当目录为空或者目录内nc个数少于2个，则返回false
+        public static bool CreateTileByWATAByCSharpFromNCFolder(string curNCFFoldername, ref string start, ref string end, ref string datnums, ref string yearmmddForID)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            FileInfo[] fInfo = GenRainTileByCSharp.GetRainNCFilesList(curNCFFoldername);
+
+            datnums = fInfo.Length.ToString();
+            if (fInfo.Length < 2)
+            {
+                Console.WriteLine(string.Format("{0}台风场文件解析场次信息失败，没有有效的nc文件，继续下一个", curNCFFoldername) + DateTime.Now);
+                return false;
+            }
+
+            string[] gridlist = HookHelper.gridsize.Split(',');
+
+            int gridrow = 1001;
+            int gridcol = 1001;
+            float rainSRCFBL = 0.01f;
+
+            if (gridlist.Count() == 2)
+            {
+                gridrow = int.Parse(gridlist[0]);
+                gridcol = int.Parse(gridlist[1]);
+            }
+
+            if (gridlist.Count() == 3)
+            {
+                gridrow = int.Parse(gridlist[0]);
+                gridcol = int.Parse(gridlist[1]);
+                rainSRCFBL = float.Parse(gridlist[2]);
+            }
+
+            string datPureName = System.IO.Path.GetFileNameWithoutExtension(curNCFFoldername);
+
+            //！解析当前nc文件
+            //！创建数据存储结构
+            DatFileStruct datStruct = new DatFileStruct();
+            datStruct.col = gridcol;
+            datStruct.row = gridrow;
+            datStruct.fbl = rainSRCFBL;
+
+
+            // 读取dat文件改为遍历nc文件，生成datStruct结构，继续下一步的切片写出
+            try
+            {
+                //! 第一部分数据 年(year)、月日时(mdh)、该台风总时次(times) 均为整型  3 * 4 个字节
+                //文件夹内子文件第一个文件名字为时间字符串
+                String[] firstNCNameStr = fInfo[0].ToString().Split('_');
+                String firstNCName = firstNCNameStr[firstNCNameStr.Length-1];
+                int year = int.Parse(firstNCName.Substring(0,4));
+                int mdh = int.Parse(firstNCName.Substring(4, 6));
+                int times = fInfo.Length;
+                //////
+                string yearStr = year.ToString();
+                year = int.Parse(yearStr);
+                ///////
+                datStruct.headerone[0] = year;
+                datStruct.headerone[1] = mdh;
+                datStruct.headerone[2] = times;
+
+                string mdhSt = mdh.ToString();
+                if (mdhSt.Length == 5)
+                {
+                    mdhSt = String.Format("0{0}", mdhSt);
+                }
+                //System.String.Substring(Int32 startIndex, Int32 length)
+                string ymdhstr = String.Format("{0}{1}", yearStr, mdhSt);
+
+                //1,2,3位的year前边必须补0，不然会识别错误， 5位的不识别.传入程序的时间以4位为准，统一从2000年开始，追加，模型输出时候纠正时间
+                string yearStrForCalc = "2020";
+                //DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
+                DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + "01" + "-" + "01" + " " + "00" + ":00:00");
+                //! 传入到模型中的时间值，用来计算该时间段的水文结果
+                start = dt.ToString("yyyy-MM-ddTHH:mm");
+                end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");
+                datnums = times.ToString();
+
+                //该变量是根据时间值组合是数字串，后续作为降雨及计算结果的输出文件名称前缀，year前自动补0，与模型计算中更新rainfile中规则一致
+                yearmmddForID = yearStr + mdhSt.Substring(0, 2) + mdhSt.Substring(2, 2) + mdhSt.Substring(4, 2);
+
+                //！2、第二部分，是各个场次经纬度列表，
+                datStruct.Lats = new double[times];
+                datStruct.Lons = new double[times];
+
+                //!3、第三部分，是所有场次的网格数据存储，三维数组存放每个时间的网格数据
+                datStruct.rain = new float[times, datStruct.row, datStruct.col];
+                //遍历每个nc文件，读取解析存储信息
+                for (int tindex = 0; tindex < datStruct.headerone[2]; ++tindex)
+                {
+                    //使用netcdf读取nc文件
+                    //更新经纬度起点坐标，左下角
+                    double lat = 35.0;
+                    double lon = 110.0;
+                    datStruct.Lats[tindex] = lat;
+                    datStruct.Lons[tindex] = lon;
+
+                    //更新栅格值
+                }
+
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(string.Format("{0}台风场文件解析场次信息失败，继续下一个", curNCFFoldername) + DateTime.Now);
+                return false;
+            }
+            stopwatch.Stop();
+            Console.WriteLine(string.Format("读取{0}台风场文件耗时{1}", curNCFFoldername, stopwatch.ElapsedMilliseconds));
+            stopwatch.Restart();
+
+            //！22 数据读取完成，则需要插值到各个计算单元，然后写出
+            //! 遍历所有的计算单元信息表，写出数据
+            //! 遍历每个计算单元，然后在其中遍历每个场次的数据
+            int unitNUM = dbTableConfigs["china"]["GRID_HSFX_UNIT"].Rows.Count;
+            //unit 表
+            DataTable grid_unit_tables = dbTableConfigs["china"]["GRID_HSFX_UNIT"];
+
+            int countOfHaveRain = 0;
+            for (int i = 0; i < unitNUM; ++i)
+            {
+                //！单元的信息
+                string provinceName = grid_unit_tables.Rows[i]["province"].ToString();
+                string groovyName = grid_unit_tables.Rows[i]["GroovyName"].ToString();
+
+                //!当前场次下某个单元的所有时间文件写出
+                if (provinceName.Equals("hainan"))
+                {
+                    int aa = 9;
+                }
+                bool status = WriteAscFileByParams(datPureName, provinceName, groovyName, yearmmddForID, datStruct, grid_unit_tables.Rows[i]);
+                if (status)
+                {
+                    countOfHaveRain++;
+                    //Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片成功", curNCFFoldername, provinceName, groovyName) + DateTime.Now);
+                }
+                else
+                {
+                    //Console.WriteLine(string.Format("{0}台风场文件在{1}省下{2}单元目录切片失败", curNCFFoldername, provinceName, groovyName) + DateTime.Now);
+                }
+                //stopwatch.Stop();
+                //Console.WriteLine(string.Format("写入{0}台风场第{1}个计算单元耗时{2}", curNCFFoldername, i, stopwatch.ElapsedMilliseconds));
+                //stopwatch.Restart();
+            }
+            stopwatch.Stop();
+            Console.WriteLine(string.Format("写入{0}台风场文件耗时{1}", curNCFFoldername, stopwatch.ElapsedMilliseconds));
+
+            Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curNCFFoldername, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
+
+            //CSVLog
+            if (HookHelper.useCSVLOG.Equals("true"))
+            {
+                CSVData.addData(CSVData.GetRowNumber(), "HostName", System.Net.Dns.GetHostName());
+                var serverIP = Program.GetLocalIP(HookHelper.serachIP);
+                CSVData.addData(CSVData.GetRowNumber(), "服务器IP", serverIP);
+                CSVData.addData(CSVData.GetRowNumber(), "计算节点", HookHelper.computerNode);
+                CSVData.addData(CSVData.GetRowNumber(), "eventId", Path.GetFileNameWithoutExtension(curNCFFoldername));
+                CSVData.addData(CSVData.GetRowNumber(), "计算单元个数", unitNUM);
+                CSVData.addData(CSVData.GetRowNumber(), "有效降雨单元个数", countOfHaveRain);
+
+            }
+
+
+
+
+
+            datStruct.headerone = null;
+            datStruct.rain = null;
+            datStruct.Lons = null;
+            datStruct.Lats = null;
+            return true;
+        }
+        
+
         //method为省时候调用，只切割指定的省份
         public static bool CreateTileByWATAByCSharpFromProvince(string keyString, string curDatFullname, ref string start, ref string end, ref string datnums, ref string yearmmddForID)
         {
@@ -729,6 +903,20 @@ namespace GridControl
         {
             DirectoryInfo pDirectoryInfo = new DirectoryInfo(HookHelper.rainSRCDirectory);
             DirectoryInfo[] ArrayileInfo = pDirectoryInfo.GetDirectories();
+            if (ArrayileInfo.Length < 1)
+            {
+                return ArrayileInfo;
+            }
+            Array.Sort(ArrayileInfo, new FileNameSort());
+
+
+            return ArrayileInfo;
+        }
+
+        public static FileInfo[] GetRainNCFilesList(String folder)
+        {
+            DirectoryInfo pDirectoryInfo = new DirectoryInfo(folder);
+            FileInfo[] ArrayileInfo = pDirectoryInfo.GetFiles("*.nc");
             if (ArrayileInfo.Length < 1)
             {
                 return ArrayileInfo;
