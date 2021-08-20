@@ -257,8 +257,22 @@ namespace GridControl
             }
             double[] aData = new double[yNum * xNum];
 
-            res = NetCDF.nc_get_vara_double(ncid, varid, start, count, aData);
-            
+            switch (aVarS.NCType)
+            {
+                case NetCDF.NcType.NC_CHAR:
+                    byte[] charData = new byte[yNum * xNum];
+                    res = NetCDF.nc_get_vara_text(ncid, varid, start, count, charData);
+                    for (i = 0; i < yNum * xNum; i++)
+                        aData[i] = charData[i];
+                    break;
+                default:
+                    //res = NetCDF.nc_get_vara_double(ncid, varid, start, count, aData);
+                    res = NetCDF.nc_get_var_double(ncid, varid, aData);
+                    if (res != 0)
+                    { }
+                    break;
+            }
+
             if (res != 0) return gridData;
             for (i = 0; i < yNum; i++)
             {

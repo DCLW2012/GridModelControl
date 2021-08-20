@@ -302,6 +302,11 @@ namespace GridControl
                             {
                                 curRain = 0.0f;
                             }
+
+                            if (curRain > 0.5 && curRain < 1)
+                            {
+                                int aaa = 9;
+                            }
                         }
 
                         lines.Append(curRain);
@@ -631,8 +636,8 @@ namespace GridControl
                     datStruct.col = readwritencio.XDimension.DimLength;
                     datStruct.row = readwritencio.YDimension.DimLength;
                     datStruct.fbl = readwritencio.XDelt;
-                    datStruct.Lats = readwritencio.YDimension.GetValues();
-                    datStruct.Lons = readwritencio.XDimension.GetValues();
+                    datStruct.Lats[tindex] = readwritencio.YDimension.GetValues()[0];
+                    datStruct.Lons[tindex] = readwritencio.XDimension.GetValues()[0];
 
                     if (datStruct.rain == null)
                     {
