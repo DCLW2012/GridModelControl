@@ -74,8 +74,14 @@ namespace GridControl
                 {
                     WriteUnitInfo.GetAllHsfxUnitTableByWATA();
 
-
-                    CalcOneByOneWata.runBySingleCC();
+                    //默认是使用原来的流程解析dat文件
+                    if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                    {
+                        CalcOneByOneWata.runBySingleCC();
+                    }else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                    {
+                        CalcOneByOneWata.runBySingleCCFromNC();
+                    }                 
                     //执行插入日志
                     WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                 }
@@ -209,6 +215,20 @@ namespace GridControl
                 if (index + 1 <= args.Length - 1)
                 {
                     HookHelper.method = args[index + 1];
+                }
+
+            }
+
+            //--rainType 降雨类型 | dat中再模式还是 nc文件模式
+            HookHelper.raintype = "dat";
+            if (args.Contains("-raintype"))
+            {
+                int index = args.ToList().IndexOf("-raintype");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.raintype = args[index + 1];
                 }
 
             }

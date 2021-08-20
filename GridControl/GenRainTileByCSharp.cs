@@ -725,6 +725,19 @@ namespace GridControl
 
             return ArrayileInfo;
         }
+        public static FileInfo[] GetRainNCList()
+        {
+            DirectoryInfo pDirectoryInfo = new DirectoryInfo(HookHelper.rainSRCDirectory);
+            FileInfo[] ArrayileInfo = pDirectoryInfo.GetFiles("*.nc");
+            if (ArrayileInfo.Length < 1)
+            {
+                return ArrayileInfo;
+            }
+            Array.Sort(ArrayileInfo, new FileNameSort());
+
+
+            return ArrayileInfo;
+        }
     }
 
 
