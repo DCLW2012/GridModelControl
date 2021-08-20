@@ -619,6 +619,13 @@ namespace GridControl
                 for (int tindex = 0; tindex < datStruct.headerone[2]; ++tindex)
                 {
                     //使用netcdf读取nc文件
+                    bool isReadNCSucess = ReadWriteNCIO.ReadNCFileSingleTime(curNCFFoldername + "//" + fInfo[tindex].ToString());
+                    if (!isReadNCSucess)
+                    {
+                        Console.WriteLine(string.Format("{0}的nc文件读取失败，跳过计算", curNCFFoldername + "//" + fInfo[tindex].ToString()) + DateTime.Now);
+                        return false;
+                    }
+
                     //更新经纬度起点坐标，左下角
                     double lat = 35.0;
                     double lon = 110.0;

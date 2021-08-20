@@ -93,6 +93,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CSVData.cs" />
     <Compile Include="CSVFile.cs" />
+    <Compile Include="ReadWriteNCIO.cs" />
     <Compile Include="WriteExecBatFile.cs" />
     <Compile Include="WriteUnitInfo.cs" />
   </ItemGroup>
