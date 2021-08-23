@@ -524,6 +524,7 @@ namespace GridControl
 
         public bool ReadNCFileSingleTime(String fileName)
         {
+            Console.WriteLine(string.Format("当前文件名称{0}  ", fileName) + DateTime.Now);
             int ncid, ndims, nvars, natts, unlimdimid;
             int res = NetCDF.nc_open(fileName, (int)NetCDF.CreateMode.NC_NOWRITE, out ncid);
             if (res != 0) return false;

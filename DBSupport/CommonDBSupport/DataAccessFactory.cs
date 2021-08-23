@@ -47,7 +47,7 @@ namespace DBSupport
                     return new Access();
 
                 case DBType.SqLite:
-                    return new SqLite();
+                    return null;
 
                 default: return null;
             }
@@ -79,7 +79,7 @@ namespace DBSupport
                     return new Access(connectString);
 
                 case DBType.SqLite:
-                    return new SqLite(connectString);
+                    return null;
 
                 default: return null;
             }

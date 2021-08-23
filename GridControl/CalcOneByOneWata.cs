@@ -474,7 +474,7 @@ namespace GridControl
                     Stopwatch perChangci = new Stopwatch();
                     perChangci.Start();
                     bool isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharpFromNCFolder(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
-
+                    curDatFullname = yearmmddForID;
 
                     perChangci.Stop();
                     TimeSpan perChangciTime = perChangci.Elapsed;
@@ -538,11 +538,11 @@ namespace GridControl
                         if (isUpExec)
                         {
                             appValidCount++;
-                            //Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新成功  ", "china", apppath) + DateTime.Now);
+                            Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新成功  ", "china", apppath) + DateTime.Now);
                         }
                         else
                         {
-                            //Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新失败  ", "china", apppath) + DateTime.Now);
+                            Console.WriteLine(string.Format("{0}区域{1}文件execsingle.bat更新失败  ", "china", apppath) + DateTime.Now);
                         }
                     }
                     Console.WriteLine(string.Format("{0}区域{1}个有效单元的execsingle.bat更新成功  ", "china", appValidCount) + DateTime.Now);
@@ -655,12 +655,12 @@ namespace GridControl
                             {
                                 validStartUnitModel++;
                                 HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                             }
                             else
                             {
                                 HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                             }
 
                         }
