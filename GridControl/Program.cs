@@ -42,70 +42,90 @@ namespace GridControl
             {
                 CSVData.CSVInit(path);
             }
-                
-
-            //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
-            if (HookHelper.method.Equals("wata"))
-            {
-                ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
-            }
-            else
-            {
-                ClientConn.PraseGridUnitConfig();
-            }
             
-
-            // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
-            Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
-            Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
             
-            //testEXEListening();
-
             try
             {
-                if (HookHelper.method == "province")
+                string[] nodes = new string[] { HookHelper.computerNode };
+                if (HookHelper.computerNode.ToUpper().Equals("ALLNODE"))
                 {
-                    
-                    //默认是使用原来的流程解析dat文件
-                    if (HookHelper.raintype.ToUpper().Equals("DAT"))
-                    {
-                        CalcOneByOne.runBySingleCC();
-                    }
-                    else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
-                    {
-                        CalcOneByOne.runBySingleCCFromNC();
-                    }
-                    //执行插入日志
-                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    nodes = new string[] { "ComputeNode1", "ComputeNode2", "ComputeNode3", "ComputeNode4", "ComputeNode5", "ComputeNode6", "ComputeNode7", "ComputeNode8" };
                 }
 
-                if (HookHelper.method == "wata")
+                //! 设置计时器，所有节点时间累加值
+                Stopwatch totalNodeFolderDat = new Stopwatch();
+                totalNodeFolderDat.Start();
+                for (int i = 0; i < nodes.Length; ++i)
                 {
-                    WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+                    HookHelper.computerNode = nodes[i];
+                    //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
+                    if (HookHelper.method.Equals("wata"))
+                    {
+                        ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
+                    }
+                    else
+                    {
+                        ClientConn.PraseGridUnitConfig();
+                    }
 
-                    //默认是使用原来的流程解析dat文件
-                    if (HookHelper.raintype.ToUpper().Equals("DAT"))
+
+                    // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
+                    Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
+                    Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
+
+                    if (HookHelper.method == "province")
                     {
-                        CalcOneByOneWata.runBySingleCC();
-                    }else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+
+                        //默认是使用原来的流程解析dat文件
+                        if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                        {
+                            CalcOneByOne.runBySingleCC();
+                        }
+                        else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                        {
+                            CalcOneByOne.runBySingleCCFromNC();
+                        }
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    }
+
+                    if (HookHelper.method == "wata")
                     {
-                        CalcOneByOneWata.runBySingleCCFromNC();
-                    }                 
+                        WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+
+                        //默认是使用原来的流程解析dat文件
+                        if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                        {
+                            CalcOneByOneWata.runBySingleCC();
+                        }
+                        else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                        {
+                            CalcOneByOneWata.runBySingleCCFromNC();
+                        }
+                        //执行插入日志
+                        WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    }
+
+                    //! 阻塞程序不关闭
+                    Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
+
                     //执行插入日志
-                    WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                    WriteLog.WriteLogMethod(HookHelper.Log);
+                    Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
+                    Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                    Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                    Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
                 }
-
-                //! 阻塞程序不关闭
-                Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
-
-                //执行插入日志
-                WriteLog.WriteLogMethod(HookHelper.Log);
+                totalNodeFolderDat.Stop();
+                TimeSpan totalNodeFolderDatTime = totalNodeFolderDat.Elapsed;
+                Console.WriteLine(string.Format("{0}个节点调度总耗时：{1}秒", nodes.Length, totalNodeFolderDatTime.TotalMilliseconds / 1000));
+                HookHelper.Log += string.Format("{0}个节点调度总耗时：{1}秒", nodes.Length, totalNodeFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
 
                 if (!HookHelper.isCloseCMD)
                 {
                     Console.Read();
                 }
-                
+
             }
             catch (Exception ex){
                 Console.WriteLine(ex);
@@ -177,7 +197,7 @@ namespace GridControl
             //!根据数据库中配置的当前ip对应的node值，更新该选项
             HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
-            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP))
+            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) && HookHelper.computerNode.ToUpper() != "ALLNODE")
             {
                 string curNode = computerValues[localIP];
                 if (!string.IsNullOrWhiteSpace(curNode))
