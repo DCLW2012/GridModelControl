@@ -65,7 +65,16 @@ namespace GridControl
             {
                 if (HookHelper.method == "province")
                 {
-                    CalcOneByOne.runBySingleCC();
+                    
+                    //默认是使用原来的流程解析dat文件
+                    if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                    {
+                        CalcOneByOne.runBySingleCC();
+                    }
+                    else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                    {
+                        CalcOneByOne.runBySingleCCFromNC();
+                    }
                     //执行插入日志
                     WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                 }
