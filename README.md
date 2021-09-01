@@ -48,6 +48,8 @@ GridControl -method province -processnum 32 -isGridout true -province shandong  
 
 GridControl -method province -processnum 32 -isGridout true -province hainan
 
+按省份计算使用的数据库是自己省份的数据库表，
+
 
 
 //查询省份下某个uinit信息
