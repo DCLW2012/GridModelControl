@@ -114,7 +114,7 @@ namespace SysDAL
                     string sql = String.Format("SELECT *  from {0}", tbnames[i]);
                     if (tableTypeName == "GRID_HSFX_UNIT")
                     {
-                        sql = String.Format("SELECT *  from {0} order by ID", tbnames[i]);
+                        sql = String.Format("SELECT *  from {0} where GroupID <> 9999 order by ID", tbnames[i]);
                     }
                     else if (tableTypeName == "HSFX_ComputeUnit")
                     {
