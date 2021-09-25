@@ -128,7 +128,7 @@ namespace GridControl
                     cruGroupProvince = dt_unitSort.Rows[i]["province"].ToString();
                 }
             }
-            WriteLog.WriteLogMethod(sortLog, "gridUnitSortBYWATA");
+            WriteLog.WriteLogMethod(sortLog, "gridUnitSortBYWATA"+ HookHelper.computerNode);
 
             return dt_unitSort;
         }
