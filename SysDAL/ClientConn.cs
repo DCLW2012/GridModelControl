@@ -154,21 +154,13 @@ namespace SysDAL
                 if (tableTypeName == "GRID_HSFX_UNIT")
                 {
                     sql = String.Format(@"SELECT
-                                                T1.*
-                                        FROM
-                                                {0} T1
-                                        INNER JOIN(
-                                                SELECT
-                                                        a.ComputeUnit,
-                                                        b.bswatacd
-                                                FROM
-                                                        HSFX_ComputeUnit a
-                                                LEFT JOIN HSFX_Computer b ON a.ComputeNode = b.ComputeNode
-                                                WHERE
-                                                        a.ComputeNode = '{1}'
-                                        ) T2 ON T1.GroupID = T2.ComputeUnit
-                                        AND T1.bswatacd = T2.bswatacd
-                                        ORDER BY province asc", tbnames[i], computernode);
+                                                    T1.*
+                                            FROM
+                                                    {0} T1
+                                                    INNER JOIN HSFX_Computer a ON a.ComputeNode = '{1}' 
+                                                    AND T1.bswatacd = a.bswatacd 
+                                            ORDER BY
+                                                    province ASC", tbnames[i], computernode);
                 }
                 else if (tableTypeName == "HSFX_ComputeUnit")
                 {
