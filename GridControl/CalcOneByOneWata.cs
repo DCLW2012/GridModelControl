@@ -241,9 +241,10 @@ namespace GridControl
                             HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
                             //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
                         }
-                        Console.WriteLine(string.Format("{0}节点{1}个有效单元启动命令执行成功  ", HookHelper.computerNode, validStartUnitModel) + DateTime.Now);
+                        
                     }
                     endAppIndex = maxNum;
+                    Console.WriteLine(string.Format("{0}节点{1}个有效单元启动命令执行成功  ", HookHelper.computerNode, validStartUnitModel) + DateTime.Now);
                 }
 
                 //!已经先启动起来了,后续判断,算完一个追加一个,直至appnum全部完成
