@@ -256,6 +256,7 @@ namespace GridControl
                     System.Threading.Thread.Sleep(1000 * 5 * 1);
                     perWaitCount++;
                     Console.WriteLine(string.Format("已经等待次数{0}次", perWaitCount) + DateTime.Now);
+                    Console.WriteLine(string.Format("当前计算单元终止编号为{0}个", endAppIndex) + DateTime.Now);
                     //if (perWaitCount >= 60)
                     //{
                     //    //遍历强制关闭当前场次的所有pid程序
