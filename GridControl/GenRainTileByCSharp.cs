@@ -462,7 +462,7 @@ namespace GridControl
             }
             br.Close();
             stopwatch.Stop();
-            Console.WriteLine(string.Format("读取{0}台风场文件耗时{1}", curDatFullname, stopwatch.ElapsedMilliseconds));
+            Console.WriteLine(string.Format("读取{0}台风场文件耗时{1}秒", curDatFullname, stopwatch.ElapsedMilliseconds / 1000));
             stopwatch.Restart();
 
             //！22 数据读取完成，则需要插值到各个计算单元，然后写出
@@ -499,7 +499,7 @@ namespace GridControl
                 //stopwatch.Restart();
             }
             stopwatch.Stop();
-            Console.WriteLine(string.Format("写入{0}台风场文件耗时{1}", curDatFullname, stopwatch.ElapsedMilliseconds));
+            Console.WriteLine(string.Format("写入{0}台风场文件耗时{1}秒", curDatFullname, stopwatch.ElapsedMilliseconds / 1000));
 
             Console.WriteLine(string.Format("{0}台风场文件在{1}节点下共有{2}个计算单元，其中{3}个计算单元中有有效降雨", curDatFullname, HookHelper.computerNode, unitNUM, countOfHaveRain) + DateTime.Now);
 
