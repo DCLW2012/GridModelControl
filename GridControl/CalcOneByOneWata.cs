@@ -117,10 +117,10 @@ namespace GridControl
                     bool isGenTilesucess = false;
                     if (HookHelper.tilemehtod.ToUpper().Trim().Equals("ALL"))
                     {
-                        GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
+                        isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharp(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
                     }else
                     {
-                        GenRainTileByCSharp.CreateTileByWATAByCSharpOneTimeByOne(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
+                        isGenTilesucess = GenRainTileByCSharp.CreateTileByWATAByCSharpOneTimeByOne(curDatFullname, ref start, ref end, ref datnums, ref yearmmddForID);
                     }
                     
 
