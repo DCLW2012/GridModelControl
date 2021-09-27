@@ -133,6 +133,8 @@ namespace SysDAL
         //解析存储全国区域网格表
         public static void PraseGridUnitConfigAllChina(string computernode)
         {
+            m_dbTableConfig.Clear();
+
             //！！取出当前key值
             string keyString = "china";
 

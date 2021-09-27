@@ -35,31 +35,11 @@
 
 
 
-11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等   --- 已废弃
-12、isUpdateRivlParams更新河道宽度参数---  已废弃
+11、isUpdateParams是否根据数据库表更新参数值，包括土壤质地、土地利用对应的曼宁系数及渗水率等
+12、isUpdateRivlParams更新河道宽度参数
 12、历史命令
 -method wata -isUpdateParams true
 
-//按省份计算岚山风险普查区域
+13、dat文件如果过大，会超过c#数组内存分配，没办法一次读取所有，然后执行切片，就要一次读取一个时间的栅格数据，当前时间切片完成后再执行下一个时间
 
-GridControl -method province -processnum 32 -isGridout true -province shandong   -按省份计算
-
-//按省份计算海南，台风验证
-
-GridControl -method province -processnum 32 -isGridout true -province hainan
-
-
-
-//查询省份下某个uinit信息
-
-SELECT DISTINCT
-        T1.UNITCD,
-        T2.ComputeNode,
-        T2.APPPath
-FROM
-        GRID_HSFX_UNIT T1
-LEFT JOIN HSFX_ComputeUnit T2 ON T1.GroupID = T2.ComputeUnit
-WHERE
-         T1.UNITCD IN (
-        'whf60_1_5'
-)
+-tilemehtod (all | one)  all代表一次加载所有，one代表一次处理一个
