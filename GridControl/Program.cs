@@ -53,7 +53,7 @@ namespace GridControl
                 string[] nodes = new string[] { HookHelper.computerNode};
                 if (HookHelper.computerNode.ToUpper().Equals("ALLNODE"))
                 {
-                    nodes = new string[] { "ComputeNode1", "ComputeNode2", "ComputeNode3", "ComputeNode4", "ComputeNode5", "ComputeNode6", "ComputeNode7", "ComputeNode8"};  
+                    nodes = new string[] { "ComputeNode1", "ComputeNode2", "ComputeNode3", "ComputeNode4", "ComputeNode5", "ComputeNode6", "ComputeNode7", "ComputeNode8", "ComputeNode9", "ComputeNode10", "ComputeNode11" };  
                 }
 
                 //! 设置计时器，所有节点时间累加值
