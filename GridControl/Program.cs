@@ -186,23 +186,33 @@ namespace GridControl
             //!根据数据库中配置的当前ip对应的node值，更新该选项
             HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
-            if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) && HookHelper.computerNode.ToUpper() != "ALLNODE")
+
+            //本地模式下，忽略主机ip查询
+            if (HookHelper.isLocatTest) {
+                Console.WriteLine(string.Format("测试模式，将使用默认值节点{0}  ", HookHelper.computerNode) + DateTime.Now);
+            }
+            else
             {
-                string curNode = computerValues[localIP];
-                if (!string.IsNullOrWhiteSpace(curNode))
+                if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) && HookHelper.computerNode.ToUpper() != "ALLNODE")
                 {
-                    HookHelper.computerNode = curNode;
-                    Console.WriteLine(string.Format("当前主机节点{0}的computernode值为{1}  ", localIP, curNode) + DateTime.Now);
+                    string curNode = computerValues[localIP];
+                    if (!string.IsNullOrWhiteSpace(curNode))
+                    {
+                        HookHelper.computerNode = curNode;
+                        Console.WriteLine(string.Format("当前主机节点{0}的computernode值为{1}  ", localIP, curNode) + DateTime.Now);
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}  ", localIP, curNode) + DateTime.Now);
+                    }
+
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}  ", localIP, curNode) + DateTime.Now);
+                    Console.WriteLine(string.Format("当前主机节点{0}没有在数据库中配置node编号，将使用默认值节点{1}  ", localIP, HookHelper.computerNode) + DateTime.Now);
                 }
-
-            }else
-            {
-                Console.WriteLine(string.Format("当前主机节点{0}没有在数据库中配置node编号，将使用默认值  ", localIP) + DateTime.Now);
             }
+            
 
             
         }
@@ -278,6 +288,21 @@ namespace GridControl
                 }
 
             }
+
+            //是否本地测试模式，固定使用配置文件中的节点值
+            HookHelper.isLocatTest = false;
+            if (args.Contains("-isLocatTest"))
+            {
+                int index = args.ToList().IndexOf("-isLocatTest");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.isLocatTest = bool.Parse(args[index + 1]);
+                }
+
+            }
+            
 
             HookHelper.updatebyfile = true;
             if (args.Contains("-updatebyfile"))
