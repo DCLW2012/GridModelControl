@@ -337,7 +337,7 @@ namespace GridControl
                         }
                         else
                         {
-                            Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
+                            Console.WriteLine(string.Format("追加模式下单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
                         }
                     }
 
