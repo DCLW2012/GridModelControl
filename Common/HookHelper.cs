@@ -32,7 +32,9 @@ namespace Common
         public static string rubbatForDOS { get; set; }
         public static string method { get; set; }
         public static string raintype { get; set; }
-        
+        public static string tilemehtod { get; set; }
+
+        public static bool isLocatTest { get; set; }
         public static string curProvince { get; set; }
         
         public static string computerNode { get; set; }
