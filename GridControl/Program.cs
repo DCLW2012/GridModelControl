@@ -89,8 +89,14 @@ namespace GridControl
                     {
                         //WriteUnitInfo.GetAllHsfxUnitTableByWATA();
 
-
-                        CalcOneByOneWata.runBySingleCC();
+                        if (HookHelper.processModel.ToUpper().Equals("NORMAL")) {
+                            CalcOneByOneWata.runBySingleCC();
+                        }
+                        else
+                        {
+                            CalcOneByOneWata.runBySingleCCADD();
+                        }
+                        
                         //执行插入日志
                         WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
                     }
@@ -180,6 +186,17 @@ namespace GridControl
             {
                 HookHelper.waitcount = 60;
             }
+
+            //进程启动模式
+            if (ConfigurationManager.AppSettings["processModel"] != null)
+            {
+                HookHelper.processModel = ConfigurationManager.AppSettings["processModel"].ToString();
+            }
+            else
+            {
+                HookHelper.processModel = "normal";
+            }
+            
 
             HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
             HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
