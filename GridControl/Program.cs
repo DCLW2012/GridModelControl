@@ -210,7 +210,7 @@ namespace GridControl
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) && HookHelper.computerNode.ToUpper() != "ALLNODE")
+                if (!string.IsNullOrWhiteSpace(localIP) && computerValues.ContainsKey(localIP) )
                 {
                     string curNode = computerValues[localIP];
                     if (!string.IsNullOrWhiteSpace(curNode))
@@ -220,7 +220,7 @@ namespace GridControl
                     }
                     else
                     {
-                        Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}  ", localIP, curNode) + DateTime.Now);
+                        Console.WriteLine(string.Format("当前主机节点{0}不存在有效的computernode值{1}，使用默认节点{2}  ", localIP, curNode, HookHelper.computerNode) + DateTime.Now);
                     }
 
                 }
