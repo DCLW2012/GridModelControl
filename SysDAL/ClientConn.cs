@@ -202,5 +202,19 @@ namespace SysDAL
             }
             
         }
+
+        public static bool IsValidDat(string datName)
+        {
+            String errinfoSQL = String.Format("select * from Grid_TaiFeng_ErrorCALC where DATName = '{0}'", datName);
+            string keyString = "china";
+            DataTable dt = Dal_Rain.GetDataBySql(keyString, errinfoSQL);
+
+            if (dt.Rows.Count > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

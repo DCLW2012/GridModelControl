@@ -203,7 +203,7 @@ namespace GridControl
             //!根据数据库中配置的当前ip对应的node值，更新该选项
             HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
-
+            HookHelper.localIP = localIP;
             //本地模式下，忽略主机ip查询
             if (HookHelper.isLocatTest) {
                 Console.WriteLine(string.Format("测试模式，将使用默认值节点{0}  ", HookHelper.computerNode) + DateTime.Now);

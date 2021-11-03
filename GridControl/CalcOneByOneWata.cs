@@ -558,6 +558,18 @@ namespace GridControl
                                     {
                                         //curProcss.Kill();
                                         HookHelper.KillProcessAndChildren(curPID);
+
+                                        //写出信息到数据库表中
+                                        string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
+                                        String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value, HookHelper.computerNode, HookHelper.localIP);
+                                        String sqlinserBaseInfo = String.Format("insert into Grid_TaiFeng_ErrorCALC (DATName, AppPath, unitcd, computernode, computerIP) VALUES {0}", inValues);
+
+                                        bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
+                                        if (isExist)
+                                        {
+                                            string keyString = "china";
+                                            Dal_Rain.ExecuteSqlInserting(keyString, sqlinserBaseInfo);
+                                        }
                                     }
                                 }
                             }
@@ -623,25 +635,39 @@ namespace GridControl
                             //! 启动该exec.bat
                             //! 单元信息
                             string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
-                            bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
-                            if (isOneStart)
+
+                            //启动前判断如果已经存在错误，则跳过不启动
+                            string datPureNameInsertForStart = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
+                            bool isExistForStart = ClientConn.IsValidDat(datPureNameInsertForStart);
+                            if (isExistForStart)
                             {
-                                validStartUnitModel++;
-                                HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                bool isOneStart = StartOneByOneExecsingle(execpath, appunitInfo);
+                                if (isOneStart)
+                                {
+                                    validStartUnitModel++;
+                                    HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
+                                    //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行成功  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                }
+                                else
+                                {
+                                    HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
+                                    //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                }
                             }
                             else
                             {
-                                HookHelper.Log += string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now + ";\r\n";
-                                //Console.WriteLine(string.Format("{0}节点{1}单元{2}路径执行失败  ", HookHelper.computerNode, ComputeUnit, execpath) + DateTime.Now);
+                                Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}跳过计算   ", curDatFullname) + DateTime.Now);
+                                HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}跳过计算   ", curDatFullname) + DateTime.Now + ";\r\n";
                             }
+
+                            
 
                         }
                         Console.WriteLine(string.Format("{0}节点{1}个有效单元启动命令执行成功  ", HookHelper.computerNode, validStartUnitModel) + DateTime.Now);
                     }
                 }
 
-                //!循环每个组，pid存在，则执行等待，直至继续运行到下一步，代表一个场次计算结束
+                //!上边已经判断了循环里的组，这里需要判断最后一个组，pid存在，则执行等待，直至继续运行到下一步，代表一个场次计算结束
                 int perWaitCount = 0;  //如果等待超过1个小时，仍然无法计算，则跳过这个场次，并写出到log中
                 while (pids.Count > 0)
                 {
@@ -673,6 +699,18 @@ namespace GridControl
                             {
                                 //curProcss.Kill();
                                 HookHelper.KillProcessAndChildren(curPID);
+                                //写出错误信息到sql中
+                                //当前单元没有正常计算，台风id写出到数据库表中
+                                string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
+                                String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value, HookHelper.computerNode, HookHelper.localIP);
+                                String sqlinserBaseInfo = String.Format("insert into Grid_TaiFeng_ErrorCALC (DATName, AppPath, unitcd, computernode, computerIP) VALUES {0}", inValues);
+
+                                bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
+                                if (isExist)
+                                {
+                                    string keyString = "china";
+                                    Dal_Rain.ExecuteSqlInserting(keyString, sqlinserBaseInfo);
+                                }
                             }
                             else
                             {

@@ -52,6 +52,8 @@ namespace Common
         public static bool isGridout { get; set; }
 
         public static string serachIP { get; set; }
+        public static string localIP { get; set; }
+        
         public static string gridsize { get; set; }
         public static string useCSVLOG { get; set; }
         public static int waitcount { get; set; }
