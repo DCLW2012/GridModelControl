@@ -635,7 +635,7 @@ namespace GridControl
                             //! 启动该exec.bat
                             //! 单元信息
                             string appunitInfo = ComputeNode + "_" + ComputeUnit + "_" + apppath;
-
+                            
                             //启动前判断如果已经存在错误，则跳过不启动
                             string datPureNameInsertForStart = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
                             bool isExistForStart = ClientConn.IsValidDat(datPureNameInsertForStart);
@@ -656,8 +656,8 @@ namespace GridControl
                             }
                             else
                             {
-                                Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}跳过计算   ", curDatFullname) + DateTime.Now);
-                                HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}跳过计算   ", curDatFullname) + DateTime.Now + ";\r\n";
+                                Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now);
+                                HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now + ";\r\n";
                             }
 
                             
