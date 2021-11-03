@@ -413,6 +413,8 @@ namespace GridControl
             int datnum = fInfo.Length;
             for (int d = 0; d < datnum; ++d)
             {
+                int perGroupCount = 0;
+                int perWaitCount = 0;
                 //每次计算当前台风前先删除当前节点下，所有单元的公共传递文件inputq.csv\rainfile.txt
 
 
@@ -527,7 +529,7 @@ namespace GridControl
                     for (int g = 0; g < processGroup; ++g)
                     {
                         //!循环每个组，pid存在，则执行等待
-                        int perGroupCount = 0;
+                        perGroupCount = 0;
                         while (pids.Count > 0)
                         {
                             //! 执行等待，然后查询更新pids列表.等待1分钟
@@ -537,7 +539,7 @@ namespace GridControl
 
                             //kill
                             perGroupCount++;
-                            Console.WriteLine(string.Format("已经等待次数{0}次", perGroupCount) + DateTime.Now);
+                            Console.WriteLine(string.Format("第{0}进程组,已经等待次数{1}次",g, perGroupCount) + DateTime.Now);
                             if (perGroupCount >= HookHelper.waitcount)
                             {
                                 //遍历强制关闭当前场次的所有pid程序
@@ -557,8 +559,11 @@ namespace GridControl
                                     if (isInProcess)
                                     {
                                         //curProcss.Kill();
+                                        //HookHelper.Log += string.Format("***********关闭进程开始 ") + DateTime.Now + ";\r\n";
+                                        //Console.WriteLine(string.Format("***********关闭进程开始") + DateTime.Now);
                                         HookHelper.KillProcessAndChildren(curPID);
-
+                                        //Console.WriteLine(string.Format("***********关闭进程结束") + DateTime.Now);
+                                        //HookHelper.Log += string.Format("***********关闭进程结束 ") + DateTime.Now + ";\r\n";
                                         //写出信息到数据库表中
                                         string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
                                         String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value + "-GridControlError", HookHelper.computerNode, HookHelper.localIP);
@@ -570,6 +575,11 @@ namespace GridControl
                                             string keyString = "china";
                                             Dal_Rain.ExecuteSqlInserting(keyString, sqlinserBaseInfo);
                                         }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(string.Format("***********当前进程已自动中止") + DateTime.Now);
+                                        HookHelper.Log += string.Format("***********当前进程已自动中止") + DateTime.Now + ";\r\n";
                                     }
                                 }
                             }
@@ -668,14 +678,14 @@ namespace GridControl
                 }
 
                 //!上边已经判断了循环里的组，这里需要判断最后一个组，pid存在，则执行等待，直至继续运行到下一步，代表一个场次计算结束
-                int perWaitCount = 0;  //如果等待超过1个小时，仍然无法计算，则跳过这个场次，并写出到log中
+                perWaitCount = 0;  //如果等待超过1个小时，仍然无法计算，则跳过这个场次，并写出到log中
                 while (pids.Count > 0)
                 {
                     //! 执行等待，然后查询更新pids列表.等待1分钟
                     Console.WriteLine(string.Format("等待第{0}场{1}文件计算完成并关闭，pid进程查询更新等待中，等待时长15秒...", d + 1, curDatFullname) + DateTime.Now);
                     System.Threading.Thread.Sleep(1000 * 15 * 1);
                     perWaitCount++;
-                    Console.WriteLine(string.Format("已经等待次数{0}次", perWaitCount) + DateTime.Now);
+                    Console.WriteLine(string.Format("最后进程组,已经等待次数{0}次", perWaitCount) + DateTime.Now);
                     if (perWaitCount >= HookHelper.waitcount)
                     {
                         //遍历强制关闭当前场次的所有pid程序
@@ -698,7 +708,9 @@ namespace GridControl
                             if (isInProcess)
                             {
                                 //curProcss.Kill();
+                                //Console.WriteLine(string.Format("***********关闭进程开始") + DateTime.Now);
                                 HookHelper.KillProcessAndChildren(curPID);
+                                //Console.WriteLine(string.Format("***********关闭进程结束") + DateTime.Now);
                                 //写出错误信息到sql中
                                 //当前单元没有正常计算，台风id写出到数据库表中
                                 string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
@@ -714,7 +726,8 @@ namespace GridControl
                             }
                             else
                             {
-                                Console.WriteLine(string.Format("最后一组单元{0}计算进行中......需继续等待......", item.Value) + DateTime.Now);
+                                Console.WriteLine(string.Format("***********当前进程已自动中止") + DateTime.Now);
+                                HookHelper.Log += string.Format("***********当前进程已自动中止") + DateTime.Now + ";\r\n";
                             }
                         }
                     }
