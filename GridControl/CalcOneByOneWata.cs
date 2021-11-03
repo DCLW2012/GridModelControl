@@ -561,7 +561,7 @@ namespace GridControl
 
                                         //写出信息到数据库表中
                                         string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                        String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value, HookHelper.computerNode, HookHelper.localIP);
+                                        String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value + "-GridControlError", HookHelper.computerNode, HookHelper.localIP);
                                         String sqlinserBaseInfo = String.Format("insert into Grid_TaiFeng_ErrorCALC (DATName, AppPath, unitcd, computernode, computerIP) VALUES {0}", inValues);
 
                                         bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
@@ -702,7 +702,7 @@ namespace GridControl
                                 //写出错误信息到sql中
                                 //当前单元没有正常计算，台风id写出到数据库表中
                                 string datPureNameInsert = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value, HookHelper.computerNode, HookHelper.localIP);
+                                String inValues = String.Format("('{0}','{1}','{2}','{3}','{4}')", datPureNameInsert, "", item.Value + "-GridControlError", HookHelper.computerNode, HookHelper.localIP);
                                 String sqlinserBaseInfo = String.Format("insert into Grid_TaiFeng_ErrorCALC (DATName, AppPath, unitcd, computernode, computerIP) VALUES {0}", inValues);
 
                                 bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
