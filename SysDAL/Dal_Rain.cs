@@ -49,6 +49,22 @@ namespace SysDAL
             
         }
 
+        public static int ExecuteSqlInserting(string dbname, string sql)
+        {
+            int reslut;
+            try
+            {
+                reslut = ClientConn.m_dataBaseConnects[dbname].ExecuteNonQuery(sql);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+            return reslut;
+        }
+
         #region 判断数据库表是否存在，通过指定专用的连接字符串，执行一个不需要返回值的SqlCommand命令。
         /// <summary>
         /// 判断数据库表是否存在，返回页头，通过指定专用的连接字符串，执行一个不需要返回值的SqlCommand命令。

@@ -52,15 +52,17 @@ namespace Common
         public static bool isGridout { get; set; }
 
         public static string serachIP { get; set; }
+        public static string localIP { get; set; }
+        
         public static string gridsize { get; set; }
         public static string useCSVLOG { get; set; }
         public static int waitcount { get; set; }
-        
+        public static string processModel { get; set; }
 
         /**
- * 传入参数：父进程id
- * 功能：根据父进程id，杀死与之相关的进程树
- */
+         * 传入参数：父进程id
+         * 功能：根据父进程id，杀死与之相关的进程树
+         */
         public static void KillProcessAndChildren(int pid)
         {
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
@@ -75,9 +77,11 @@ namespace Common
                 Console.WriteLine(string.Format("kill process by id {0}!", pid));
                 proc.Kill();
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
                 /* process already exited */
+                //Console.WriteLine(string.Format("process already exited") );
+                HookHelper.Log += string.Format("process already exited，进程已自动关闭") + ex + "," + DateTime.Now + ";\r\n";
             }
         }
     }
