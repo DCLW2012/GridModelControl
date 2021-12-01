@@ -52,6 +52,12 @@ GridControl -method province -processnum 32 -isGridout true -province hainan
 
 
 
+第三期集成测试 省份
+
+GridControl -method province -processnum 32 -isGridout true -province shandong -raintype nc
+
+
+
 //查询省份下某个uinit信息
 
 SELECT DISTINCT
