@@ -183,7 +183,7 @@ namespace GridControl
             HookHelper.useCSVLOG = ConfigurationManager.AppSettings["useCSVLOG"].ToString();
 
             //等待次数
-            //HookHelper.waitcount = ConfigurationManager.AppSettings["waitcount"].ToString();
+            HookHelper.waitcount = int.Parse( ConfigurationManager.AppSettings["waitcount"].ToString());
             if (ConfigurationManager.AppSettings["waitcount"] != null)
             {
                 HookHelper.waitcount = int.Parse(ConfigurationManager.AppSettings["waitcount"].ToString());
