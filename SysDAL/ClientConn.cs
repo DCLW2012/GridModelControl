@@ -93,6 +93,7 @@ namespace SysDAL
 
         public static void PraseGridUnitConfig()
         {
+            m_dbTableConfig.Clear();
             int num = m_dataBaseConnects.Count;
             foreach (var curDB in m_dataBaseConnects)
             {
