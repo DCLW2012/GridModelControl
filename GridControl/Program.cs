@@ -85,8 +85,12 @@ namespace GridControl
                         {
                             CalcOneByOne.runBySingleCCFromNC();
                         }
+
+                       
                         //执行插入日志
                         WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                        //按省份计算，一次节点算完就结束。
+                        break;
                     }
 
                     if (HookHelper.method == "wata")
