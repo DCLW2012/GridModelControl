@@ -184,7 +184,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID);
+                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID, HookHelper.computerNode);
 
                         if (isUpExec)
                         {
@@ -342,8 +342,8 @@ namespace GridControl
                             }
                             else
                             {
-                                Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now);
-                                HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now + ";\r\n";
+                                Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常Grid_TaiFeng_ErrorCALC，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now);
+                                HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常Grid_TaiFeng_ErrorCALC，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now + ";\r\n";
                             }
 
 
@@ -592,7 +592,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID);
+                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID, HookHelper.computerNode);
 
                         if (isUpExec)
                         {
@@ -937,7 +937,7 @@ namespace GridControl
                         string apppath = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                         string ComputeUnit = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
                         string provinceName = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["province"].ToString();
-
+                        string computerNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                         //execbat路径
                         string execpath = apppath + "execsingle.bat";
                         if (apppath.EndsWith("/"))
@@ -960,7 +960,7 @@ namespace GridControl
                         //！覆盖更新通过指定参数到execsingle.bat文件
 
                         string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID);
+                        isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, outrainTilepath, yearmmddForID, computerNode);
 
                         if (isUpExec)
                         {

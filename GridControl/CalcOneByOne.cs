@@ -153,6 +153,7 @@ namespace GridControl
                                     //!当前路径
                                     string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                                     string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                                    string computerNode = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                                     //execbat路径
                                     string execpath = apppath + "execsingle.bat";
                                     if (apppath.EndsWith("/"))
@@ -170,11 +171,15 @@ namespace GridControl
                                     // 更新execpath的值
                                     bool isUpExec = false;
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory, yearmmddForID);
+                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory, yearmmddForID, computerNode);
 
                                     if (isUpExec)
                                     {
                                         Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新成功  ", keyString, apppath) + DateTime.Now);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(string.Format("{0}区域{1}文件exec.bat更新失败", keyString, apppath) + DateTime.Now);
                                     }
                                 }
 
@@ -236,8 +241,8 @@ namespace GridControl
                                                     bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
                                                     if (isExist)
                                                     {
-                                                        string keyString = "china";
-                                                        Dal_Rain.ExecuteSqlInserting(keyString, sqlinserBaseInfo);
+                                                        string keyStringForError = "china";
+                                                        Dal_Rain.ExecuteSqlInserting(keyStringForError, sqlinserBaseInfo);
                                                     }
                                                 }
                                                 else
@@ -293,7 +298,7 @@ namespace GridControl
                                         //!当前路径
                                         string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                                         string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                                        string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
+                                        string ComputeNode = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                                         //execbat路径
                                         string execpath = apppath + "execsingle.bat";
                                         if (apppath.EndsWith("/"))
@@ -330,8 +335,8 @@ namespace GridControl
                                         }
                                         else
                                         {
-                                            Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now);
-                                            HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now + ";\r\n";
+                                            Console.WriteLine(appunitInfo + String.Format("单元dem网格场次数据存在异常Grid_TaiFeng_ErrorCALC，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now);
+                                            HookHelper.Log += appunitInfo + String.Format("单元dem网格场次数据存在异常Grid_TaiFeng_ErrorCALC，台风{0}所在进程跳过启动   ", curDatFullname) + DateTime.Now + ";\r\n";
                                         }
 
                                     }
@@ -388,8 +393,8 @@ namespace GridControl
                                             bool isExist = ClientConn.IsValidDat(datPureNameInsert);  //错误信息只写出一次
                                             if (isExist)
                                             {
-                                                string keyString = "china";
-                                                Dal_Rain.ExecuteSqlInserting(keyString, sqlinserBaseInfo);
+                                                string keyStringForError = "china";
+                                                Dal_Rain.ExecuteSqlInserting(keyStringForError, sqlinserBaseInfo);
                                             }
                                         }
                                         else
@@ -534,6 +539,7 @@ namespace GridControl
                                     //!当前路径
                                     string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                                     string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
+                                    string computerNode = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                                     //execbat路径
                                     string execpath = apppath + "execsingle.bat";
                                     if (apppath.EndsWith("/"))
@@ -551,7 +557,7 @@ namespace GridControl
                                     // 更新execpath的值
                                     bool isUpExec = false;
                                     string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
-                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory, yearmmddForID);
+                                    isUpExec = WriteExecBatFile.UpdateExecBatFileByTemplateExecsingle(execpath, ComputeUnit, start, end, datnums, datPureName, HookHelper.rainTileDirectory, yearmmddForID, computerNode);
 
                                     if (isUpExec)
                                     {
@@ -654,7 +660,7 @@ namespace GridControl
                                         //!当前路径
                                         string apppath = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["AppPath"].ToString();
                                         string ComputeUnit = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeUnit"].ToString();
-                                        string ComputeNode = dbTableConfigs["china"]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
+                                        string ComputeNode = dbTableConfigs[keyString]["HSFX_ComputeUnit"].Rows[a]["ComputeNode"].ToString();
                                         //execbat路径
                                         string execpath = apppath + "execsingle.bat";
                                         if (apppath.EndsWith("/"))

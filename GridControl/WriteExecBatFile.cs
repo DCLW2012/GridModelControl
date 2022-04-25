@@ -12,7 +12,7 @@ namespace GridControl
 {
     public class WriteExecBatFile
     {
-        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName, string outrainTilepath, string yearmmddForID)
+        public static bool UpdateExecBatFileByTemplateExecsingle(string fileName, string ComputeUnit, string start, string end, string timeNums, string datName, string outrainTilepath, string yearmmddForID, string computerNode)
         {
             DirectoryInfo info = new DirectoryInfo(fileName);
             String apppath = info.Parent.FullName;
@@ -35,7 +35,7 @@ namespace GridControl
             //! 写参数
             string newLine = String.Format("DCFDProc.exe {0} 60 60 1 1 ", ComputeUnit);
             string parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo {0} -computernode {1} -s {2} -c {3} -datTimes {4} -curDatGridName {5} -gridRainRoot {6} -gridFBCRoot {7} -yearid {8}",
-                                             HookHelper.method, HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID);
+                                             HookHelper.method, computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID);
             bool isGridoutValue = false;
             bool isUpdateParamsValue = false;
             bool isUpdateRivlParamsValue = false;
@@ -54,7 +54,7 @@ namespace GridControl
             }
 
             parasLine = String.Format("-m grid -exec false -t forecast -usegroovy true -methodtopo {0} -computernode {1} -s {2} -c {3} -datTimes {4} -curDatGridName {5} -gridRainRoot {6} -gridFBCRoot {7} -yearid {8} -isGridout {9} -isUpdateParams {10} -isUpdateRivlParams {11}",
-                                             HookHelper.method, HookHelper.computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID, isGridoutValue, isUpdateParamsValue, isUpdateRivlParamsValue);
+                                             HookHelper.method, computerNode, start, end, timeNums, datName, outrainTilepath, HookHelper.rainSRCDirectory.Replace('\\', '/'), yearmmddForID, isGridoutValue, isUpdateParamsValue, isUpdateRivlParamsValue);
 
             streamWriter.WriteLine(newLine + parasLine);
             //! 结束----
