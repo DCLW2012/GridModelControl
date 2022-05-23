@@ -61,7 +61,7 @@ namespace GridControl
                     //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
                     if (HookHelper.method.Equals("wata"))
                     {
-                        ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode);
+                        ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode, HookHelper.curProvince);
                     }
                     else
                     {

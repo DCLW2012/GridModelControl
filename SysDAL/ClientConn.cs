@@ -131,8 +131,8 @@ namespace SysDAL
 
         }
 
-        //解析存储全国区域网格表
-        public static void PraseGridUnitConfigAllChina(string computernode)
+        //解析存储全国区域网格表，传入指定省份，确定是否按流域只计算某个省
+        public static void PraseGridUnitConfigAllChina(string computernode, string provincename)
         {
             m_dbTableConfig.Clear();
 
@@ -162,6 +162,19 @@ namespace SysDAL
                                                     AND T1.bswatacd = a.bswatacd 
                                             ORDER BY
                                                     province ASC", tbnames[i], computernode);
+
+                    if (!string.IsNullOrEmpty(provincename))
+                    {
+                        sql = String.Format(@"SELECT
+                                                    T1.*
+                                            FROM
+                                                    {0} T1
+                                                    INNER JOIN HSFX_Computer a ON a.ComputeNode = '{1}' 
+                                                    AND T1.bswatacd = a.bswatacd 
+                                                    AND province = '{2}'
+                                            ORDER BY
+                                                    province ASC", tbnames[i], computernode, provincename);
+                    }
                 }
                 else if (tableTypeName == "HSFX_ComputeUnit")
                 {
@@ -174,6 +187,20 @@ namespace SysDAL
                                         AND ComputeUnit > 100
                                         ORDER BY
                                                 ComputeUnit ", tbnames[i], computernode);
+
+                    if (!string.IsNullOrEmpty(provincename))
+                    {
+                        sql = String.Format(@"SELECT
+                                                *
+                                        FROM
+                                                {0}
+                                        WHERE
+                                                ComputeNode = '{1}'
+                                        AND province = '{2}'
+                                        AND ComputeUnit > 100
+                                        ORDER BY
+                                                ComputeUnit ", tbnames[i], computernode, provincename);
+                    }
                 }
                 DataTable value = Dal_Rain.GetDataBySql(keyString, sql);
                 tableTypes.Add(tableTypeName, value);
