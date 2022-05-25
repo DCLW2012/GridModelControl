@@ -95,7 +95,7 @@ namespace GridControl
 
                     if (HookHelper.method == "wata")
                     {
-                        WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+                        //WriteUnitInfo.GetAllHsfxUnitTableByWATA();
 
                         //默认是使用原来的流程解析dat文件
                         if (HookHelper.raintype.ToUpper().Equals("DAT"))
