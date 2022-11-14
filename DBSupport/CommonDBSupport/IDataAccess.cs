@@ -14,7 +14,7 @@
 using System;
 using System.Data;
 using System.Collections;
-
+using static DBSupport.DataAccessFactory;
 namespace DBSupport
 {
 	/// <summary>
@@ -29,10 +29,11 @@ namespace DBSupport
 		/// </summary>
 		string ConnectString{get;set;}
 
+		DBType SqlDBType { get; set; }
 		/// <summary>
 		/// 获取错误信息
 		/// </summary>
-        string LastError { get; set; }
+		string LastError { get; set; }
 
 		#endregion
 

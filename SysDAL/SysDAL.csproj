@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="ClientConn.cs" />
     <Compile Include="Dal_Rain.cs" />
+    <Compile Include="Dal_ThirdWeb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

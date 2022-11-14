@@ -2,25 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.OleDb;
-using System.Data;
+using Npgsql;
+using NpgsqlTypes;
 using System.Collections;
+using System.Data;
+using static DBSupport.DataAccessFactory;
+using System.Globalization;
 
 namespace DBSupport
 {
-    public class Access : IDataAccess
+    internal class PostGreSQL : IDataAccess
     {
         #region 字段、属性
 
         //连接对象
-        private OleDbConnection cnn;
+        private NpgsqlConnection cnn;
 
         //命令对象
-        private OleDbCommand cmd;
+        private NpgsqlCommand cmd;
 
         //数据库连接字符串
         private string connectString = "";
-
+        private DBType type = DBType.SqlServer;
         //错误信息
         private string errorMessage = "";
 
@@ -38,7 +41,17 @@ namespace DBSupport
                 connectString = value;
             }
         }
-
+        public DBType SqlDBType
+        {
+            get
+            {
+                return type;
+            }
+            set
+            {
+                type = value;
+            }
+        }
         /// <summary>
         /// 获取错误信息
         /// </summary>
@@ -50,11 +63,9 @@ namespace DBSupport
             }
             set
             {
-                errorMessage = value;
+                errorMessage = null;
             }
         }
-
-        public DataAccessFactory.DBType SqlDBType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         #endregion
 
@@ -63,10 +74,10 @@ namespace DBSupport
         /// <summary>
         /// 无参构造
         /// </summary>
-        public Access()
+        public PostGreSQL()
         {
-            cnn = new OleDbConnection();
-            cmd = new OleDbCommand();
+            cnn = new NpgsqlConnection();
+            cmd = new NpgsqlCommand();
             cmd.Connection = cnn;
         }
 
@@ -74,19 +85,19 @@ namespace DBSupport
         /// 带参构造
         /// </summary>
         /// <param name="connectString">数据库连接字符传</param>
-        public Access(string connectString)
+        public PostGreSQL(string connectString)
         {
             try
             {
                 this.connectString = connectString;
-                cnn = new OleDbConnection(connectString);
-                cmd = new OleDbCommand();
+                cnn = new NpgsqlConnection(connectString);
+                cmd = new NpgsqlCommand();
                 cmd.Connection = cnn;
                 cnn.Open();
             }
             catch (Exception ex)
             {
-
+                throw ex;
             }
 
         }
@@ -196,25 +207,25 @@ namespace DBSupport
         /// <returns>参数列表</returns>
         public IDataParameter[] CreateParamters(int paramCount)
         {
-            OleDbParameter[] Params = new OleDbParameter[paramCount];
+            NpgsqlParameter[] Params = new NpgsqlParameter[paramCount];
             for (int i = 0; i < paramCount; i++)
             {
-                Params[i] = new OleDbParameter();
+                Params[i] = new NpgsqlParameter();
             }
             return Params;
         }
 
         #endregion
 
-        #region 创建SqlCommand对象并配置其参数列表(私有方法)
+        #region 创建NpgsqlCommand对象并配置其参数列表(私有方法)
 
         /// <summary>
-        /// 创建SqlCommand对象并配置其参数列表
+        /// 创建NpgsqlCommand对象并配置其参数列表
         /// </summary>
         /// <param name="IsProceduceType">命令对象类型标志</param>
         /// <param name="commandText">命令文本</param>
         /// <param name="Params">参数列表</param>
-        /// <returns>配置后的SqlCommand对象</returns>
+        /// <returns>配置后的NpgsqlCommand对象</returns>
         private void SetParamters(bool IsProceduceType, string commandText, object[] Params)
         {
             cmd.Parameters.Clear();
@@ -231,7 +242,7 @@ namespace DBSupport
 
             if (Params != null)
             {
-                OleDbParameter[] p = (OleDbParameter[])Params;
+                NpgsqlParameter[] p = (NpgsqlParameter[])Params;
 
                 if (p.Length > 0)
                 {
@@ -258,18 +269,11 @@ namespace DBSupport
             try
             {
                 Open();
-                cmd.Transaction = cnn.BeginTransaction();
-                string[] strArr = commandText.Split('#');
-                for (int i = 0; i < strArr.Length; i++)
-                {
-                    cmd.CommandText = strArr[i];
-                    cmd.ExecuteNonQuery();
-                }
+                cmd.CommandText = commandText;
 
-                cmd.Transaction.Commit();
-                ret = 1;
+                ret = cmd.ExecuteNonQuery();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
@@ -289,6 +293,7 @@ namespace DBSupport
         public int ExecuteNonQuery(string commandText, object[] Params)
         {
             int ret = -1;
+
             try
             {
                 Open();
@@ -296,7 +301,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteNonQuery();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
@@ -324,7 +329,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteNonQuery();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
@@ -353,14 +358,14 @@ namespace DBSupport
 
                 ret = cmd.ExecuteNonQuery();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -380,20 +385,20 @@ namespace DBSupport
             try
             {
                 cmd.CommandText = commandText;
-                OleDbDataAdapter sda = new OleDbDataAdapter(cmd);
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter(cmd);
 
                 ret = new DataSet();
                 sda.Fill(ret);
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -411,19 +416,19 @@ namespace DBSupport
             {
                 SetParamters(false, commandText, Params);
 
-                OleDbDataAdapter sda = new OleDbDataAdapter(cmd);
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter(cmd);
                 ret = new DataSet();
                 sda.Fill(ret);
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -440,19 +445,19 @@ namespace DBSupport
             {
                 SetParamters(true, strProcduceName, null);
 
-                OleDbDataAdapter sda = new OleDbDataAdapter(cmd);
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter(cmd);
                 ret = new DataSet();
                 sda.Fill(ret);
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -470,32 +475,32 @@ namespace DBSupport
             {
                 SetParamters(true, strProcduceName, Params);
 
-                OleDbDataAdapter sda = new OleDbDataAdapter(cmd);
+                NpgsqlDataAdapter sda = new NpgsqlDataAdapter(cmd);
                 ret = new DataSet();
                 sda.Fill(ret);
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
 
             return ret;
         }
 
         #endregion
 
-        #region 执行查询方法返回SqlDataReader对象
+        #region 执行查询方法返回NpgsqlDataReader对象
 
         /// <summary>
-        /// 执行无参查询SQL返回SqlDataReader对象，失败返回null
+        /// 执行无参查询SQL返回NpgsqlDataReader对象，失败返回null
         /// </summary>
         /// <param name="commandText">无参查询SQL语句</param>
-        /// <returns>SqlDataReader对象，失败返回null</returns>
+        /// <returns>NpgsqlDataReader对象，失败返回null</returns>
         public IDataReader ExecuteDataReader(string commandText)
         {
             IDataReader ret = null;
@@ -507,7 +512,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteReader();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 //Close();
@@ -517,11 +522,11 @@ namespace DBSupport
         }
 
         /// <summary>
-        /// 执行带参查询SQL语句返回SqlDataReader对象，失败返回null
+        /// 执行带参查询SQL语句返回NpgsqlDataReader对象，失败返回null
         /// </summary>
         /// <param name="commandText">SQL语句</param>
         /// <param name="Params">参数列表</param>
-        /// <returns>SqlDataReader对象，失败返回null</returns>
+        /// <returns>NpgsqlDataReader对象，失败返回null</returns>
         public IDataReader ExecuteDataReader(string commandText, object[] Params)
         {
             IDataReader ret = null;
@@ -533,7 +538,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteReader();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 //Close();
@@ -543,10 +548,10 @@ namespace DBSupport
         }
 
         /// <summary>
-        /// 执行无参查询存储过程返回SqlDataReader对象，失败返回null
+        /// 执行无参查询存储过程返回NpgsqlDataReader对象，失败返回null
         /// </summary>
         /// <param name="strProcduceName">存储过程名</param>
-        /// <returns>SqlDataReader对象，失败返回null</returns>
+        /// <returns>NpgsqlDataReader对象，失败返回null</returns>
         public IDataReader ExecuteDataReaderForProcduce(string strProcduceName)
         {
             IDataReader ret = null;
@@ -558,7 +563,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteReader();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 //Close();
@@ -568,11 +573,11 @@ namespace DBSupport
         }
 
         /// <summary>
-        /// 执行有参查询存储过程返回SqlDataReader对象，失败返回null
+        /// 执行有参查询存储过程返回NpgsqlDataReader对象，失败返回null
         /// </summary>
         /// <param name="strProcduceName">存储过程名</param>
         /// <param name="Params">参数列表</param>
-        /// <returns>SqlDataReader对象，失败返回null</returns>
+        /// <returns>NpgsqlDataReader对象，失败返回null</returns>
         public IDataReader ExecuteDataReaderForProcduce(string strProcduceName, object[] Params)
         {
             IDataReader ret = null;
@@ -584,7 +589,7 @@ namespace DBSupport
 
                 ret = cmd.ExecuteReader();
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 //Close();
@@ -614,14 +619,14 @@ namespace DBSupport
                 object obj = cmd.ExecuteScalar();
                 ret = obj == null ? "" : obj;
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
 
             return ret;
         }
@@ -644,14 +649,14 @@ namespace DBSupport
                 object obj = cmd.ExecuteScalar();
                 ret = obj == null ? "" : obj;
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
 
             return ret;
         }
@@ -673,14 +678,14 @@ namespace DBSupport
                 object obj = cmd.ExecuteScalar();
                 ret = obj == null ? "" : obj;
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
 
             return ret;
         }
@@ -703,14 +708,14 @@ namespace DBSupport
                 object obj = cmd.ExecuteScalar();
                 ret = obj == null ? "" : obj;
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
 
             return ret;
         }
@@ -732,7 +737,7 @@ namespace DBSupport
             {
                 Open();
                 cmd.CommandText = commandText;
-                OleDbDataReader sqr = cmd.ExecuteReader();
+                NpgsqlDataReader sqr = cmd.ExecuteReader();
                 while (sqr.Read())
                 {
                     IList temp = new ArrayList();
@@ -743,15 +748,15 @@ namespace DBSupport
                     ret.Add(temp);
                 }
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally 
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -770,7 +775,7 @@ namespace DBSupport
                 Open();
                 SetParamters(false, commandText, Params);
 
-                OleDbDataReader sqr = cmd.ExecuteReader();
+                NpgsqlDataReader sqr = cmd.ExecuteReader();
                 while (sqr.Read())
                 {
                     IList temp = new ArrayList();
@@ -781,15 +786,15 @@ namespace DBSupport
                     ret.Add(temp);
                 }
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -807,7 +812,7 @@ namespace DBSupport
                 Open();
                 SetParamters(true, strProcduceName, null);
 
-                OleDbDataReader sqr = cmd.ExecuteReader();
+                NpgsqlDataReader sqr = cmd.ExecuteReader();
                 while (sqr.Read())
                 {
                     IList temp = new ArrayList();
@@ -818,15 +823,15 @@ namespace DBSupport
                     ret.Add(temp);
                 }
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
@@ -845,7 +850,7 @@ namespace DBSupport
                 Open();
                 SetParamters(true, strProcduceName, Params);
 
-                OleDbDataReader sqr = cmd.ExecuteReader();
+                NpgsqlDataReader sqr = cmd.ExecuteReader();
                 while (sqr.Read())
                 {
                     IList temp = new ArrayList();
@@ -856,24 +861,106 @@ namespace DBSupport
                     ret.Add(temp);
                 }
             }
-            catch (OleDbException e)
+            catch (NpgsqlException e)
             {
                 errorMessage = e.Message;
                 ret = null;
             }
-            finally
-            {
-                Close();
-            }
+            //finally
+            //{
+            //    Close();
+            //}
             return ret;
         }
 
         #endregion
 
-        #region
-        public void BulkToDB(DataTable dt, string tbname)
-        { 
+        #region SqlServerBulk导入
+        /// <summary>
+        /// 执行sqlserverBulk导入
+        /// </summary>
+        /// <param name="dt">导入的数据列表</param>
+        /// <param name="tbname">导入的数据库名称</param>
+        public void BulkToDB1(DataTable dt, string tbname)
+        {
+            //NpgsqlConnection bulkCopy = new NpgsqlConnection(cnn);
+            //bulkCopy.DestinationTableName = tbname;
+            //bulkCopy.BatchSize = dt.Rows.Count;
+            //Console.WriteLine("bulkcopy记录数：" + bulkCopy.BatchSize + tbname);
+            //bulkCopy.BulkCopyTimeout = 3000;//设置导入时长3分钟
+            //try
+            //{
+            //    Open();
+            //    if (dt != null && dt.Rows.Count != 0)
+            //        bulkCopy.WriteToServer(dt);
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw ex;
+            //}
+            //finally
+            //{
+            //    Close();
+            //    if (bulkCopy != null)
+            //        bulkCopy.Close();
+            //}
 
+
+
+        }
+
+        /// <summary>
+        /// 通过PostgreSQL连接把dataTable中的数据整块填充到数据库对应的数据表中
+        /// 注意，该函数不负责NpgsqlConnection的创建、打开以及关闭
+        /// </summary>
+        /// <param name="conn">PostgreSQL连接</param>
+        /// <param name="dataTable">数据表</param>
+        public void BulkToDB(DataTable dataTable, string tbname)
+        {
+            var commandFormat = string.Format(CultureInfo.InvariantCulture, "COPY {0} FROM STDIN BINARY", tbname.ToLower());
+            try
+            {
+                //** 测试示例
+                //dataTable.Clear();
+                //DataRow dr_rivl = dataTable.NewRow();
+                //dr_rivl[1] = "1";
+                //dr_rivl[2] = "555";
+                //dr_rivl[3] = DateTime.Now;
+                //dr_rivl[4] = "5555";
+                //dr_rivl[5] = 0.2;
+                //dr_rivl[6] = 0;
+                //dr_rivl[7] = DateTime.Now;
+
+                //dr_rivl[8] = DateTime.Now;    //! 峰值流量时间
+                //dr_rivl[9] = 5.6;
+                //dr_rivl[10] = "2021-08-08 00:00";
+                //dr_rivl[12] = 33;
+                //dataTable.Rows.Add(dr_rivl);
+                //** 测试示例
+                Open();
+                //if (dataTable != null && dataTable.Rows.Count != 0)
+                //{
+                //    using (var writer = cnn.BeginBinaryImport(commandFormat))
+                //    {
+                //        foreach (DataRow item in dataTable.Rows) {
+                //            writer.WriteRow(item.ItemArray);
+                //        }
+                //        writer.Complete();
+                //    }
+
+                //}
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                Close();
+                if (cnn != null)
+                    cnn.Close();
+            }
+            
         }
         #endregion
     }

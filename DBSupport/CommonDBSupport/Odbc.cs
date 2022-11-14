@@ -54,14 +54,16 @@ namespace DBSupport
             }
 		}
 
-		#endregion
+        public DataAccessFactory.DBType SqlDBType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-		#region 构造函数
+        #endregion
 
-		/// <summary>
+        #region 构造函数
+
+        /// <summary>
         /// 无参构造
-		/// </summary>
-		public Odbc()
+        /// </summary>
+        public Odbc()
 		{
 			cnn = new OdbcConnection();
             cmd = new OdbcCommand();

@@ -20,7 +20,7 @@ namespace DBSupport
         /// <summary>
         /// 数据库类型枚举
         /// </summary>
-        public enum DBType { MsSql = 0, Oracle, Odbc, SqlServer, Access, SqLite }
+        public enum DBType { MsSql = 0, Oracle, Odbc, SqlServer, Access, SqLite, PGSQL }
 
         /// <summary>
         /// 创建数据库访问对象
@@ -80,6 +80,8 @@ namespace DBSupport
 
                 case DBType.SqLite:
                     return null;
+                case DBType.PGSQL:
+                    return new PostGreSQL(connectString);
 
                 default: return null;
             }

@@ -58,6 +58,8 @@ namespace DBSupport
             }
         }
 
+        public DataAccessFactory.DBType SqlDBType { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         #endregion
 
         #region ¹¹Ôìº¯Êý

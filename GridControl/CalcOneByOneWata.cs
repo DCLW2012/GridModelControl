@@ -67,7 +67,7 @@ namespace GridControl
 
         //根据数据库中配置的 台风场次信息表进行遍历计算
         
-        public static bool runBySingleCCUseDatTable()
+        public static bool runBySingleCCUseDatTable(string fullpath, int d)
         {
             //!! 场次信息回传
             // 更新execpath的值
@@ -81,15 +81,7 @@ namespace GridControl
             //! 设置计时器，当前场次时间
             Stopwatch totalFolderDat = new Stopwatch();
             totalFolderDat.Start();
-            if (!Directory.Exists(HookHelper.rainSRCDirectory))
-            {
-                Console.WriteLine(string.Format("{0}台风场dat降雨目录不存在  ", HookHelper.rainSRCDirectory) + DateTime.Now);
-                return false;
-            }
 
-            FileInfo[] fInfo = GenRainTileByCSharp.GetRaindatList();
-            int datnum = fInfo.Length;
-            for (int d = 0; d < datnum; ++d)
             {
                 int perGroupCount = 0;
                 int perWaitCount = 0;
@@ -100,7 +92,9 @@ namespace GridControl
                 //! 设置计时器，当前场次时间
                 Stopwatch oneDat = new Stopwatch();
                 oneDat.Start();
-                string curDatFullname = fInfo[d].FullName;
+
+                
+                string curDatFullname = fullpath;
 
                 Console.WriteLine(string.Format("****************************降雨目录下第{0}场*********A************", d + 1) + DateTime.Now);
                 Console.WriteLine(string.Format("*****************************************************AAA***********") + DateTime.Now);
@@ -135,7 +129,7 @@ namespace GridControl
                     {
                         //Console.WriteLine(string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now);
                         HookHelper.Log += string.Format("{0}区域降雨切片执行失败  ", HookHelper.computerNode) + DateTime.Now + ";\r\n";
-                        continue;
+                        return false;
                     }
                     else
                     {
@@ -463,22 +457,22 @@ namespace GridControl
                     CSVData.addData(CSVData.GetRowNumber(), "单场台风时长", oneDatTime.TotalMilliseconds / 1000);
                     CSVData.addData(CSVData.GetRowNumber(), "单场计算时长", oneDatTime.TotalMilliseconds / 1000 -
                         (double)CSVData.LogDataTable.Rows[CSVData.GetRowNumber()]["切片时长"]);
-                }
+                } 
 
             }
 
-            Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now);
-            HookHelper.Log += string.Format("{0}场台风场次逐场次流域计算完成  ", datnum) + DateTime.Now + ";\r\n";
-            Console.WriteLine(string.Format("*********(-_-) **************{0}场台风场次逐场次流域计算完成*******..~^_^~..***********", datnum) + DateTime.Now);
-            Console.WriteLine(string.Format("*********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
-            Console.WriteLine(string.Format("*********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
-            Console.WriteLine(string.Format("********(-_-) **************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
-            Console.WriteLine(string.Format("********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..*********", datnum) + DateTime.Now);
-            Console.WriteLine(string.Format("********(-_-) ****************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", datnum) + DateTime.Now);
+            Console.WriteLine(string.Format("{0}场台风场次逐场次流域计算完成  ", fullpath) + DateTime.Now);
+            HookHelper.Log += string.Format("{0}场台风场次逐场次流域计算完成  ", fullpath) + DateTime.Now + ";\r\n";
+            Console.WriteLine(string.Format("*********(-_-) **************{0}场台风场次逐场次流域计算完成*******..~^_^~..***********", fullpath) + DateTime.Now);
+            Console.WriteLine(string.Format("*********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", fullpath) + DateTime.Now);
+            Console.WriteLine(string.Format("*********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", fullpath) + DateTime.Now);
+            Console.WriteLine(string.Format("********(-_-) **************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", fullpath) + DateTime.Now);
+            Console.WriteLine(string.Format("********(-_-) ***************{0}场台风场次逐场次流域计算完成*******..~^_^~..*********", fullpath) + DateTime.Now);
+            Console.WriteLine(string.Format("********(-_-) ****************{0}场台风场次逐场次流域计算完成*******..~^_^~..**********", fullpath) + DateTime.Now);
             totalFolderDat.Stop();
             TimeSpan totalFolderDatTime = totalFolderDat.Elapsed;
-            Console.WriteLine(string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000));
-            HookHelper.Log += string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, datnum, totalFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
+            Console.WriteLine(string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, fullpath, totalFolderDatTime.TotalMilliseconds / 1000));
+            HookHelper.Log += string.Format("{0}降雨目录下{1}个降雨文件从降雨切片->bat信息更新->等待网格流域计算，总耗时：{2}秒", HookHelper.rainSRCDirectory, fullpath, totalFolderDatTime.TotalMilliseconds / 1000) + DateTime.Now + ";\r\n";
             return true;
         }
         public static bool runBySingleCC()

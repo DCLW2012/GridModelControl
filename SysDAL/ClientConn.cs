@@ -19,6 +19,9 @@ namespace SysDAL
         //！1\创建个map容器，key:value（数据库名称：链接）
         public static Dictionary<string, IDataAccess> m_dataBaseConnects = new Dictionary<string, IDataAccess>();
 
+        //第三方web交互数据库链接
+        public static IDataAccess m_thirddataAccess;
+
         //! 数据库链接对应的要处理的表名列表
         //！3\创建个map容器，key:value（数据库名称：数据库表名map容器,包含2的部分）
         // 容器中包含子容器，子容器存储类型对应的表名（创建个map容器，key:value（表类型：数据库表名）
@@ -52,6 +55,22 @@ namespace SysDAL
                 m_dataBaseConnects.Add(dbName, DataAccess);
             }
         }
+
+        public static string GetDataBaseName(string client)
+        {
+            string r = Regex.Match(client, @"Data Source=([^;]+)").Groups[1].Value;
+            DataBaseName = r.Split('.')[0];
+
+            return DataBaseName;
+        }
+        //1 创建第三方数据库链接
+        public static void PraseThirdWebConfig()
+        {
+            string oledbclient = ConfigurationManager.AppSettings["thirdwebfront"].ToString();
+            m_thirddataAccess = DataAccessFactory.CreateDataAccess(DataAccessFactory.DBType.PGSQL, oledbclient);
+            m_thirddataAccess.SqlDBType = DataAccessFactory.DBType.PGSQL;
+        }
+        
 
         //! 解析了数据库的链接后，根据数据库的code名，找该库对应的要处理的数据类型列表
         public static void PraseTableTypeConfig()
