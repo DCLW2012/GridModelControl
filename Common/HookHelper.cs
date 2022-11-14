@@ -35,6 +35,9 @@ namespace Common
         public static string tilemehtod { get; set; }
 
         public static bool isLocatTest { get; set; }
+
+        //是否使用数据库表中的场次目录信息进行计算，必须分辨率是固定的或者表里指定
+        public static bool isUseDatTable { get; set; }
         public static string curProvince { get; set; }
         
         public static string computerNode { get; set; }

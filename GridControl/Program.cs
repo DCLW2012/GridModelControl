@@ -100,7 +100,15 @@ namespace GridControl
                         //默认是使用原来的流程解析dat文件
                         if (HookHelper.raintype.ToUpper().Equals("DAT"))
                         {
-                            CalcOneByOneWata.runBySingleCC();
+                            if (HookHelper.isUseDatTable)
+                            {
+                                CalcOneByOneWata.runBySingleCCUseDatTable();
+                            }
+                            else
+                            {
+                                CalcOneByOneWata.runBySingleCC();
+                            }
+                            
                         }
                         else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
                         {
@@ -327,7 +335,21 @@ namespace GridControl
                 }
 
             }
-            
+
+            //是否使用数据库表中的场次目录信息进行计算，必须分辨率是固定的或者表里指定
+            HookHelper.isUseDatTable = false;
+            if (args.Contains("-isUseDatTable"))
+            {
+                int index = args.ToList().IndexOf("-isUseDatTable");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.isUseDatTable = bool.Parse(args[index + 1]);
+                }
+
+            }
+
 
             HookHelper.updatebyfile = true;
             if (args.Contains("-updatebyfile"))
