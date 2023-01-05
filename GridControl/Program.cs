@@ -129,7 +129,7 @@ namespace GridControl
                         {
                             isErrorunits = 1;
                         }
-                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = {1}", isErrorunits, datname);
+                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunits, datname);
                         Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
                     }
 
