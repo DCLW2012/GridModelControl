@@ -70,7 +70,7 @@ namespace GridControl
                                         grid_taifeng_filestatus_baseinfo
                                     WHERE
 
-                                        iscalcfinish = 0
+                                        iscalcfinish = 1
                                     ORDER BY
                                     ID ASC";
                     DataTable taifenginfoForcalc = Dal_ThirdWeb.GetDataBySql(taifenginfSql);
@@ -84,7 +84,7 @@ namespace GridControl
                     for (int d = 0; d < datnum; ++d)
                     {
                         string fullpath = taifenginfoForcalc.Rows[d]["filepath"].ToString();
-                        string datname = taifenginfoForcalc.Rows[d]["datname"].ToString();
+                        string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
                         int datID = int.Parse(taifenginfoForcalc.Rows[d]["ID"].ToString());
                         for (int i = 0; i < nodes.Length; ++i)
                         {
@@ -123,14 +123,14 @@ namespace GridControl
                         }
 
                         //更新场次名称
-                        //更新本场次结算状态 为1
+                        //更新本场次结算状态 为2
                         bool iscurdatErrorExist = ClientConn.IsValidDat(datname);
                         int isErrorunits = 0;
                         if (iscurdatErrorExist)
                         {
                             isErrorunits = 1;
                         }
-                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 1,iserror = {1} where ID = {0}", datID, isErrorunits);
+                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {1} where ID = {0}", datID, isErrorunits);
                         Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
                     }
 
