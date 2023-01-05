@@ -85,7 +85,6 @@ namespace GridControl
                     {
                         string fullpath = taifenginfoForcalc.Rows[d]["filepath"].ToString();
                         string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
-                        int datID = int.Parse(taifenginfoForcalc.Rows[d]["ID"].ToString());
                         for (int i = 0; i < nodes.Length; ++i)
                         {
                             HookHelper.computerNode = nodes[i];
@@ -130,7 +129,7 @@ namespace GridControl
                         {
                             isErrorunits = 1;
                         }
-                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {1} where ID = {0}", datID, isErrorunits);
+                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = {1}", isErrorunits, datname);
                         Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
                     }
 
