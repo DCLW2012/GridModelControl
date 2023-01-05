@@ -72,7 +72,7 @@ namespace GridControl
 
                                         iscalcfinish = 1
                                     ORDER BY
-                                    ID ASC";
+                                    inputtime ASC";
                     DataTable taifenginfoForcalc = Dal_ThirdWeb.GetDataBySql(taifenginfSql);
 
                     if (taifenginfoForcalc.Rows.Count == 0)
