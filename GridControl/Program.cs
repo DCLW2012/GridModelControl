@@ -84,6 +84,14 @@ namespace GridControl
                     for (int d = 0; d < datnum; ++d)
                     {
                         string fullpath = taifenginfoForcalc.Rows[d]["filepath"].ToString();
+
+                        fullpath = HookHelper.rainSRCDirectory + fullpath.Replace("/", "\\\\");
+
+                        if (!File.Exists(fullpath))
+                        {
+                            continue;
+                        }
+
                         string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
                         for (int i = 0; i < nodes.Length; ++i)
                         {
