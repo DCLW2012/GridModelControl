@@ -511,7 +511,15 @@ namespace GridControl
                 rainSRCFBL = float.Parse(gridlist[2]);
             }
 
+            //动态根据文件名修正行列数2023021608-24-r1040-c1600-d6.dat
             string datPureName = System.IO.Path.GetFileNameWithoutExtension(curDatFullname);
+            string[] namelist = datPureName.Split('-');
+            if (namelist.Length == 5 && namelist[0].Length == 10)
+            {
+                gridrow = int.Parse(namelist[2].Replace("r", ""));
+                gridcol = int.Parse(namelist[3].Replace("c", ""));
+                rainSRCFBL = float.Parse(namelist[4].Replace("d", "")) / 100;
+            }
 
             //！解析当前dat文件
             //！创建数据存储结构
