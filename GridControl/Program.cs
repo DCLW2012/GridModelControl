@@ -86,13 +86,18 @@ namespace GridControl
                         string fullpath = taifenginfoForcalc.Rows[d]["filepath"].ToString();
 
                         fullpath = HookHelper.rainSRCDirectory + fullpath.Replace("/", "\\\\");
-
+                        string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
                         if (!File.Exists(fullpath))
                         {
+                            //既然文件不存在在本地磁盘中，就要标记库中状态，然接口让查询到计算状态完成了
+                            Console.WriteLine(string.Format("数据库表{0}中存在有效的dat降雨场次，但是没有在本地配置的磁盘目录下找到该文件  ", "grid_taifeng_filestatus_baseinfo") + DateTime.Now);
+                            int isErrorunitst = 1;
+                            String sqldatstatusBaseInfot = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunitst, datname);
+                            Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfot);
                             continue;
                         }
 
-                        string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
+                        
                         for (int i = 0; i < nodes.Length; ++i)
                         {
                             HookHelper.computerNode = nodes[i];
@@ -230,7 +235,7 @@ namespace GridControl
                 {
                     Console.Read();
                 }
-
+                WriteLog.WriteLogMethod(HookHelper.Log);
             }
             catch (Exception ex){
                 Console.WriteLine(ex);
