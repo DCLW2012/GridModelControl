@@ -14,6 +14,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Common
 {
@@ -108,24 +109,37 @@ namespace Common
          */
         public static void KillProcessAndChildren(int pid)
         {
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
-            ManagementObjectCollection moc = searcher.Get();
-            foreach (ManagementObject mo in moc)
+            //判断是windows操作系统
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
+                ManagementObjectCollection moc = searcher.Get();
+                foreach (ManagementObject mo in moc)
+                {
+                    KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
+                }
+                try
+                {
+                    Process proc = Process.GetProcessById(pid);
+                    Console.WriteLine(string.Format("kill process by id {0}!", pid));
+                    proc.Kill();
+                }
+                catch (Exception ex)
+                {
+                    /* process already exited */
+                    //Console.WriteLine(string.Format("process already exited") );
+                    HookHelper.Log += string.Format("process already exited，进程已自动关闭") + ex + "," + DateTime.Now + ";\r\n";
+                }
             }
-            try
+
+            //如果是 linux系统
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                Process proc = Process.GetProcessById(pid);
-                Console.WriteLine(string.Format("kill process by id {0}!", pid));
-                proc.Kill();
+
             }
-            catch (Exception ex)
-            {
-                /* process already exited */
-                //Console.WriteLine(string.Format("process already exited") );
-                HookHelper.Log += string.Format("process already exited，进程已自动关闭") + ex + "," + DateTime.Now + ";\r\n";
-            }
+
+
+
         }
     }
 }

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GridControl": {
+      "commandName": "Project",
+      "commandLineArgs": "-method wata -processnum 32 -isGridout true -isLocatTest true -isCloseCMD true -province henan -isUseDatTable false"
+    }
+  }
+}
