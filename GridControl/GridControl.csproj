@@ -76,9 +76,4 @@
   <ItemGroup>
     <Compile Remove="BatchCalculateTest.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>
