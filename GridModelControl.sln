@@ -1,13 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysDAL", "SysDAL\SysDAL.csproj", "{9DD4AE56-6E3E-49D9-883A-0DBEE7DF209E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysModel", "SysModel\SysModel.csproj", "{8B53B84F-F6C8-4DE8-899F-B1F035B462EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{A0A049BC-DB9A-4D98-831B-6AE9C779C482}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9D978A48-7556-4AEA-81F1-2F183A3E0157} = {9D978A48-7556-4AEA-81F1-2F183A3E0157}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GridControl", "GridControl\GridControl.csproj", "{1B01BA3E-CB60-4430-AC3E-A63956257E28}"
 EndProject
