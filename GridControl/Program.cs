@@ -10,6 +10,7 @@ using System.IO;
 using System.Configuration;
 using System.Diagnostics;
 using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace GridControl
 {
@@ -17,6 +18,8 @@ namespace GridControl
     {
         static void Main(string[] args)
         {
+            HookHelper.GetAppconfig();
+
             //!!删除指定目录下的所有的txt文件日志文件
             WriteLog.DeleteLog();
 
@@ -39,7 +42,7 @@ namespace GridControl
             //CSVLog
             string serverIP = Program.GetLocalIP(HookHelper.serachIP);
             string hostName = Dns.GetHostName();
-            string path = ConfigurationManager.AppSettings["CSVLogPath"].ToString()
+            string path = HookHelper.AppSettings["CSVLogPath"].ToString()
                 + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".csv";
             if (HookHelper.useCSVLOG.Equals("true"))
             {
@@ -285,32 +288,32 @@ namespace GridControl
             Dictionary<string, string> computerValues = ClientConn.m_computerValues;
 
             //! 台风数据文件目录
-            HookHelper.rainSRCDirectory = ConfigurationManager.AppSettings["rainSRC"].ToString();
+            HookHelper.rainSRCDirectory = HookHelper.AppSettings["rainSRC"].ToString();
 
-            HookHelper.raindataForPython = ConfigurationManager.AppSettings["raindataForPython"].ToString();
+            HookHelper.raindataForPython = HookHelper.AppSettings["raindataForPython"].ToString();
 
-            HookHelper.gridsize = ConfigurationManager.AppSettings["gridsize"].ToString();
-            HookHelper.useCSVLOG = ConfigurationManager.AppSettings["useCSVLOG"].ToString();
+            HookHelper.gridsize = HookHelper.AppSettings["gridsize"].ToString();
+            HookHelper.useCSVLOG = HookHelper.AppSettings["useCSVLOG"].ToString();
 
             //等待次数
-            HookHelper.waitcount = int.Parse( ConfigurationManager.AppSettings["waitcount"].ToString());
-            if (ConfigurationManager.AppSettings["waitcount"] != null)
+            HookHelper.waitcount = int.Parse( HookHelper.AppSettings["waitcount"].ToString());
+            if (HookHelper.AppSettings["waitcount"] != null)
             {
-                HookHelper.waitcount = int.Parse(ConfigurationManager.AppSettings["waitcount"].ToString());
+                HookHelper.waitcount = int.Parse(HookHelper.AppSettings["waitcount"].ToString());
             }else
             {
                 HookHelper.waitcount = 60;
             }
 
-            if (ConfigurationManager.AppSettings["thirdwebfront"] != null)
+            if (HookHelper.AppSettings["thirdwebfront"] != null)
             {
 
             }
 
-            HookHelper.rubbatForDOS = ConfigurationManager.AppSettings["rubbatForDOS"].ToString();
-            HookHelper.computerNode = ConfigurationManager.AppSettings["computerNode"].ToString();
+            HookHelper.rubbatForDOS = HookHelper.AppSettings["rubbatForDOS"].ToString();
+            HookHelper.computerNode = HookHelper.AppSettings["computerNode"].ToString();
             //!根据数据库中配置的当前ip对应的node值，更新该选项
-            HookHelper.serachIP = ConfigurationManager.AppSettings["searchIP"].ToString();
+            HookHelper.serachIP = HookHelper.AppSettings["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
 
             //本地模式下，忽略主机ip查询

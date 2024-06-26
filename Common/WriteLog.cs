@@ -54,9 +54,9 @@ namespace Common
         public static void DeleteLog()
         {
             int logNumExpire = 30;
-            if (ConfigurationManager.AppSettings["logNumExpire"] != null)
+            if (HookHelper.AppSettings["logNumExpire"] != null)
             {
-                logNumExpire = int.Parse(ConfigurationManager.AppSettings["logNumExpire"].ToString());
+                logNumExpire = int.Parse(HookHelper.AppSettings["logNumExpire"].ToString());
             }
 
             string path = Environment.CurrentDirectory + "//Log//";//文件存放地址;

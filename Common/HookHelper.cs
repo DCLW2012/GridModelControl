@@ -11,6 +11,9 @@ using System.Collections.Specialized;
 using System.Xml;
 using System.Management;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using System.Threading;
 
 namespace Common
 {
@@ -35,6 +38,8 @@ namespace Common
         public static string tilemehtod { get; set; }
 
         public static bool isLocatTest { get; set; }
+
+        public static IConfigurationRoot AppSettings { get; set; }
 
         //是否使用数据库表中的场次目录信息进行计算，必须分辨率是固定的或者表里指定
         public static bool isUseDatTable { get; set; }
@@ -61,6 +66,18 @@ namespace Common
         public static string useCSVLOG { get; set; }
         public static int waitcount { get; set; }
         public static string processModel { get; set; }
+
+        public static void GetAppconfig()
+        {
+            var builder = new ConfigurationBuilder()
+            .AddXmlFile("app.config", optional: true, reloadOnChange: true);
+
+            AppSettings = builder.Build();
+             
+            string settingValue = AppSettings["appSettings:logNumExpire"];
+            Console.WriteLine($"Setting1: {settingValue}");
+
+        }
 
         /**
          * 传入参数：父进程id
