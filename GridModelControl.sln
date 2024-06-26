@@ -1,20 +1,20 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysDAL", "SysDAL\SysDAL.csproj", "{9DD4AE56-6E3E-49D9-883A-0DBEE7DF209E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysDAL", "SysDAL\SysDAL.csproj", "{9DD4AE56-6E3E-49D9-883A-0DBEE7DF209E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SysModel", "SysModel\SysModel.csproj", "{8B53B84F-F6C8-4DE8-899F-B1F035B462EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysModel", "SysModel\SysModel.csproj", "{8B53B84F-F6C8-4DE8-899F-B1F035B462EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{A0A049BC-DB9A-4D98-831B-6AE9C779C482}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{A0A049BC-DB9A-4D98-831B-6AE9C779C482}"
 	ProjectSection(ProjectDependencies) = postProject
 		{9D978A48-7556-4AEA-81F1-2F183A3E0157} = {9D978A48-7556-4AEA-81F1-2F183A3E0157}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GridControl", "GridControl\GridControl.csproj", "{1B01BA3E-CB60-4430-AC3E-A63956257E28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GridControl", "GridControl\GridControl.csproj", "{1B01BA3E-CB60-4430-AC3E-A63956257E28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBSupport", "DBSupport\DBSupport.csproj", "{9D978A48-7556-4AEA-81F1-2F183A3E0157}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DBSupport", "DBSupport\DBSupport.csproj", "{9D978A48-7556-4AEA-81F1-2F183A3E0157}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{416DCFB2-C4C4-4572-9710-4969013CEB1C}"
 	ProjectSection(SolutionItems) = preProject

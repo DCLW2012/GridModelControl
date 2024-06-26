@@ -43,8 +43,6 @@ namespace DBSupport
                 case DBType.SqlServer:
                     return new SqlServer();
 
-                case DBType.Access:
-                    return new Access();
 
                 case DBType.SqLite:
                     return null;
@@ -74,9 +72,6 @@ namespace DBSupport
 
                 case DBType.SqlServer:
                     return new SqlServer(connectString);
-
-                case DBType.Access:
-                    return new Access(connectString);
 
                 case DBType.SqLite:
                     return null;

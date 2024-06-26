@@ -71,3 +71,9 @@ WHERE
          T1.UNITCD IN (
         'whf60_1_5'
 )
+
+### 升级为netcore项目 2024-06-26
+
+#### dotnet tool install -g upgrade-assistant
+
+#### upgrade-assistant upgrade
