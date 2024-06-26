@@ -54,22 +54,27 @@ namespace Common
         public static void DeleteLog()
         {
             int logNumExpire = 30;
-            if (HookHelper.AppSettings["logNumExpire"] != null)
+            if (HookHelper.AppSettings.Build()["logNumExpire"] != null)
             {
-                logNumExpire = int.Parse(HookHelper.AppSettings["logNumExpire"].ToString());
+                logNumExpire = int.Parse(HookHelper.AppSettings.Build()["logNumExpire"].ToString());
             }
 
             string path = Environment.CurrentDirectory + "//Log//";//文件存放地址;
             string pattern = "*.txt";
-            string[] strFileName = Directory.GetFiles(path, pattern);
-            //! 日志文件个数超过多少条，执行删除
-            if (strFileName.Length > logNumExpire)
+            //判断path路径是否存在
+            if (Directory.Exists(path))
             {
-                foreach (var item in strFileName)
+                string[] strFileName = Directory.GetFiles(path, pattern);
+                //! 日志文件个数超过多少条，执行删除
+                if (strFileName.Length > logNumExpire)
                 {
-                    File.Delete(item);
+                    foreach (var item in strFileName)
+                    {
+                        File.Delete(item);
+                    }
                 }
             }
+            
         }
     }
 }

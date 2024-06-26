@@ -39,7 +39,9 @@ namespace Common
 
         public static bool isLocatTest { get; set; }
 
-        public static IConfigurationRoot AppSettings { get; set; }
+        public static ConfigurationBuilder AppSettings { get; set; }
+        public static List<ConnectInfo> ConnectInfoList { get; set; }
+        
 
         //是否使用数据库表中的场次目录信息进行计算，必须分辨率是固定的或者表里指定
         public static bool isUseDatTable { get; set; }
@@ -69,14 +71,35 @@ namespace Common
 
         public static void GetAppconfig()
         {
-            var builder = new ConfigurationBuilder()
-            .AddXmlFile("app.config", optional: true, reloadOnChange: true);
+            //初始化参数信息
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-            AppSettings = builder.Build();
-             
-            string settingValue = AppSettings["appSettings:logNumExpire"];
-            Console.WriteLine($"Setting1: {settingValue}");
+            AppSettings = (ConfigurationBuilder)builder;
 
+            //获取配置文件中的connectionStrings 段配置信息
+
+            IConfigurationSection connectionStringSec = AppSettings.Build().GetSection("connectionStrings");
+            //遍历connectionStringSec中的子json对象
+            ConnectInfoList = new List<ConnectInfo>();
+            foreach (var item in connectionStringSec.GetChildren())
+            {
+                //获取子json对象的key和value
+                string key = item.Key;
+
+                //获取item中的 三个section的值 connectionString name rainTileFolder
+                string connectionString = item.GetSection("connectionString").Value;
+                string name = item.GetSection("name").Value;
+                string rainTileFolder = item.GetSection("rainTileFolder").Value;
+
+                //将获取的值封装到ConnectInfo对象中
+                ConnectInfo connectInfo = new ConnectInfo(name, connectionString, rainTileFolder);
+
+                //将ConnectInfo对象添加到集合中
+                ConnectInfoList.Add(connectInfo);
+            }
+
+            int aa = 9;
         }
 
         /**

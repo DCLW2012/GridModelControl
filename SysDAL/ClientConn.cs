@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Configuration;
 using System.Data;
+using SysModel;
+using Microsoft.Extensions.Configuration;
 
 namespace SysDAL
 {
@@ -22,6 +24,9 @@ namespace SysDAL
         //第三方web交互数据库链接
         public static IDataAccess m_thirddataAccess;
 
+        public static List<ConnectInfo> ConnectInfoList { get; set; }
+        public static ConfigurationBuilder AppSettings { get; set; }
+
         //! 数据库链接对应的要处理的表名列表
         //！3\创建个map容器，key:value（数据库名称：数据库表名map容器,包含2的部分）
         // 容器中包含子容器，子容器存储类型对应的表名（创建个map容器，key:value（表类型：数据库表名）
@@ -35,21 +40,22 @@ namespace SysDAL
         //! 根据config中的数据库链接，取出name，建立链接，存储到map中
         public static void PraseDataBaseConfig(bool isAllConnect)
         {
-            int num = System.Configuration.ConfigurationManager.ConnectionStrings.Count;
-            for(int i = 1; i != num; ++i)
+            int num = ConnectInfoList.Count;
+            //！遍历容器
+            foreach (ConnectInfo info in ConnectInfoList)
             {
                 //!! 取出name
-                String dbName = System.Configuration.ConfigurationManager.ConnectionStrings[i].Name;
+                String dbName = info.Name;
 
                 //！2.建立链接(根据数据库类型，建立链接，目前默认为sqlserver)
-                string oledbclient = System.Configuration.ConfigurationManager.ConnectionStrings[dbName].ToString();
+                string oledbclient = info.ConnectionString;
                 IDataAccess DataAccess = null;
 
                 if (isAllConnect || dbName.Equals("china"))
                 {
                     DataAccess = DataAccessFactory.CreateDataAccess(DataAccessFactory.DBType.SqlServer, oledbclient);
                 }
-                
+
 
                 //3.存储到map容器中
                 m_dataBaseConnects.Add(dbName, DataAccess);
@@ -66,46 +72,36 @@ namespace SysDAL
         //1 创建第三方数据库链接
         public static void PraseThirdWebConfig()
         {
-            string oledbclient = ConfigurationManager.AppSettings["thirdwebfront"].ToString();
+            string oledbclient = AppSettings.Build()["thirdwebfront"].ToString();
             m_thirddataAccess = DataAccessFactory.CreateDataAccess(DataAccessFactory.DBType.PGSQL, oledbclient);
             m_thirddataAccess.SqlDBType = DataAccessFactory.DBType.PGSQL;
         }
         
+        //初始化函数
+        public static void Init(ConfigurationBuilder _AppSettings, List<ConnectInfo> _ConnectInfoList)
+        {
+            AppSettings = _AppSettings;
+            ConnectInfoList = _ConnectInfoList;
+        }
 
         //! 解析了数据库的链接后，根据数据库的code名，找该库对应的要处理的数据类型列表
         public static void PraseTableTypeConfig()
         {
-            int num = m_dataBaseConnects.Count;
-            foreach (var curDB in m_dataBaseConnects) 
+            foreach (ConnectInfo info in ConnectInfoList)
             {
-                //！！取出当前key值
-                string keyString = curDB.Key;
-
-                //! 数据库表类型对应的表名
-                //！2\创建个map容器，key:value（表类型：数据库表名）
-                Dictionary<string, string> tableTypes = new Dictionary<string, string>();
-
-                // 获取同名对应的section配置文件中的值.
-                System.Collections.Specialized.NameValueCollection appSettingSection =
-                  (System.Collections.Specialized.NameValueCollection)ConfigurationManager.GetSection(keyString);
-                  if(appSettingSection == null)
-                  {
-                      continue;
-                  }
-
-                //！遍历table，存储起来
-                int tableNum = appSettingSection.Count;
-                for(int i = 0; i != tableNum; ++i)
+                String name = info.Name;
+                String rainTilepath = info.RainTileFolder;
+                if (!String.IsNullOrEmpty(rainTilepath))
                 {
-                    //!当前表名类型
-                    string tableTypeName = appSettingSection.AllKeys[i];
-                    string value = appSettingSection.Get(tableTypeName);
-                    tableTypes.Add(tableTypeName, value);
-                }
+                    //！2\创建个map容器，key:value（表类型：数据库表名）
+                    Dictionary<string, string> tableTypes = new Dictionary<string, string>();
+                    tableTypes.Add("rainTileFolder", rainTilepath);
+                    //! 存储
+                    m_dbTableTypes.Add(name, tableTypes);
 
-                //! 存储
-                m_dbTableTypes.Add(keyString, tableTypes);
+                }
             }
+            
             
         }
 

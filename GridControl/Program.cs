@@ -18,6 +18,9 @@ namespace GridControl
     {
         static void Main(string[] args)
         {
+            // 设置 gcAllowVeryLargeObjects 为 true
+            Environment.SetEnvironmentVariable("COMPlus_gcAllowVeryLargeObjects", "1");
+
             HookHelper.GetAppconfig();
 
             //!!删除指定目录下的所有的txt文件日志文件
@@ -28,6 +31,7 @@ namespace GridControl
             argsPrase(args);
 
             //! 2、初始化数据库链接信息
+            ClientConn.Init(HookHelper.AppSettings, HookHelper.ConnectInfoList);
             ClientConn.PraseDataBaseConfig(!HookHelper.method.Equals("wata"));  //解析配置文件，并建立数据库连接。
             ClientConn.PraseTableTypeConfig(); //解析数据库对应要解析的表类型链接
             ClientConn.PraseComputerTableConfig();
@@ -42,7 +46,7 @@ namespace GridControl
             //CSVLog
             string serverIP = Program.GetLocalIP(HookHelper.serachIP);
             string hostName = Dns.GetHostName();
-            string path = HookHelper.AppSettings["CSVLogPath"].ToString()
+            string path = HookHelper.AppSettings.Build()["CSVLogPath"].ToString()
                 + "\\" + hostName.ToString() + "_" + serverIP.ToString() + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".csv";
             if (HookHelper.useCSVLOG.Equals("true"))
             {
@@ -288,32 +292,32 @@ namespace GridControl
             Dictionary<string, string> computerValues = ClientConn.m_computerValues;
 
             //! 台风数据文件目录
-            HookHelper.rainSRCDirectory = HookHelper.AppSettings["rainSRC"].ToString();
+            HookHelper.rainSRCDirectory = HookHelper.AppSettings.Build()["rainSRC"].ToString();
 
-            HookHelper.raindataForPython = HookHelper.AppSettings["raindataForPython"].ToString();
+            HookHelper.raindataForPython = HookHelper.AppSettings.Build()["raindataForPython"].ToString();
 
-            HookHelper.gridsize = HookHelper.AppSettings["gridsize"].ToString();
-            HookHelper.useCSVLOG = HookHelper.AppSettings["useCSVLOG"].ToString();
+            HookHelper.gridsize = HookHelper.AppSettings.Build()["gridsize"].ToString();
+            HookHelper.useCSVLOG = HookHelper.AppSettings.Build()["useCSVLOG"].ToString();
 
             //等待次数
-            HookHelper.waitcount = int.Parse( HookHelper.AppSettings["waitcount"].ToString());
-            if (HookHelper.AppSettings["waitcount"] != null)
+            HookHelper.waitcount = int.Parse( HookHelper.AppSettings.Build()["waitcount"].ToString());
+            if (HookHelper.AppSettings.Build()["waitcount"] != null)
             {
-                HookHelper.waitcount = int.Parse(HookHelper.AppSettings["waitcount"].ToString());
+                HookHelper.waitcount = int.Parse(HookHelper.AppSettings.Build()["waitcount"].ToString());
             }else
             {
                 HookHelper.waitcount = 60;
             }
 
-            if (HookHelper.AppSettings["thirdwebfront"] != null)
+            if (HookHelper.AppSettings.Build()["thirdwebfront"] != null)
             {
 
             }
 
-            HookHelper.rubbatForDOS = HookHelper.AppSettings["rubbatForDOS"].ToString();
-            HookHelper.computerNode = HookHelper.AppSettings["computerNode"].ToString();
+            HookHelper.rubbatForDOS = HookHelper.AppSettings.Build()["rubbatForDOS"].ToString();
+            HookHelper.computerNode = HookHelper.AppSettings.Build()["computerNode"].ToString();
             //!根据数据库中配置的当前ip对应的node值，更新该选项
-            HookHelper.serachIP = HookHelper.AppSettings["searchIP"].ToString();
+            HookHelper.serachIP = HookHelper.AppSettings.Build()["searchIP"].ToString();
             string localIP = GetLocalIP(HookHelper.serachIP);
 
             //本地模式下，忽略主机ip查询
