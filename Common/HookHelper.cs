@@ -112,24 +112,12 @@ namespace Common
             //判断是windows操作系统
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher("Select * From Win32_Process Where ParentProcessID=" + pid);
-                ManagementObjectCollection moc = searcher.Get();
-                foreach (ManagementObject mo in moc)
-                {
-                    KillProcessAndChildren(Convert.ToInt32(mo["ProcessID"]));
-                }
-                try
-                {
-                    Process proc = Process.GetProcessById(pid);
-                    Console.WriteLine(string.Format("kill process by id {0}!", pid));
-                    proc.Kill();
-                }
-                catch (Exception ex)
-                {
-                    /* process already exited */
-                    //Console.WriteLine(string.Format("process already exited") );
-                    HookHelper.Log += string.Format("process already exited，进程已自动关闭") + ex + "," + DateTime.Now + ";\r\n";
-                }
+                //根据传入得pid 使用cmd命令关闭进程及子进程
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", "/c taskkill /T /F /PID " + pid);
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                Process.Start(psi);
+
             }
 
             //如果是 linux系统
