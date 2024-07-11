@@ -123,6 +123,11 @@ namespace Common
             //如果是 linux系统
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
+                //关闭进程
+                ProcessStartInfo psi = new ProcessStartInfo("kill", "-9 " + pid);
+                psi.CreateNoWindow = true;
+                psi.UseShellExecute = false;
+                Process.Start(psi);
 
             }
 
