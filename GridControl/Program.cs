@@ -93,6 +93,11 @@ namespace GridControl
                         string fullpath = taifenginfoForcalc.Rows[d]["filepath"].ToString();
 
                         fullpath = HookHelper.rainSRCDirectory + fullpath.Replace("/", "\\\\");
+
+                        //取出basename
+                        // 获取文件名（不包含扩展名）
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullpath);
+
                         string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
                         if (!File.Exists(fullpath))
                         {
@@ -102,6 +107,13 @@ namespace GridControl
                             String sqldatstatusBaseInfot = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunitst, datname);
                             Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfot);
                             continue;
+                        }
+                        else
+                        {
+                            //文件存在，要先在错误信息表中，删除这个dat文件的记录，再计算
+                            String sqldatstatusBaseInfot = String.Format("DELETE from Grid_TaiFeng_ErrorCALC WHERE DATName = '{0}'", fileNameWithoutExtension);
+                            int numd = Dal_Rain.ExecuteSql("china",sqldatstatusBaseInfot);
+                            int aa = 9;
                         }
 
                         

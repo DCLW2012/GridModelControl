@@ -37,6 +37,12 @@ namespace SysDAL
             return dt;
         }
 
+        public static int ExecuteSql(string dbname, string sql)
+        {
+            int result = ClientConn.m_dataBaseConnects[dbname].ExecuteNonQuery(sql);
+            return result;
+        }
+
         /// <summary>
         /// SqlServerBulk导入数据
         /// </summary>
