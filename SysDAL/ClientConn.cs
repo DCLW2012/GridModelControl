@@ -180,13 +180,25 @@ namespace SysDAL
 
                     if (!string.IsNullOrEmpty(provincename))
                     {
+                        //如果省份名称中包含逗号，则表示是多个省份
+                        List<string> listmultipro = new List<string>();
+                        if (provincename.Contains(','))
+                        {
+                            listmultipro = provincename.Split(',').ToList();
+                            //每个元素用单引号包裹并用逗号连接
+                            for (int j = 0; j < listmultipro.Count; j++)
+                            {
+                                listmultipro[j] = "'" + listmultipro[j] + "'";
+                            }
+                            provincename = string.Join(",", listmultipro);
+                        }
                         sql = String.Format(@"SELECT
                                                     T1.*
                                             FROM
                                                     {0} T1
                                                     INNER JOIN HSFX_Computer a ON a.ComputeNode = '{1}' 
                                                     AND T1.bswatacd = a.bswatacd 
-                                                    AND province = '{2}'
+                                                    AND province in ({2})
                                             ORDER BY
                                                     province ASC", tbnames[i], computernode, provincename);
                     }
@@ -205,13 +217,25 @@ namespace SysDAL
 
                     if (!string.IsNullOrEmpty(provincename))
                     {
+                        //如果省份名称中包含逗号，则表示是多个省份
+                        List<string> listmultipro = new List<string>();
+                        if (provincename.Contains(','))
+                        {
+                            listmultipro = provincename.Split(',').ToList();
+                            //每个元素用单引号包裹并用逗号连接
+                            for (int j = 0; j < listmultipro.Count; j++)
+                            {
+                                listmultipro[j] = "'" + listmultipro[j] + "'";
+                            }
+                            provincename = string.Join(",", listmultipro);
+                        }
                         sql = String.Format(@"SELECT
                                                 *
                                         FROM
                                                 {0}
                                         WHERE
                                                 ComputeNode = '{1}'
-                                        AND province = '{2}'
+                                        AND province in ({2})
                                         AND ComputeUnit > 100
                                         ORDER BY
                                                 ComputeUnit ", tbnames[i], computernode, provincename);
