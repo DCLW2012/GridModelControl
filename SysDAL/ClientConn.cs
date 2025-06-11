@@ -182,16 +182,13 @@ namespace SysDAL
                     {
                         //如果省份名称中包含逗号，则表示是多个省份
                         List<string> listmultipro = new List<string>();
-                        if (provincename.Contains(','))
+                        listmultipro = provincename.Split(',').ToList();
+                        //每个元素用单引号包裹并用逗号连接
+                        for (int j = 0; j < listmultipro.Count; j++)
                         {
-                            listmultipro = provincename.Split(',').ToList();
-                            //每个元素用单引号包裹并用逗号连接
-                            for (int j = 0; j < listmultipro.Count; j++)
-                            {
-                                listmultipro[j] = "'" + listmultipro[j] + "'";
-                            }
-                            provincename = string.Join(",", listmultipro);
+                            listmultipro[j] = "'" + listmultipro[j] + "'";
                         }
+                        String new_provincename = string.Join(",", listmultipro);
                         sql = String.Format(@"SELECT
                                                     T1.*
                                             FROM
@@ -200,7 +197,7 @@ namespace SysDAL
                                                     AND T1.bswatacd = a.bswatacd 
                                                     AND province in ({2})
                                             ORDER BY
-                                                    province ASC", tbnames[i], computernode, provincename);
+                                                    province ASC", tbnames[i], computernode, new_provincename);
                     }
                 }
                 else if (tableTypeName == "HSFX_ComputeUnit")
@@ -219,16 +216,13 @@ namespace SysDAL
                     {
                         //如果省份名称中包含逗号，则表示是多个省份
                         List<string> listmultipro = new List<string>();
-                        if (provincename.Contains(','))
+                        listmultipro = provincename.Split(',').ToList();
+                        //每个元素用单引号包裹并用逗号连接
+                        for (int j = 0; j < listmultipro.Count; j++)
                         {
-                            listmultipro = provincename.Split(',').ToList();
-                            //每个元素用单引号包裹并用逗号连接
-                            for (int j = 0; j < listmultipro.Count; j++)
-                            {
-                                listmultipro[j] = "'" + listmultipro[j] + "'";
-                            }
-                            provincename = string.Join(",", listmultipro);
+                            listmultipro[j] = "'" + listmultipro[j] + "'";
                         }
+                        String new_provincename = string.Join(",", listmultipro);
                         sql = String.Format(@"SELECT
                                                 *
                                         FROM
@@ -238,7 +232,7 @@ namespace SysDAL
                                         AND province in ({2})
                                         AND ComputeUnit > 100
                                         ORDER BY
-                                                ComputeUnit ", tbnames[i], computernode, provincename);
+                                                ComputeUnit ", tbnames[i], computernode, new_provincename);
                     }
                 }
                 DataTable value = Dal_Rain.GetDataBySql(keyString, sql);

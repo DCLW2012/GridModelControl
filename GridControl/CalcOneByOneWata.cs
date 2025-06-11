@@ -270,8 +270,12 @@ namespace GridControl
                                 {
                                     curProcss = null;
                                 }
-                                bool isInProcess = curProcss == null ? false : true;
-                                if (!isInProcess)
+                                bool isHaveExit = false;
+                                if (curProcss != null)
+                                {
+                                    isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                }
+                                if (isHaveExit)
                                 {
                                     pids.Remove(item.Key);
                                 }
@@ -355,7 +359,7 @@ namespace GridControl
                 {
                     //! 执行等待，然后查询更新pids列表.等待1分钟
                     Console.WriteLine(string.Format("等待第{0}场{1}文件计算完成并关闭，pid进程查询更新等待中，等待时长15秒...", d + 1, curDatFullname) + DateTime.Now);
-                    System.Threading.Thread.Sleep(1000 * 15 * 1);
+                    System.Threading.Thread.Sleep(1000 * 5 * 1);
                     perWaitCount++;
                     Console.WriteLine(string.Format("最后进程组,已经等待次数{0}次", perWaitCount) + DateTime.Now);
                     if (perWaitCount >= HookHelper.waitcount)
@@ -418,8 +422,12 @@ namespace GridControl
                         {
                             curProcss = null;
                         }
-                        bool isInProcess = curProcss == null ? false : true;
-                        if (!isInProcess)
+                        bool isHaveExit = false;
+                        if (curProcss != null)
+                        {
+                            isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                        }
+                        if (isHaveExit)
                         {
                             pids.Remove(item.Key);
                         }
@@ -684,8 +692,12 @@ namespace GridControl
                                 {
                                     curProcss = null;
                                 }
-                                bool isInProcess = curProcss == null ? false : true;
-                                if (!isInProcess)
+                                bool isHaveExit = false;
+                                if (curProcss != null)
+                                {
+                                    isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                }
+                                if (isHaveExit)
                                 {
                                     pids.Remove(item.Key);
                                 }
@@ -832,8 +844,12 @@ namespace GridControl
                         {
                             curProcss = null;
                         }
-                        bool isInProcess = curProcss == null ? false : true;
-                        if (!isInProcess)
+                        bool isHaveExit = false;
+                        if (curProcss != null)
+                        {
+                            isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                        }
+                        if (isHaveExit)
                         {
                             pids.Remove(item.Key);
                         }
@@ -1072,8 +1088,12 @@ namespace GridControl
                                 {
                                     curProcss = null;
                                 }
-                                bool isInProcess = curProcss == null ? false : true;
-                                if (!isInProcess)
+                                bool isHaveExit = false;
+                                if (curProcss != null)
+                                {
+                                    isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                }
+                                if (isHaveExit)
                                 {
                                     pids.Remove(item.Key);
                                 }
@@ -1191,8 +1211,12 @@ namespace GridControl
                         {
                             curProcss = null;
                         }
-                        bool isInProcess = curProcss == null ? false : true;
-                        if (!isInProcess)
+                        bool isHaveExit = false;
+                        if (curProcss != null)
+                        {
+                            isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                        }
+                        if (isHaveExit)
                         {
                             pids.Remove(item.Key);
                         }
@@ -1487,8 +1511,12 @@ namespace GridControl
                         {
                             curProcss = null;
                         }
-                        bool isInProcess = curProcss == null ? false : true;
-                        if (!isInProcess)
+                        bool isHaveExit = false;
+                        if (curProcss != null)
+                        {
+                            isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                        }
+                        if (isHaveExit)
                         {
                             pids.Remove(item.Key);
 
