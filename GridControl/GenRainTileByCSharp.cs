@@ -65,6 +65,7 @@ namespace GridControl
         public double ymaxcorner;
 
         public double cellsize;
+        public double nodata;
 
         public DatFileStruct()
         {
