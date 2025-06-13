@@ -35,6 +35,8 @@ namespace Common
         //bat文件名称
         public static string rubbatForDOS { get; set; }
         public static string method { get; set; }
+        public static string filename { get; set; }
+        
         public static string raintype { get; set; }
         public static string tilemehtod { get; set; }
 

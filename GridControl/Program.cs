@@ -75,18 +75,46 @@ namespace GridControl
                                     FROM
 
                                         grid_taifeng_filestatus_baseinfo
-                                    WHERE
-
-                                        iscalcfinish = 1
                                     ORDER BY
                                     inputtime ASC";
+                    if (String.IsNullOrEmpty(HookHelper.filename))
+                    {
+                        taifenginfSql = @"SELECT
+                                        *
+                                    FROM
+
+                                        grid_taifeng_filestatus_baseinfo
+
+                                    WHERE iscalcfinish = 1
+                                    ORDER BY
+                                    inputtime ASC";
+                    }
                     DataTable taifenginfoForcalc = Dal_ThirdWeb.GetDataBySql(taifenginfSql);
 
-                    if (taifenginfoForcalc.Rows.Count == 0)
+                    //找到表中 等于filename的记录，进行计算
+                    
+                    if (!String.IsNullOrEmpty(HookHelper.filename))
+                    {
+                        DataRow[] rows = taifenginfoForcalc.Select(String.Format("filename = '{0}'", HookHelper.filename));
+                        if(rows.Length > 0)
+                        {
+                            taifenginfoForcalc = rows.CopyToDataTable();
+                        }
+                        else
+                        {
+                            Console.WriteLine(string.Format("数据库表{0}中不存在有效的dat降雨场次  ", "grid_taifeng_filestatus_baseinfo") + DateTime.Now);
+                            return;
+                        }
+                    }
+
+                    if (taifenginfoForcalc.Rows.Count == 0 )
                     {
                         Console.WriteLine(string.Format("数据库表{0}中不存在有效的dat降雨场次  ", "grid_taifeng_filestatus_baseinfo") + DateTime.Now);
                         return;
                     }
+
+
+
                     int datnum = taifenginfoForcalc.Rows.Count;
                     for (int d = 0; d < datnum; ++d)
                     {
@@ -388,6 +416,19 @@ namespace GridControl
                 if (index + 1 <= args.Length - 1)
                 {
                     HookHelper.method = args[index + 1];
+                }
+
+            }
+
+            HookHelper.filename = "";
+            if (args.Contains("-filename"))
+            {
+                int index = args.ToList().IndexOf("-filename");
+
+                //！ 参数标识符 后放的有值，才更新初始控制参数
+                if (index + 1 <= args.Length - 1)
+                {
+                    HookHelper.filename = args[index + 1];
                 }
 
             }
