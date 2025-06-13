@@ -145,7 +145,7 @@ namespace GridControl
                         }
 
                         
-                        for (int i = 0; i < nodes.Length; ++i)
+                        for (int i = 0; i < 0; ++i)
                         {
                             HookHelper.computerNode = nodes[i];
                             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
@@ -188,6 +188,14 @@ namespace GridControl
                         if (iscurdatErrorExist)
                         {
                             isErrorunits = 1;
+                        }
+
+                        //合并当前场次的结果，到指定的目录下
+                        MergeTileToIISFolder mergeTileToIISFolder = new MergeTileToIISFolder(fileNameWithoutExtension);
+                        bool isMerge = mergeTileToIISFolder.DoASCMergeGridPerProvinceLocal();
+                        if (isMerge)
+                        {
+                            Console.WriteLine(string.Format("{0}场次合并结果完成  ", datname) + DateTime.Now);
                         }
                         String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunits, datname);
                         Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
@@ -333,7 +341,8 @@ namespace GridControl
 
             //! 台风数据文件目录
             HookHelper.rainSRCDirectory = HookHelper.AppSettings.Build()["rainSRC"].ToString();
-
+            HookHelper.IISRootDirectory = HookHelper.AppSettings.Build()["IISRootDirectory"].ToString();
+            
             HookHelper.raindataForPython = HookHelper.AppSettings.Build()["raindataForPython"].ToString();
 
             HookHelper.gridsize = HookHelper.AppSettings.Build()["gridsize"].ToString();

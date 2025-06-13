@@ -26,6 +26,8 @@ namespace Common
         //! 雨水情模板数据文件目录
         public static string rainSRCDirectory { get; set; }
 
+        public static string IISRootDirectory { get; set; }
+
         //! tile文件在本地的放置目录
         public static string rainTileDirectory { get; set; }
 
