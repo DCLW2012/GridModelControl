@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 
 namespace GridControl
 {
+    
+
     public class HSFX_UNIT_Grid
     {
 	    public String UNITCD;
@@ -542,10 +544,16 @@ namespace GridControl
         {
             //! 网格模型out中输出文件的英文名称
             List<String> gridResultFieldName = new List<string>();
+            Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
+
+            //为每个指标添加对应的url列表
             gridResultFieldName.Add("water_depth");
             gridResultFieldName.Add("discharge");
             //gridResultFieldName.push_back("velocity");
             //gridResultFieldName.push_back("precip");
+
+            gridResultFieldURL.Add("water_depth", new List<WaterDeep>());
+            gridResultFieldURL.Add("discharge", new List<WaterDeep>());
 
             int NOData = -9999;
 
@@ -564,6 +572,9 @@ namespace GridControl
             double mfbl = double.Parse(_stpoinginfo.Rows[0][5].ToString());
             //遍历每个时间
             for (int t = 0; t < totalTimeNum; t = t + 1){
+                //begin_time 增加t天
+                DateTime curTime = begin_time.AddHours(t);
+                String curFrameTime = curTime.ToString("yyyyMMddHHmm");
                 for (int g = 0; g < gridResultFieldName.Count; ++g)
                 {
                     //存储当前dat场次降雨最大最小值
@@ -598,6 +609,9 @@ namespace GridControl
                         String proName = _srcSizeINFO.Rows[p]["province"].ToString();
                         mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
 
+                        //每种指标对应的json索引文件名
+                        String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".json");
+
                         //对齐输出文件索引
                         String txtFolder = Path.Combine(curCCname, proName, "output", "txt");
                         String pngFloder = Path.Combine(curCCname, proName, "output", "png", gridResultFieldName[g]);
@@ -617,7 +631,7 @@ namespace GridControl
                             }
                             if(isstop == 1)
                             {
-                                break;
+                                //break;
                             }
                             //QString curSearchDatFile = QString("%1/GRIDEXE/output/%2/%3/out/%4%5.txt").arg(unitsinfo[i].APPPath).arg(curCCname).arg(unitsinfo[i].UNITCD).arg(gridResultFieldName[g]).arg(indexNumber);
                             //改为netcre
@@ -775,6 +789,22 @@ namespace GridControl
                                 bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
                                 if (isPngOK)
                                 {
+                                    //curCCTimeOutPngFilename 中获取带扩展名的文件名
+                                    String extStr = Path.GetFileName(curCCTimeOutPngFilename);
+
+                                    //为对应的指标添加url
+                                    WaterDeep wd = new WaterDeep();
+                                    wd.url = String.Format("/output/png/{0}/{1}", gridResultFieldName[g], extStr);
+                                    wd.time = curFrameTime;
+                                    wd.area = 0; //淹没面积
+                                    wd.isHavarecord = "1"; //有数据
+                                    if (!gridResultFieldURL.ContainsKey(gridResultFieldName[g]))
+                                    {
+                                        gridResultFieldURL[gridResultFieldName[g]] = new List<WaterDeep>();
+                                    }
+                                    gridResultFieldURL[gridResultFieldName[g]].Add(wd);
+                                    ReadWriteJSONFile.Write(gridResultFieldURL[gridResultFieldName[g]], curJsonFilefullpath);
+
                                     //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
                                     //写出提示信息
                                     Console.WriteLine($"场次 {curCCname} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 在 {proName} 省份的PNG写出成功");
