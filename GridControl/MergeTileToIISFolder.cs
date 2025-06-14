@@ -315,6 +315,12 @@ namespace GridControl
         {
             try
             {
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(fileName);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
                 using (StreamWriter writer = new StreamWriter(fileName))
                 {
                     writer.WriteLine("Projection UTM");
@@ -344,6 +350,13 @@ namespace GridControl
         {
             try
             {
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(fileName);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
                 using (StreamWriter writer = new StreamWriter(fileName))
                 {
                     // 写出 ASC 文件头
@@ -468,6 +481,18 @@ namespace GridControl
         {
             try
             {
+                // 检查输入文件是否存在
+                if (!File.Exists(inascfile))
+                {
+                    Console.WriteLine($"输入的ASC文件不存在: {inascfile}");
+                    return false;
+                }
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(outpngfile);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
                 DatFileStruct curDt = new DatFileStruct();
                 ReadGridDataFromAsc(inascfile, ref curDt);
 
@@ -574,11 +599,13 @@ namespace GridControl
                         mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
 
                         //对齐输出文件索引
+                        String txtFolder = Path.Combine(curCCname, proName, "output", "txt");
+                        String pngFloder = Path.Combine(curCCname, proName, "output", "png", gridResultFieldName[g]);
                         String outFormatIndex = t.ToString("D3");
-                        String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, curCCname, curCCname, gridResultFieldName[g], proName, outFormatIndex);
-                        String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, curCCname, curCCname, gridResultFieldName[g], proName, outFormatIndex);
-                        String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, curCCname, curCCname, gridResultFieldName[g], proName, outFormatIndex);
-                        String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, curCCname, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
                         //遍历每个单元
                         int isstop = 0;
                         for (int i = 0; i < totalUnitsnum; ++i)
@@ -590,7 +617,7 @@ namespace GridControl
                             }
                             if(isstop == 1)
                             {
-                                //break;
+                                break;
                             }
                             //QString curSearchDatFile = QString("%1/GRIDEXE/output/%2/%3/out/%4%5.txt").arg(unitsinfo[i].APPPath).arg(curCCname).arg(unitsinfo[i].UNITCD).arg(gridResultFieldName[g]).arg(indexNumber);
                             //改为netcre

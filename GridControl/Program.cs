@@ -144,8 +144,16 @@ namespace GridControl
                             int aa = 9;
                         }
 
-                        
-                        for (int i = 0; i < nodes.Length; ++i)
+                        //判断结果目录存在在，删除目录
+                        String iisresfoleder = Path.Combine(HookHelper.IISRootDirectory, fileNameWithoutExtension);
+                        if (Directory.Exists(iisresfoleder))
+                        {
+                            Directory.Delete(iisresfoleder, true);
+                        }
+
+
+
+                        for (int i = 0; i < 0; ++i)
                         {
                             HookHelper.computerNode = nodes[i];
                             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
