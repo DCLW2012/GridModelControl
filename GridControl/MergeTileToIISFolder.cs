@@ -604,6 +604,7 @@ namespace GridControl
 
         //执行合并
         //合并当前主机下所有模型目录下的结果
+        //各个省份分目录存储
         public bool DoASCMergeGridPerProvinceLocal()
         {
             //! 网格模型out中输出文件的英文名称
@@ -930,6 +931,307 @@ namespace GridControl
                     }
                 }
                 
+            }
+
+            return true;
+        }
+
+        //合并各个省份到全国
+        public bool DoASCMergeGridAllProvinceLocalToOne()
+        {
+            //! 网格模型out中输出文件的英文名称
+            List<String> gridResultFieldName = new List<string>();
+            Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
+
+            //为每个指标添加对应的url列表
+            gridResultFieldName.Add("water_depth");
+            gridResultFieldName.Add("discharge");
+            //gridResultFieldName.push_back("velocity");
+            //gridResultFieldName.push_back("precip");
+
+            gridResultFieldURL.Add("water_depth", new List<WaterDeep>());
+            gridResultFieldURL.Add("discharge", new List<WaterDeep>());
+
+            int NOData = -9999;
+
+            //执行数据合并写出
+            String curCCname = _fileNameWithoutExtension;
+
+            DateTime begin_time = Convert.ToDateTime(_taifenginfoForcalc.Rows[0]["starttime"]);
+            String startTimeCurDat = begin_time.ToString("yyyy-MM-dd HH:mm:ss");
+            //获取 "yyyyMMddhh"
+            String startTimeFromSrc = begin_time.ToString("yyyyMMddHH");
+
+            int totalTimeNum = int.Parse(_taifenginfoForcalc.Rows[0]["times"].ToString());
+            double mfbl = double.Parse(_stpoinginfo.Rows[0][5].ToString());
+            //遍历每个时间
+            for (int t = 0; t < totalTimeNum; t = t + 1)
+            {
+                //begin_time 增加t天
+                DateTime curTime = begin_time.AddHours(t);
+                String curFrameTime = curTime.ToString("yyyyMMddHHmm");
+                for (int g = 0; g < gridResultFieldName.Count; ++g)
+                {
+                    //存储当前dat场次降雨最大最小值
+                    DatInfoRecord diRecordmin = new DatInfoRecord();
+                    diRecordmin.value = 99999;
+                    DatInfoRecord diRecordmax = new DatInfoRecord();
+                    diRecordmax.value = -99999;
+                    Dictionary<String, DatInfoRecord> minmaxCurField = new Dictionary<string, DatInfoRecord>();
+                    minmaxCurField.Add("min", diRecordmin);
+                    minmaxCurField.Add("max", diRecordmax);
+
+                    //每次读取asc数据后，膨胀这个变量
+                    DatFileStruct lastDt = new DatFileStruct();
+
+                    bool isDataUpdate = false;
+
+                    //每种指标对应的json索引文件名
+                    String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, gridResultFieldName[g] + ".json");
+
+                    //每种指标对应的当前省的 gif文件名
+                    String curgifproFilefullpath = Path.Combine(_iisRootDirectory, curCCname, gridResultFieldName[g] + ".gif");
+
+                    //对齐输出文件索引
+                    String txtFolder = Path.Combine(curCCname, "output", "txt");
+                    String pngFloder = Path.Combine(curCCname, "output", "png", gridResultFieldName[g]);
+                    String outFormatIndex = t.ToString("D3");
+                    String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+                    String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+                    String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+                    String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+                    //遍历 srcSizeINFO
+                    for (int p = 0; p < _srcSizeINFO.Rows.Count; p++)
+                    {
+
+                        //省名字
+                        String proName = _srcSizeINFO.Rows[p]["province"].ToString();
+                        mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
+
+                        String txtFolderCurPro = Path.Combine(curCCname, proName, "output", "txt");
+                        String curSearchDatFile = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolderCurPro, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+
+                        //输出目录
+                        String outdir = _iisRootDirectory + Path.DirectorySeparatorChar + curCCname;
+                        //判断目录不存在则创建
+                        if (!Directory.Exists(outdir))
+                        {
+                            Directory.CreateDirectory(outdir);
+                        }
+
+                        //执行读写
+                        List<datInfo> curDats = new List<datInfo>();
+
+                        // 打开读取这个文件
+                        DatFileStruct curDt = new DatFileStruct();
+                        ReadGridDataFromAsc(curSearchDatFile, ref curDt);
+                        //更新数据
+                        if (curDt.rain == null)
+                        {
+                            continue;
+                        }
+
+                        isDataUpdate = true;
+
+                        //！根据当前curDt和 更新已有的expand
+                        DatFileStruct expandDt = new DatFileStruct();
+                        if (lastDt.rain == null)
+                        {
+                            expandDt.xllcorner = curDt.xllcorner;
+                            expandDt.yllcorner = curDt.yllcorner;
+                            expandDt.xmaxcorner = curDt.xmaxcorner;
+                            expandDt.ymaxcorner = curDt.ymaxcorner;
+                        }
+                        else
+                        {
+                            expandDt.xllcorner = (curDt.xllcorner <= lastDt.xllcorner) ? curDt.xllcorner : lastDt.xllcorner;
+                            expandDt.yllcorner = (curDt.yllcorner <= lastDt.yllcorner) ? curDt.yllcorner : lastDt.yllcorner;
+                            expandDt.xmaxcorner = (curDt.xmaxcorner > lastDt.xmaxcorner) ? curDt.xmaxcorner : lastDt.xmaxcorner;
+                            expandDt.ymaxcorner = (curDt.ymaxcorner > lastDt.ymaxcorner) ? curDt.ymaxcorner : lastDt.ymaxcorner;
+                        }
+
+                        //！扩展后的行列数
+                        expandDt.col = (int)Math.Floor((expandDt.xmaxcorner - expandDt.xllcorner) / mfbl + 1E-6);
+                        expandDt.row = (int)Math.Floor((expandDt.ymaxcorner - expandDt.yllcorner) / mfbl + 1E-6);
+
+                        // 创建一个新的expand后的data数组，行列初始为NOData，循环找到对应文件更新data中的值，写出
+                        float[,,] data = new float[expandDt.row, expandDt.col, 1];
+                        //！初始化所有值为-9999
+                        for (int r = 0; r < expandDt.row; r++)
+                        {
+                            for (int c = 0; c < expandDt.col; c++)
+                            {
+                                data[r, c, 0] = NOData;
+                            }
+                        }
+
+                        //！1、上次原有的数据放入到expand中
+                        for (int lastR = 0; lastR < lastDt.row; lastR++)
+                        {
+                            for (int lastC = 0; lastC < lastDt.col; lastC++)
+                            {
+                                double curLon = lastDt.xllcorner + mfbl * (lastC);
+                                double curLat = lastDt.yllcorner + mfbl * (lastR);
+
+                                int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
+                                int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
+
+                                if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
+                                {
+
+                                    if (lastDt.rain[lastR, lastC, 0] != NOData)
+                                    {
+                                        data[globalR, globalC, 0] = lastDt.rain[lastR, lastC, 0];
+                                    }
+                                    else
+                                    {
+                                        int gg = 9;
+                                    }
+
+                                }
+                            }
+                        }
+
+                        //！2、新解析的文件写入到expand中
+                        //！计算行列号，以及左下角起点，并将新的和原有的，放到expand后的
+                        //! expandDt是新的，包含lastDt 和 curDt
+                        //！扩展后的行列数
+                        for (int dtR = 0; dtR < curDt.row; dtR++)
+                        {
+                            for (int dtC = 0; dtC < curDt.col; dtC++)
+                            {
+                                double curLon = curDt.xllcorner + mfbl * (dtC);
+                                double curLat = curDt.yllcorner + mfbl * (dtR);
+
+                                int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
+                                int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
+
+                                if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
+                                {
+
+                                    if (curDt.rain[(curDt.row - 1 - dtR), dtC, 0] != NOData)
+                                    {
+                                        data[globalR, globalC, 0] = curDt.rain[(curDt.row - 1 - dtR), dtC, 0];
+                                    }
+
+                                }
+                            }
+                        }
+
+                        //释放lastDt.rain
+                        if (lastDt.rain != null)
+                        {
+                            lastDt.rain = null;
+                        }
+
+                        //更新lastDt 用expandDt
+                        lastDt.xllcorner = expandDt.xllcorner;
+                        lastDt.yllcorner = expandDt.yllcorner;
+                        lastDt.xmaxcorner = expandDt.xmaxcorner;
+                        lastDt.ymaxcorner = expandDt.ymaxcorner;
+                        lastDt.col = expandDt.col;
+                        lastDt.row = expandDt.row;
+                        lastDt.cellsize = expandDt.cellsize;
+                        lastDt.nodata = expandDt.nodata;
+                        lastDt.rain = data; 
+                    }
+
+                    //写出到文件
+                    //                  HSFX_UNIT_Grid params;
+                    //params.ncols = QString::number(lastDt.col);
+                    //params.nrows = QString::number(lastDt.row);
+                    //params.xllcorner = QString::number(lastDt.xllcorner, 'f', 6);
+                    //params.yllcorner = QString::number(lastDt.yllcorner, 'f', 6);
+                    //params.cellsize = QString::number(mfbl, 'f', 6);
+                    //以上写为netcore
+                    HSFX_UNIT_Grid paramsgrid = new HSFX_UNIT_Grid();
+                    paramsgrid.ncols = lastDt.col.ToString(CultureInfo.InvariantCulture);
+                    paramsgrid.nrows = lastDt.row.ToString(CultureInfo.InvariantCulture);
+                    paramsgrid.xllcorner = lastDt.xllcorner.ToString("f6", CultureInfo.InvariantCulture);
+                    paramsgrid.yllcorner = lastDt.yllcorner.ToString("f6", CultureInfo.InvariantCulture);
+                    paramsgrid.cellsize = mfbl.ToString("f6", CultureInfo.InvariantCulture);
+                    if (isDataUpdate)
+                    {
+                        float curMinvalue = 0.0f;
+                        float curMaxValue = 0.0f;
+                        bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
+                        if (status)
+                        {
+                            bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+                            if (isPngOK)
+                            {
+                                //curCCTimeOutPngFilename 中获取带扩展名的文件名
+                                String extStr = Path.GetFileName(curCCTimeOutPngFilename);
+
+                                //为对应的指标添加url
+                                WaterDeep wd = new WaterDeep();
+                                wd.url = String.Format("/output/png/{0}/{1}", gridResultFieldName[g], extStr);
+                                wd.time = curFrameTime;
+                                wd.area = 0; //淹没面积
+                                wd.isHavarecord = "1"; //有数据
+                                if (!gridResultFieldURL.ContainsKey(gridResultFieldName[g]))
+                                {
+                                    gridResultFieldURL[gridResultFieldName[g]] = new List<WaterDeep>();
+                                }
+                                gridResultFieldURL[gridResultFieldName[g]].Add(wd);
+                                ReadWriteJSONFile.Write(gridResultFieldURL[gridResultFieldName[g]], curJsonFilefullpath);
+
+                                //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
+                                
+
+                                //如果是最后一个时间，则在当前png目录下直接输出gif文件，合并png
+                                if (t == totalTimeNum - 1)
+                                {
+                                    //合并当前省份下的所有png文件
+                                    String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
+
+                                    bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                    if (isGifOK)
+                                    {
+                                        //输出gif成功
+                                        Console.WriteLine("全区域合并成功");
+                                    }
+                                }
+                            }
+                        }
+                        //! 写出同名proj文件curCCOutProjfileName
+                        int utmNumber = _srcEPSGINFO[_srcSizeINFO.Rows[0]["province"].ToString()];
+                        String utmIndexStr = (utmNumber - 32600).ToString();
+                        bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
+                        if (status)
+                        {
+                            //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
+                        }
+
+                        //写出min max值
+                        if (status)
+                        {
+                            //更新最值
+                            if (curMinvalue < minmaxCurField["min"].value)
+                            {
+                                minmaxCurField["min"].value = curMinvalue;
+                                minmaxCurField["min"].tm = outFormatIndex;
+                            }
+                            if (curMaxValue > minmaxCurField["max"].value)
+                            {
+                                minmaxCurField["max"].value = curMaxValue;
+                                minmaxCurField["max"].tm = outFormatIndex;
+                            }
+                            //输出文件名
+                            String fiName = curCCTimeOutMinmaxFilename;
+                            //写出min maxvalue到finame中
+                            using (StreamWriter writer = new StreamWriter(fiName))
+                            {
+                                //stream << "min" << "," << minmaxCurField["min"].value << "," << "time" << "," << minmaxCurField["min"].tm << "\n";
+                                //stream << "max" << "," << minmaxCurField["max"].value << "," << "time" << "," << minmaxCurField["max"].tm << "\n";
+                                //写出上边两行
+                                writer.WriteLine($"min,{minmaxCurField["min"].value},time,{minmaxCurField["min"].tm}");
+                                writer.WriteLine($"max,{minmaxCurField["max"].value},time,{minmaxCurField["max"].tm}");
+                            }
+                        }
+                    }
+                }
+
             }
 
             return true;

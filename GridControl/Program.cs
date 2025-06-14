@@ -203,6 +203,7 @@ namespace GridControl
                         bool isMerge = mergeTileToIISFolder.DoASCMergeGridPerProvinceLocal();
                         if (isMerge)
                         {
+                            isMerge = mergeTileToIISFolder.DoASCMergeGridAllProvinceLocalToOne();
                             Console.WriteLine(string.Format("{0}场次合并结果完成  ", datname) + DateTime.Now);
                         }
                         String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunits, datname);
