@@ -3,6 +3,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing.Processors.Quantization;
+using SixLabors.ImageSharp.Processing;
 using SysDAL;
 using System;
 using System.Collections.Generic;
@@ -501,39 +503,41 @@ namespace GridControl
                 return false;
             }
 
-            using (var image = Image.Load<Rgba32>(imagePaths[0]))
+            // 加载所有PNG图像
+            var frames = new List<Image>();
+            foreach (var path in imagePaths)
             {
-                // 设置 GIF 编码器参数
-                var gifEncoder = new GifEncoder()
-                {
-                    ColorTableMode = GifColorTableMode.Global,
-                    // Delay = (ushort)(delayMs / 10)  // 不推荐在此设置全局延迟
-                };
-
-                // 设置 GIF 循环次数（0 表示无限循环）
-                image.Metadata.GetGifMetadata().RepeatCount = 0;
-
-                // 设置第一帧的延迟
-                image.Frames.RootFrame.Metadata.GetGifMetadata().FrameDelay = (ushort)(delayMilliseconds / 10); // 单位是 1/100 秒
-
-                // 添加后续帧
-                for (int i = 1; i < imagePaths.Count; i++)
-                {
-                    using (var frameImage = Image.Load<Rgba32>(imagePaths[i]))
-                    {
-                        var frame = frameImage.Frames.RootFrame;
-                        var metadata = frame.Metadata.GetGifMetadata();
-                        metadata.FrameDelay = (ushort)(delayMilliseconds / 100); // 延迟单位是 1/100 秒
-                        image.Frames.AddFrame(frame);
-                    }
-                }
-
-                // 保存 GIF 文件
-                using (var fs = new FileStream(outputGifPath, FileMode.Create))
-                {
-                    image.Save(fs, gifEncoder);
-                }
+                frames.Add(Image.Load(path));
             }
+
+            int repeatCount = 0;
+            // 创建GIF（使用第一帧初始化）
+            using var gif = new Image<Rgba32>(frames[0].Width, frames[0].Height);
+            var gifMeta = gif.Metadata.GetGifMetadata();
+            gifMeta.RepeatCount = (ushort)repeatCount;
+
+            // 添加所有帧
+            foreach (var frame in frames)
+            {
+                // 克隆帧并设置延迟
+                var clonedFrame = frame.Clone(ctx => ctx.Resize(gif.Size())); // 确保尺寸一致
+                var frameMeta = clonedFrame.Frames.RootFrame.Metadata.GetGifMetadata();
+                frameMeta.FrameDelay = delayMilliseconds / 10; // 转换为GIF时间单位（1单位=10ms）
+
+                // 添加到GIF
+                gif.Frames.AddFrame(clonedFrame.Frames.RootFrame);
+            }
+
+            // 移除初始空白帧
+            gif.Frames.RemoveFrame(0);
+
+            // 保存GIF
+            var encoder = new GifEncoder
+            {
+                ColorTableMode = GifColorTableMode.Global,
+                Quantizer = new OctreeQuantizer() // 优化颜色
+            };
+            gif.Save(outputGifPath, encoder);
 
             Console.WriteLine("✅ GIF 创建完成！");
             return true;
@@ -877,7 +881,7 @@ namespace GridControl
                                         //合并当前省份下的所有png文件
                                         String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
                                         
-                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 5000);
+                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                         if (isGifOK)
                                         {
                                             //输出gif成功

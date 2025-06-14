@@ -153,7 +153,7 @@ namespace GridControl
 
 
 
-                        for (int i = 0; i < nodes.Length; ++i)
+                        for (int i = 0; i < 0; ++i)
                         {
                             HookHelper.computerNode = nodes[i];
                             //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
