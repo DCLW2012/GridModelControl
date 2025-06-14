@@ -877,7 +877,7 @@ namespace GridControl
                                         //合并当前省份下的所有png文件
                                         String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
                                         
-                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 5000);
                                         if (isGifOK)
                                         {
                                             //输出gif成功
