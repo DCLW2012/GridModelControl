@@ -1,5 +1,6 @@
 ﻿using Common;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SysDAL;
@@ -7,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -479,6 +479,65 @@ namespace GridControl
 
         }
 
+        public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
+        {
+            // 检查输出目录是否存在，不存在则创建
+            string directory = Path.GetDirectoryName(outputGifPath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            List<string> imagePaths = new List<string>();
+            //获取 pngFloder 目录下的所有png文件，并按名字升序排列
+            if (Directory.Exists(pngFloder))
+            {
+                imagePaths = Directory.GetFiles(pngFloder, "*.png")
+                                    .OrderBy(f => f)
+                                    .ToList();
+            }
+            if(imagePaths.Count == 0)
+            {
+                return false;
+            }
+
+            using (var image = Image.Load<Rgba32>(imagePaths[0]))
+            {
+                // 设置 GIF 编码器参数
+                var gifEncoder = new GifEncoder()
+                {
+                    ColorTableMode = GifColorTableMode.Global,
+                    // Delay = (ushort)(delayMs / 10)  // 不推荐在此设置全局延迟
+                };
+
+                // 设置 GIF 循环次数（0 表示无限循环）
+                image.Metadata.GetGifMetadata().RepeatCount = 0;
+
+                // 设置第一帧的延迟
+                image.Frames.RootFrame.Metadata.GetGifMetadata().FrameDelay = (ushort)(delayMilliseconds / 10); // 单位是 1/100 秒
+
+                // 添加后续帧
+                for (int i = 1; i < imagePaths.Count; i++)
+                {
+                    using (var frameImage = Image.Load<Rgba32>(imagePaths[i]))
+                    {
+                        var frame = frameImage.Frames.RootFrame;
+                        var metadata = frame.Metadata.GetGifMetadata();
+                        metadata.FrameDelay = (ushort)(delayMilliseconds / 100); // 延迟单位是 1/100 秒
+                        image.Frames.AddFrame(frame);
+                    }
+                }
+
+                // 保存 GIF 文件
+                using (var fs = new FileStream(outputGifPath, FileMode.Create))
+                {
+                    image.Save(fs, gifEncoder);
+                }
+            }
+
+            Console.WriteLine("✅ GIF 创建完成！");
+            return true;
+        }
         public bool AscDemToColorPng(string inascfile, string outpngfile, float curMinValue, float curMaxValue)
         {
             try
@@ -611,6 +670,9 @@ namespace GridControl
 
                         //每种指标对应的json索引文件名
                         String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".json");
+
+                        //每种指标对应的当前省的 gif文件名
+                        String curgifproFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".gif");
 
                         //对齐输出文件索引
                         String txtFolder = Path.Combine(curCCname, proName, "output", "txt");
@@ -808,6 +870,20 @@ namespace GridControl
                                     //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
                                     //写出提示信息
                                     Console.WriteLine($"场次 {curCCname} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 在 {proName} 省份的PNG写出成功");
+
+                                    //如果是最后一个时间，则在当前省份目录下直接输出gif文件，合并png
+                                    if (t == totalTimeNum - 1)
+                                    {
+                                        //合并当前省份下的所有png文件
+                                        String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
+                                        
+                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                        if (isGifOK)
+                                        {
+                                            //输出gif成功
+                                            Console.WriteLine($"场次 {curCCname} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 在 {proName} 省份的GIF写出成功");
+                                        }
+                                    }
                                 }
                             }
                             //! 写出同名proj文件curCCOutProjfileName
