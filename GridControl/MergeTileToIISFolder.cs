@@ -520,9 +520,10 @@ namespace GridControl
             foreach (var frame in frames)
             {
                 // 克隆帧并设置延迟
-                var clonedFrame = frame.Clone(ctx => ctx.Resize(gif.Size())); // 确保尺寸一致
+                var clonedFrame = frame.Clone(ctx => ctx.Resize(gif.Size)); // 确保尺寸一致
                 var frameMeta = clonedFrame.Frames.RootFrame.Metadata.GetGifMetadata();
                 frameMeta.FrameDelay = delayMilliseconds / 10; // 转换为GIF时间单位（1单位=10ms）
+                //上边的单位是10ms，所以这里除以10
 
                 // 添加到GIF
                 gif.Frames.AddFrame(clonedFrame.Frames.RootFrame);
