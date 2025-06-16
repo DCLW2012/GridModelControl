@@ -78,6 +78,8 @@ namespace GridControl
         DataTable _stpoinginfo;
         Dictionary<String, int> _srcEPSGINFO;
         DataTable _srcSizeINFO;
+        //各个省份的四至信息
+        DataTable _extentInfo;
         int _provinceNum;
         DataTable _unitsinfo;
         DataTable _taifenginfoForcalc;
@@ -116,6 +118,8 @@ namespace GridControl
             String srcSizeINFOSQL = "SELECT * from ChinaCoordinate ORDER BY Coordinate desc";
             _srcSizeINFO = Dal_Rain.GetDataBySql(keyString, srcSizeINFOSQL);
 
+            String srcExtentINFOSQL = "SELECT * from grid_taifeng_province_extent ORDER BY order_num asc";
+            _extentInfo = Dal_ThirdWeb.GetDataBySql(srcExtentINFOSQL);
 
             int _provinceNum = _srcSizeINFO.Rows.Count;
 
@@ -607,6 +611,8 @@ namespace GridControl
         //各个省份分目录存储
         public bool DoASCMergeGridPerProvinceLocal()
         {
+            
+
             //! 网格模型out中输出文件的英文名称
             List<String> gridResultFieldName = new List<string>();
             Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
@@ -654,9 +660,6 @@ namespace GridControl
                     //遍历 srcSizeINFO
                     for (int p = 0; p < _srcSizeINFO.Rows.Count; p++)
                     {
-                        //每次读取asc数据后，膨胀这个变量
-                        DatFileStruct lastDt = new DatFileStruct();
-
                         bool isDataUpdate = false;
 
                         //对 时间 t索引 大于0小于10 则输出1位， 大于等于10且小于100输出2位 其他则输出3位
@@ -673,6 +676,41 @@ namespace GridControl
                         //省名字
                         String proName = _srcSizeINFO.Rows[p]["province"].ToString();
                         mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
+
+                        //! 当前省份的四至信息
+                        DataRow[] dataRows = _extentInfo.Select($"province = '{proName}'");
+                        if(dataRows.Length == 0)
+                        {
+                            Console.WriteLine($"没有找到省份 {proName} 的四至信息，跳过该省份的处理。");
+                            continue;
+                        }
+                        //提前确定好目标区域大小，将找到的单元，计算行列数后，放到这个数组中
+                        double xllcorner = double.Parse(dataRows[0]["xllcorner"].ToString());
+                        double yllcorner = double.Parse(dataRows[0]["yllcorner"].ToString());
+                        int ncols = int.Parse(dataRows[0]["ncols"].ToString());
+                        int nrows = int.Parse(dataRows[0]["nrows"].ToString());
+                        double cellsize = double.Parse(dataRows[0]["cellsize"].ToString());
+
+                        //每次读取asc数据后，膨胀这个变量
+                        //修改为根据每个省份的四至信息来处理
+                        DatFileStruct lastDt = new DatFileStruct();
+                        lastDt.xllcorner = xllcorner;
+                        lastDt.yllcorner = yllcorner;
+                        lastDt.xmaxcorner = xllcorner + ncols * cellsize;
+                        lastDt.ymaxcorner = yllcorner + nrows * cellsize;
+                        lastDt.col = ncols;
+                        lastDt.row = nrows;
+                        lastDt.cellsize = cellsize;
+                        lastDt.nodata = NOData;
+                        lastDt.rain = new float[nrows, ncols, 1];
+                        //初始值设置为 NOData
+                        for (int r = 0; r < nrows; r++)
+                        {
+                            for (int c = 0; c < ncols; c++)
+                            {
+                                lastDt.rain[r, c, 0] = NOData;
+                            }
+                        }
 
                         //每种指标对应的json索引文件名
                         String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".json");
@@ -728,69 +766,9 @@ namespace GridControl
 
                             isDataUpdate = true;
 
-                            //！根据当前curDt和 更新已有的expand
-                            DatFileStruct expandDt = new DatFileStruct();
-                            if (lastDt.rain == null)
-                            {
-                                expandDt.xllcorner = curDt.xllcorner;
-                                expandDt.yllcorner = curDt.yllcorner;
-                                expandDt.xmaxcorner = curDt.xmaxcorner;
-                                expandDt.ymaxcorner = curDt.ymaxcorner;
-                            }
-                            else
-                            {
-                                expandDt.xllcorner = (curDt.xllcorner <= lastDt.xllcorner) ? curDt.xllcorner : lastDt.xllcorner;
-                                expandDt.yllcorner = (curDt.yllcorner <= lastDt.yllcorner) ? curDt.yllcorner : lastDt.yllcorner;
-                                expandDt.xmaxcorner = (curDt.xmaxcorner > lastDt.xmaxcorner) ? curDt.xmaxcorner : lastDt.xmaxcorner;
-                                expandDt.ymaxcorner = (curDt.ymaxcorner > lastDt.ymaxcorner) ? curDt.ymaxcorner : lastDt.ymaxcorner;
-                            }
 
-                            //！扩展后的行列数
-                            expandDt.col = (int)Math.Floor((expandDt.xmaxcorner - expandDt.xllcorner) / mfbl + 1E-6);
-                            expandDt.row = (int)Math.Floor((expandDt.ymaxcorner - expandDt.yllcorner) / mfbl + 1E-6);
 
-                            // 创建一个新的expand后的data数组，行列初始为NOData，循环找到对应文件更新data中的值，写出
-                            float[,,] data = new float[expandDt.row, expandDt.col, 1];
-                            //！初始化所有值为-9999
-                            for (int r = 0; r < expandDt.row; r++)
-                            {
-                                for (int c = 0; c < expandDt.col; c++)
-                                {
-                                    data[r, c, 0] = NOData;
-                                }
-                            }
-
-                            //！1、上次原有的数据放入到expand中
-                            for (int lastR = 0; lastR < lastDt.row; lastR++)
-                            {
-                                for (int lastC = 0; lastC < lastDt.col; lastC++)
-                                {
-                                    double curLon = lastDt.xllcorner + mfbl * (lastC);
-                                    double curLat = lastDt.yllcorner + mfbl * (lastR);
-
-                                    int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
-                                    int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
-
-                                    if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
-                                    {
-
-                                        if (lastDt.rain[lastR, lastC, 0] != NOData)
-                                        {
-                                            data[globalR, globalC, 0] = lastDt.rain[lastR, lastC, 0];
-                                        }
-                                        else
-                                        {
-                                            int gg = 9;
-                                        }
-
-                                    }
-                                }
-                            }
-
-                            //！2、新解析的文件写入到expand中
-                            //！计算行列号，以及左下角起点，并将新的和原有的，放到expand后的
-                            //! expandDt是新的，包含lastDt 和 curDt
-                            //！扩展后的行列数
+                            //！根据当前curDt，计算其在lastDt中的行列号
                             for (int dtR = 0; dtR < curDt.row; dtR++)
                             {
                                 for (int dtC = 0; dtC < curDt.col; dtC++)
@@ -798,38 +776,20 @@ namespace GridControl
                                     double curLon = curDt.xllcorner + mfbl * (dtC);
                                     double curLat = curDt.yllcorner + mfbl * (dtR);
 
-                                    int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
-                                    int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
+                                    int globalR = (int)Math.Floor((curLat - lastDt.yllcorner) * (1 / mfbl) + 1E-6);
+                                    int globalC = (int)Math.Floor((curLon - lastDt.xllcorner) * (1 / mfbl) + 1E-6);
 
-                                    if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
+                                    if (globalR >= 0 && globalC >= 0 && globalR < lastDt.row && globalC < lastDt.col)
                                     {
 
                                         if (curDt.rain[(curDt.row - 1 - dtR), dtC, 0] != NOData)
                                         {
-                                            data[globalR, globalC, 0] = curDt.rain[(curDt.row - 1 - dtR), dtC, 0];
+                                            lastDt.rain[globalR, globalC, 0] = curDt.rain[(curDt.row - 1 - dtR), dtC, 0];
                                         }
 
                                     }
                                 }
                             }
-
-                            //释放lastDt.rain
-                            if (lastDt.rain != null)
-                            {
-                                lastDt.rain = null;
-                            }
-
-                            //更新lastDt 用expandDt
-                            lastDt.xllcorner = expandDt.xllcorner;
-                            lastDt.yllcorner = expandDt.yllcorner;
-                            lastDt.xmaxcorner = expandDt.xmaxcorner;
-                            lastDt.ymaxcorner = expandDt.ymaxcorner;
-                            lastDt.col = expandDt.col;
-                            lastDt.row = expandDt.row;
-                            lastDt.cellsize = expandDt.cellsize;
-                            lastDt.nodata = expandDt.nodata;
-                            lastDt.rain = data;
-
 
                         }
 
@@ -981,8 +941,40 @@ namespace GridControl
                     minmaxCurField.Add("min", diRecordmin);
                     minmaxCurField.Add("max", diRecordmax);
 
+                    //! 当前省份的四至信息
+                    DataRow[] dataRows = _extentInfo.Select($"province = 'china'");
+                    if (dataRows.Length == 0)
+                    {
+                        Console.WriteLine($"没有找到省份 china 的四至信息，跳过该省份的处理。");
+                        continue;
+                    }
+                    //提前确定好目标区域大小，将找到的单元，计算行列数后，放到这个数组中
+                    double xllcorner = double.Parse(dataRows[0]["xllcorner"].ToString());
+                    double yllcorner = double.Parse(dataRows[0]["yllcorner"].ToString());
+                    int ncols = int.Parse(dataRows[0]["ncols"].ToString());
+                    int nrows = int.Parse(dataRows[0]["nrows"].ToString());
+                    double cellsize = double.Parse(dataRows[0]["cellsize"].ToString());
+
                     //每次读取asc数据后，膨胀这个变量
+                    //修改为根据每个省份的四至信息来处理
                     DatFileStruct lastDt = new DatFileStruct();
+                    lastDt.xllcorner = xllcorner;
+                    lastDt.yllcorner = yllcorner;
+                    lastDt.xmaxcorner = xllcorner + ncols * cellsize;
+                    lastDt.ymaxcorner = yllcorner + nrows * cellsize;
+                    lastDt.col = ncols;
+                    lastDt.row = nrows;
+                    lastDt.cellsize = cellsize;
+                    lastDt.nodata = NOData;
+                    lastDt.rain = new float[nrows, ncols, 1];
+                    //初始值设置为 NOData
+                    for (int r = 0; r < nrows; r++)
+                    {
+                        for (int c = 0; c < ncols; c++)
+                        {
+                            lastDt.rain[r, c, 0] = NOData;
+                        }
+                    }
 
                     bool isDataUpdate = false;
 
@@ -1033,69 +1025,7 @@ namespace GridControl
 
                         isDataUpdate = true;
 
-                        //！根据当前curDt和 更新已有的expand
-                        DatFileStruct expandDt = new DatFileStruct();
-                        if (lastDt.rain == null)
-                        {
-                            expandDt.xllcorner = curDt.xllcorner;
-                            expandDt.yllcorner = curDt.yllcorner;
-                            expandDt.xmaxcorner = curDt.xmaxcorner;
-                            expandDt.ymaxcorner = curDt.ymaxcorner;
-                        }
-                        else
-                        {
-                            expandDt.xllcorner = (curDt.xllcorner <= lastDt.xllcorner) ? curDt.xllcorner : lastDt.xllcorner;
-                            expandDt.yllcorner = (curDt.yllcorner <= lastDt.yllcorner) ? curDt.yllcorner : lastDt.yllcorner;
-                            expandDt.xmaxcorner = (curDt.xmaxcorner > lastDt.xmaxcorner) ? curDt.xmaxcorner : lastDt.xmaxcorner;
-                            expandDt.ymaxcorner = (curDt.ymaxcorner > lastDt.ymaxcorner) ? curDt.ymaxcorner : lastDt.ymaxcorner;
-                        }
-
-                        //！扩展后的行列数
-                        expandDt.col = (int)Math.Floor((expandDt.xmaxcorner - expandDt.xllcorner) / mfbl + 1E-6);
-                        expandDt.row = (int)Math.Floor((expandDt.ymaxcorner - expandDt.yllcorner) / mfbl + 1E-6);
-
-                        // 创建一个新的expand后的data数组，行列初始为NOData，循环找到对应文件更新data中的值，写出
-                        float[,,] data = new float[expandDt.row, expandDt.col, 1];
-                        //！初始化所有值为-9999
-                        for (int r = 0; r < expandDt.row; r++)
-                        {
-                            for (int c = 0; c < expandDt.col; c++)
-                            {
-                                data[r, c, 0] = NOData;
-                            }
-                        }
-
-                        //！1、上次原有的数据放入到expand中
-                        for (int lastR = 0; lastR < lastDt.row; lastR++)
-                        {
-                            for (int lastC = 0; lastC < lastDt.col; lastC++)
-                            {
-                                double curLon = lastDt.xllcorner + mfbl * (lastC);
-                                double curLat = lastDt.yllcorner + mfbl * (lastR);
-
-                                int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
-                                int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
-
-                                if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
-                                {
-
-                                    if (lastDt.rain[lastR, lastC, 0] != NOData)
-                                    {
-                                        data[globalR, globalC, 0] = lastDt.rain[lastR, lastC, 0];
-                                    }
-                                    else
-                                    {
-                                        int gg = 9;
-                                    }
-
-                                }
-                            }
-                        }
-
-                        //！2、新解析的文件写入到expand中
-                        //！计算行列号，以及左下角起点，并将新的和原有的，放到expand后的
-                        //! expandDt是新的，包含lastDt 和 curDt
-                        //！扩展后的行列数
+                        
                         for (int dtR = 0; dtR < curDt.row; dtR++)
                         {
                             for (int dtC = 0; dtC < curDt.col; dtC++)
@@ -1103,37 +1033,20 @@ namespace GridControl
                                 double curLon = curDt.xllcorner + mfbl * (dtC);
                                 double curLat = curDt.yllcorner + mfbl * (dtR);
 
-                                int globalR = (int)Math.Floor((curLat - expandDt.yllcorner) * (1 / mfbl) + 1E-6);
-                                int globalC = (int)Math.Floor((curLon - expandDt.xllcorner) * (1 / mfbl) + 1E-6);
+                                int globalR = (int)Math.Floor((curLat - lastDt.yllcorner) * (1 / mfbl) + 1E-6);
+                                int globalC = (int)Math.Floor((curLon - lastDt.xllcorner) * (1 / mfbl) + 1E-6);
 
-                                if (globalR >= 0 && globalC >= 0 && globalR < expandDt.row && globalC < expandDt.col)
+                                if (globalR >= 0 && globalC >= 0 && globalR < lastDt.row && globalC < lastDt.col)
                                 {
 
                                     if (curDt.rain[(curDt.row - 1 - dtR), dtC, 0] != NOData)
                                     {
-                                        data[globalR, globalC, 0] = curDt.rain[(curDt.row - 1 - dtR), dtC, 0];
+                                        lastDt.rain[globalR, globalC, 0] = curDt.rain[(curDt.row - 1 - dtR), dtC, 0];
                                     }
 
                                 }
                             }
                         }
-
-                        //释放lastDt.rain
-                        if (lastDt.rain != null)
-                        {
-                            lastDt.rain = null;
-                        }
-
-                        //更新lastDt 用expandDt
-                        lastDt.xllcorner = expandDt.xllcorner;
-                        lastDt.yllcorner = expandDt.yllcorner;
-                        lastDt.xmaxcorner = expandDt.xmaxcorner;
-                        lastDt.ymaxcorner = expandDt.ymaxcorner;
-                        lastDt.col = expandDt.col;
-                        lastDt.row = expandDt.row;
-                        lastDt.cellsize = expandDt.cellsize;
-                        lastDt.nodata = expandDt.nodata;
-                        lastDt.rain = data; 
                     }
 
                     //写出到文件
