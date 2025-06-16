@@ -1334,18 +1334,18 @@ namespace GridControl
                     double yllcorner = double.Parse(dataRows[0]["yllcorner"].ToString());
                     int ncols = int.Parse(dataRows[0]["ncols"].ToString());
                     int nrows = int.Parse(dataRows[0]["nrows"].ToString());
-                    double cellsize = double.Parse(dataRows[0]["cellsize"].ToString());
+                    double global_cellsize = double.Parse(dataRows[0]["cellsize"].ToString());
 
                     //每次读取asc数据后，膨胀这个变量
                     //修改为根据每个省份的四至信息来处理
                     DatFileStruct lastDt = new DatFileStruct();
                     lastDt.xllcorner = xllcorner;
                     lastDt.yllcorner = yllcorner;
-                    lastDt.xmaxcorner = xllcorner + ncols * cellsize;
-                    lastDt.ymaxcorner = yllcorner + nrows * cellsize;
+                    lastDt.xmaxcorner = xllcorner + ncols * global_cellsize;
+                    lastDt.ymaxcorner = yllcorner + nrows * global_cellsize;
                     lastDt.col = ncols;
                     lastDt.row = nrows;
-                    lastDt.cellsize = cellsize;
+                    lastDt.cellsize = global_cellsize;
                     lastDt.nodata = NOData;
                     lastDt.rain = new float[nrows, ncols, 1];
                     //初始值设置为 NOData
@@ -1438,8 +1438,8 @@ namespace GridControl
                                 
 
 
-                                int globalR = (int)Math.Floor((curLat - lastDt.yllcorner) * (1 / mfbl) + 1E-6);
-                                int globalC = (int)Math.Floor((curLon - lastDt.xllcorner) * (1 / mfbl) + 1E-6);
+                                int globalR = (int)Math.Floor((curLat - lastDt.yllcorner) * (1 / global_cellsize) + 1E-6);
+                                int globalC = (int)Math.Floor((curLon - lastDt.xllcorner) * (1 / global_cellsize) + 1E-6);
 
                                 if (globalR >= 0 && globalC >= 0 && globalR < lastDt.row && globalC < lastDt.col)
                                 {
@@ -1467,7 +1467,7 @@ namespace GridControl
                     paramsgrid.nrows = lastDt.row.ToString(CultureInfo.InvariantCulture);
                     paramsgrid.xllcorner = lastDt.xllcorner.ToString("f6", CultureInfo.InvariantCulture);
                     paramsgrid.yllcorner = lastDt.yllcorner.ToString("f6", CultureInfo.InvariantCulture);
-                    paramsgrid.cellsize = mfbl.ToString("f6", CultureInfo.InvariantCulture);
+                    paramsgrid.cellsize = global_cellsize.ToString("f6", CultureInfo.InvariantCulture);
                     if (isDataUpdate)
                     {
                         float curMinvalue = 0.0f;
