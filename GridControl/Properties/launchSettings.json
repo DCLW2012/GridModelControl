@@ -2,7 +2,7 @@
   "profiles": {
     "GridControl": {
       "commandName": "Project",
-      "commandLineArgs": "-method wata -processnum 32 -isGridout true -isLocatTest true -isCloseCMD true -province henan -isUseDatTable true -filename 2025061100-10-r4000-c4000-d1.dat -isshowchildprocess true"
+      "commandLineArgs": "-method wata -processnum 32 -isGridout true -isLocatTest true -isCloseCMD true -province henan -isUseDatTable true -filename 2025061100-10-r4000-c4000-d1.dat -isshowchildprocess false -isSkipCalc true"
     }
   }
 }

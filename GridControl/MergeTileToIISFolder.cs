@@ -211,6 +211,61 @@ namespace GridControl
             
         }
 
+        public bool ReSampleToDestAndReprojectToUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs, HSFX_UNIT_Grid paramsgrid)
+        {
+            //判断dstPath文件所在的目录不存在，则创建
+            string directory = Path.GetDirectoryName(dstPath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            // 初始化GDAL
+            GdalBase.ConfigureAll();
+            Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
+            Gdal.AllRegister();
+
+            // 打开源数据
+            Dataset srcDs = Gdal.Open(srcPath, Access.GA_ReadOnly);
+
+            // 设置目标投影（以 WGS84 为例，EPSG:4326）
+            string dstSrsWkt;
+            SpatialReference dstSrs = new SpatialReference("");
+            dstSrs.ImportFromEPSG(int.Parse(targetSrs.Split(":")[1]));
+            dstSrs.ExportToWkt(out dstSrsWkt, null);
+
+            // 重投影
+            // 假设已初始化GDAL并打开srcDs，已设置dstSrsWkt
+
+            double xRes = double.Parse(paramsgrid.cellsize); // 目标分辨率（单位：投影坐标系单位）
+            double yRes = double.Parse(paramsgrid.cellsize);
+            double[] outputBounds = { double.Parse(paramsgrid.xllcorner), double.Parse(paramsgrid.yllcorner), double.Parse(paramsgrid.xllcorner) + int.Parse(paramsgrid.ncols) * xRes, double.Parse(paramsgrid.yllcorner) + int.Parse(paramsgrid.nrows)* yRes}; // 指定输出范围
+
+            string[] warpOptions = new string[]
+            {
+                $"-t_srs", dstSrsWkt,
+                "-r", "near", // 最近邻插值
+                "-tr", xRes.ToString(), yRes.ToString(), // 分辨率
+                "-of", "AAIGrid",
+                "-te", outputBounds[0].ToString(), outputBounds[1].ToString(), outputBounds[2].ToString(), outputBounds[3].ToString() // 范围
+            };
+
+            Driver drv = Gdal.GetDriverByName("AAIGrid");
+            if (drv == null)
+            {
+                Console.WriteLine("无法找到AAIGrid驱动");
+                return false;
+            }
+            // 调用Gdal.Warp
+            Dataset dstDs = Gdal.Warp(dstPath, new Dataset[] { srcDs }, new GDALWarpAppOptions(warpOptions), null, "");
+
+            // 释放资源
+            srcDs.Dispose();
+            dstDs.Dispose();
+            drv.Dispose();
+            return true;
+        }
+
         public bool ReprojectToUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs)
         {
             //判断dstPath文件所在的目录不存在，则创建
@@ -1357,6 +1412,13 @@ namespace GridControl
                         }
                     }
 
+                    HSFX_UNIT_Grid paramsgrid = new HSFX_UNIT_Grid();
+                    paramsgrid.ncols = lastDt.col.ToString(CultureInfo.InvariantCulture);
+                    paramsgrid.nrows = lastDt.row.ToString(CultureInfo.InvariantCulture);
+                    paramsgrid.xllcorner = lastDt.xllcorner.ToString("f6", CultureInfo.InvariantCulture);
+                    paramsgrid.yllcorner = lastDt.yllcorner.ToString("f6", CultureInfo.InvariantCulture);
+                    paramsgrid.cellsize = global_cellsize.ToString("f6", CultureInfo.InvariantCulture);
+
                     bool isDataUpdate = false;
 
                     //每种指标对应的json索引文件名
@@ -1409,7 +1471,7 @@ namespace GridControl
                             continue;
                         }
                         String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curSearchDatFile), "UTM49", Path.GetFileName(curSearchDatFile));
-                        bool isrpro = ReprojectToUTM49(curSearchDatFile, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumberSrc),"EPSG:32649");
+                        bool isrpro = ReSampleToDestAndReprojectToUTM49(curSearchDatFile, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumberSrc),"EPSG:32649", paramsgrid);
                         if (isrpro)
                         {
                             ReadGridDataFromAsc(curSearchDatReporjectFile, ref curDt);
@@ -1435,11 +1497,9 @@ namespace GridControl
                                 double curLon = curDt.xllcorner + mfbl * (dtC);
                                 double curLat = curDt.yllcorner + mfbl * (dtR);
 
-                                
-
-
-                                int globalR = (int)Math.Floor((curLat - lastDt.yllcorner) * (1 / global_cellsize) + 1E-6);
-                                int globalC = (int)Math.Floor((curLon - lastDt.xllcorner) * (1 / global_cellsize) + 1E-6);
+                                //由于文件已经转换到统一的EPSG:32649坐标系，所以这里直接使用global_cellsize
+                                int globalR = dtR;
+                                int globalC = dtC;
 
                                 if (globalR >= 0 && globalC >= 0 && globalR < lastDt.row && globalC < lastDt.col)
                                 {
@@ -1453,21 +1513,6 @@ namespace GridControl
                             }
                         }
                     }
-
-                    //写出到文件
-                    //                  HSFX_UNIT_Grid params;
-                    //params.ncols = QString::number(lastDt.col);
-                    //params.nrows = QString::number(lastDt.row);
-                    //params.xllcorner = QString::number(lastDt.xllcorner, 'f', 6);
-                    //params.yllcorner = QString::number(lastDt.yllcorner, 'f', 6);
-                    //params.cellsize = QString::number(mfbl, 'f', 6);
-                    //以上写为netcore
-                    HSFX_UNIT_Grid paramsgrid = new HSFX_UNIT_Grid();
-                    paramsgrid.ncols = lastDt.col.ToString(CultureInfo.InvariantCulture);
-                    paramsgrid.nrows = lastDt.row.ToString(CultureInfo.InvariantCulture);
-                    paramsgrid.xllcorner = lastDt.xllcorner.ToString("f6", CultureInfo.InvariantCulture);
-                    paramsgrid.yllcorner = lastDt.yllcorner.ToString("f6", CultureInfo.InvariantCulture);
-                    paramsgrid.cellsize = global_cellsize.ToString("f6", CultureInfo.InvariantCulture);
                     if (isDataUpdate)
                     {
                         float curMinvalue = 0.0f;

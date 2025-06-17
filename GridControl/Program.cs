@@ -144,6 +144,9 @@ namespace GridControl
                             int aa = 9;
                         }
 
+                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 1,iserror = {0} where filename = '{1}'", 0, datname);
+                        Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
+
                         //判断结果目录存在在，删除目录
                         String iisresfoleder = Path.Combine(HookHelper.IISRootDirectory, fileNameWithoutExtension);
                         if (Directory.Exists(iisresfoleder))
@@ -210,7 +213,7 @@ namespace GridControl
                             isMerge = mergeTileToIISFolder.DoASCMergeGridAllProvinceLocalToOne();
                             Console.WriteLine(string.Format("{0}场次合并结果完成  ", datname) + DateTime.Now);
                         }
-                        String sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunits, datname);
+                        sqldatstatusBaseInfo = String.Format("UPDATE grid_taifeng_filestatus_baseinfo set iscalcfinish = 2,iserror = {0} where filename = '{1}'", isErrorunits, datname);
                         Dal_ThirdWeb.ExecuteSqlInserting(sqldatstatusBaseInfo);
                     }
 
