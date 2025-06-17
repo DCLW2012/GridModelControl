@@ -36,9 +36,16 @@ namespace GridControl
                 {
                     myProcessStartInfo.WindowStyle = ProcessWindowStyle.Hidden;//隐藏黑屏，不让执行exe的黑屏弹出
                 }
+                else
+                {
+                    //显示窗口
+                    myProcessStartInfo.WindowStyle = ProcessWindowStyle.Normal;//显示黑屏
+                    myProcessStartInfo.CreateNoWindow = false;
+                    myProcessStartInfo.UseShellExecute = true;
+                }
 
                 myProcess.StartInfo = myProcessStartInfo;
-                myProcess.StartInfo.Arguments = appPath;
+                myProcess.StartInfo.Arguments = "";
                 bool isStart = myProcess.Start();
 
                 if (isStart)
