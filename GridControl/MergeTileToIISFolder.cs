@@ -211,7 +211,7 @@ namespace GridControl
             
         }
 
-        public bool ReSampleToDestAndReprojectToUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs, HSFX_UNIT_Grid paramsgrid)
+        public bool ReSampleToDestAndReprojectToChinaUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs, HSFX_UNIT_Grid paramsgrid)
         {
             //判断dstPath文件所在的目录不存在，则创建
             string directory = Path.GetDirectoryName(dstPath);
@@ -266,7 +266,7 @@ namespace GridControl
             return true;
         }
 
-        public bool ReprojectToUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs)
+        public bool ReprojectAscToAsc(string srcPath, string dstPath, String sourceSrs, String targetSrs)
         {
             //判断dstPath文件所在的目录不存在，则创建
             string directory = Path.GetDirectoryName(dstPath);
@@ -698,6 +698,86 @@ namespace GridControl
                 }
 
                 
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"生成PNG失败: {ex.Message}");
+                return false;
+            }
+        }
+
+        //使用gdal写出图片
+        public bool AscDemToColorPngByGDAL(string inascfile, string outpngfile, float curMinValue, float curMaxValue)
+        {
+            try
+            {
+                // 检查输入文件是否存在
+                if (!File.Exists(inascfile))
+                {
+                    Console.WriteLine($"输入的ASC文件不存在: {inascfile}");
+                    return false;
+                }
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(outpngfile);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                GdalBase.ConfigureAll();
+
+                // 注册所有驱动
+                Gdal.AllRegister();
+
+                // 打开 ASC 文件
+                using (var ascDataset = Gdal.Open(inascfile, Access.GA_ReadOnly))
+                {
+                    if (ascDataset == null)
+                        throw new Exception("无法打开ASC文件");
+
+                    // 设置目标坐标系 (EPSG:3857)
+                    var targetSrs = new SpatialReference(null);
+                    targetSrs.ImportFromEPSG(3857);
+
+                    // 创建内存中的临时数据集
+                    var warpOptions = new string[] {
+                                "-t_srs", "EPSG:3857",  // 目标坐标系
+                                "-r", "bilinear",       // 重采样方法
+                                "-of", "MEM",            // 输出到内存
+                                "-co", "COMPRESS=DEFLATE",
+                                "-overwrite"
+            };
+
+                    // 执行坐标转换
+
+                    using (var warpedDataset = Gdal.Warp("", new Dataset[] { ascDataset },new GDALWarpAppOptions(warpOptions), null, ""))
+                    {
+                        // 配置 PNG 输出选项
+                        var pngOptions = new string[] {
+                            "-ot", "Byte",          // 8位像素
+                            "-scale",               // 自动值域拉伸
+                            "-of", "PNG",           // 输出格式
+                            "-co", "WORLDFILE=YES"  // 生成坐标文件
+                        };
+
+                        // 获取 PNG 驱动
+                        var pngDriver = Gdal.GetDriverByName("PNG");
+                        if (pngDriver == null)
+                            throw new Exception("PNG驱动不可用");
+
+                        // 删除已存在的输出文件
+                        if (File.Exists(outpngfile)) File.Delete(outpngfile);
+
+                        // 创建 PNG 文件
+                        using (var pngDataset = pngDriver.CreateCopy(outpngfile, warpedDataset, 0, pngOptions, null, null))
+                        {
+                            Console.WriteLine($"成功生成PNG: {outpngfile}");
+                        }
+                    }
+                }
+
+
                 return true;
             }
             catch (Exception ex)
@@ -1430,9 +1510,13 @@ namespace GridControl
                     //对齐输出文件索引
                     String txtFolder = Path.Combine(curCCname, "output", "txt");
                     String pngFloder = Path.Combine(curCCname, "output", "png", gridResultFieldName[g]);
+                    String pngFloder4326 = Path.Combine(curCCname, "output", "png4326", gridResultFieldName[g]);
+
                     String outFormatIndex = t.ToString("D3");
                     String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
                     String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+                    String curCCTimeOutPng4326Filename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder4326, curCCname, gridResultFieldName[g], "all", outFormatIndex);
+
                     String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
                     String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], "all", outFormatIndex);
                     //遍历 srcSizeINFO
@@ -1471,7 +1555,7 @@ namespace GridControl
                             continue;
                         }
                         String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curSearchDatFile), "UTM49", Path.GetFileName(curSearchDatFile));
-                        bool isrpro = ReSampleToDestAndReprojectToUTM49(curSearchDatFile, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumberSrc),"EPSG:32649", paramsgrid);
+                        bool isrpro = ReSampleToDestAndReprojectToChinaUTM49(curSearchDatFile, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumberSrc),"EPSG:32649", paramsgrid);
                         if (isrpro)
                         {
                             ReadGridDataFromAsc(curSearchDatReporjectFile, ref curDt);
@@ -1518,17 +1602,32 @@ namespace GridControl
                         float curMinvalue = 0.0f;
                         float curMaxValue = 0.0f;
                         bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
+                        
+                        //! 写出同名proj文件curCCOutProjfileName
+                        int utmNumber = _srcEPSGINFO["henan"];
+                        String utmIndexStr = (utmNumber - 32600).ToString();
+                        bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
                         if (status)
                         {
-                            bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
-                            if (isPngOK)
+                            bool isPngOK32649 = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+
+                            //txt 目录下建立个 4326文件夹，转换一份4326坐标文件
+                            String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileName(curCCTimeOutdir));
+                            bool isrpro4326 = ReprojectAscToAsc(curCCTimeOutdir, curSearchDatReporjectFile, String.Format("EPSG:32649"), "EPSG:4326");
+                            if (isrpro4326)
                             {
-                                //curCCTimeOutPngFilename 中获取带扩展名的文件名
-                                String extStr = Path.GetFileName(curCCTimeOutPngFilename);
+                                bool isPngOK4326 = AscDemToColorPng(curSearchDatReporjectFile, curCCTimeOutPng4326Filename, curMinvalue, curMaxValue);
+                            }
+
+                            if (isPngOK32649)
+                            {
+                                //再写出份4326的 
+                                //curCCTimeOutPng4326Filename 中获取带扩展名的文件名
+                                String extStr = Path.GetFileName(curCCTimeOutPng4326Filename);
 
                                 //为对应的指标添加url
                                 WaterDeep wd = new WaterDeep();
-                                wd.url = String.Format("/output/png/{0}/{1}", gridResultFieldName[g], extStr);
+                                wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
                                 wd.time = curFrameTime;
                                 wd.area = 0; //淹没面积
                                 wd.isHavarecord = "1"; //有数据
@@ -1540,13 +1639,13 @@ namespace GridControl
                                 ReadWriteJSONFile.Write(gridResultFieldURL[gridResultFieldName[g]], curJsonFilefullpath);
 
                                 //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
-                                
+
 
                                 //如果是最后一个时间，则在当前png目录下直接输出gif文件，合并png
                                 if (t == totalTimeNum - 1)
                                 {
                                     //合并当前省份下的所有png文件
-                                    String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
+                                    String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder4326);
 
                                     bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                     if (isGifOK)
@@ -1556,14 +1655,8 @@ namespace GridControl
                                     }
                                 }
                             }
-                        }
-                        //! 写出同名proj文件curCCOutProjfileName
-                        int utmNumber = _srcEPSGINFO["henan"];
-                        String utmIndexStr = (utmNumber - 32600).ToString();
-                        bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
-                        if (status)
-                        {
-                            //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
+
+                            
                         }
 
                         //写出min max值
