@@ -225,72 +225,76 @@ namespace GridControl
                 }
                 else
                 {
-                    for (int i = 0; i < nodes.Length; ++i)
+                    if (!HookHelper.isSkipCalc)
                     {
-                        HookHelper.computerNode = nodes[i];
-                        //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
-                        if (HookHelper.method.Equals("wata"))
+                        for (int i = 0; i < nodes.Length; ++i)
                         {
-                            ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode, HookHelper.curProvince);
-                        }
-                        else
-                        {
-                            ClientConn.PraseGridUnitConfig();
-                        }
-
-
-                        // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
-                        Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
-                        Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
-
-                        if (HookHelper.method == "province")
-                        {
-
-                            //默认是使用原来的流程解析dat文件
-                            if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                            HookHelper.computerNode = nodes[i];
+                            //! 为了后续计算速度快，提前从数据库中读取unit单元信息和模型路径信息，
+                            if (HookHelper.method.Equals("wata"))
                             {
-                                CalcOneByOne.runBySingleCC();
+                                ClientConn.PraseGridUnitConfigAllChina(HookHelper.computerNode, HookHelper.curProvince);
                             }
-                            else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                            else
                             {
-                                CalcOneByOne.runBySingleCCFromNC();
+                                ClientConn.PraseGridUnitConfig();
                             }
 
+
+                            // 每个省对应一个数据库连接，每个连接里包含了降雨切片目录
+                            Dictionary<string, Dictionary<string, string>> dbValues = ClientConn.m_dbTableTypes;
+                            Dictionary<string, Dictionary<string, DataTable>> dbTableConfigs = ClientConn.m_dbTableConfig;
+
+                            if (HookHelper.method == "province")
+                            {
+
+                                //默认是使用原来的流程解析dat文件
+                                if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                                {
+                                    CalcOneByOne.runBySingleCC();
+                                }
+                                else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                                {
+                                    CalcOneByOne.runBySingleCCFromNC();
+                                }
+
+
+                                //执行插入日志
+                                WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                                //按省份计算，一次节点算完就结束。
+                                break;
+                            }
+
+                            if (HookHelper.method == "wata")
+                            {
+                                //WriteUnitInfo.GetAllHsfxUnitTableByWATA();
+
+                                //默认是使用原来的流程解析dat文件
+                                if (HookHelper.raintype.ToUpper().Equals("DAT"))
+                                {
+
+                                    CalcOneByOneWata.runBySingleCC();
+                                }
+                                else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
+                                {
+                                    CalcOneByOneWata.runBySingleCCFromNC();
+                                }
+                                //执行插入日志
+                                WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
+                            }
+
+                            //! 阻塞程序不关闭
+                            Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
 
                             //执行插入日志
-                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
-                            //按省份计算，一次节点算完就结束。
-                            break;
+                            WriteLog.WriteLogMethod(HookHelper.Log);
+                            Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
+                            Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                            Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
+                            Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
                         }
-
-                        if (HookHelper.method == "wata")
-                        {
-                            //WriteUnitInfo.GetAllHsfxUnitTableByWATA();
-
-                            //默认是使用原来的流程解析dat文件
-                            if (HookHelper.raintype.ToUpper().Equals("DAT"))
-                            {
-
-                                CalcOneByOneWata.runBySingleCC();
-                            }
-                            else if (HookHelper.raintype.ToUpper().Equals("NC"))   //nc支持目录下时间子目录支持，和目录下单个nc文件包含多个数据支持
-                            {
-                                CalcOneByOneWata.runBySingleCCFromNC();
-                            }
-                            //执行插入日志
-                            WriteLog.WriteLogMethod(HookHelper.Log, "runByCCFolder");
-                        }
-
-                        //! 阻塞程序不关闭
-                        Console.WriteLine(string.Format("当前主机节点{0}网格计算调度完成  ", HookHelper.computerNode) + DateTime.Now);
-
-                        //执行插入日志
-                        WriteLog.WriteLogMethod(HookHelper.Log);
-                        Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
-                        Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
-                        Console.WriteLine(string.Format("                                                                    ") + DateTime.Now);
-                        Console.WriteLine(string.Format("####################################################################") + DateTime.Now);
                     }
+                        
                 }
 
                 

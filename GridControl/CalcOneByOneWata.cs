@@ -227,8 +227,12 @@ namespace GridControl
                                     {
                                         curProcss = null;
                                     }
-                                    bool isInProcess = curProcss == null ? false : true;
-                                    if (isInProcess)
+                                    bool isHaveExit = false;
+                                    if (curProcss != null)
+                                    {
+                                        isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                    }
+                                    if (!isHaveExit)
                                     {
                                         //curProcss.Kill();
                                         //HookHelper.Log += string.Format("***********关闭进程开始 ") + DateTime.Now + ";\r\n";
@@ -380,8 +384,12 @@ namespace GridControl
                             {
                                 curProcss = null;
                             }
-                            bool isInProcess = curProcss == null ? false : true;
-                            if (isInProcess)
+                            bool isHaveExit = false;
+                            if (curProcss != null)
+                            {
+                                isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                            }
+                            if (!isHaveExit)
                             {
                                 //curProcss.Kill();
                                 //Console.WriteLine(string.Format("***********关闭进程开始") + DateTime.Now);
@@ -649,8 +657,12 @@ namespace GridControl
                                     {
                                         curProcss = null;
                                     }
-                                    bool isInProcess = curProcss == null ? false : true;
-                                    if (isInProcess)
+                                    bool isHaveExit = false;
+                                    if (curProcss != null)
+                                    {
+                                        isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                    }
+                                    if (!isHaveExit)
                                     {
                                         //curProcss.Kill();
                                         //HookHelper.Log += string.Format("***********关闭进程开始 ") + DateTime.Now + ";\r\n";
@@ -802,8 +814,12 @@ namespace GridControl
                             {
                                 curProcss = null;
                             }
-                            bool isInProcess = curProcss == null ? false : true;
-                            if (isInProcess)
+                            bool isHaveExit = false;
+                            if (curProcss != null)
+                            {
+                                isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                            }
+                            if (!isHaveExit)
                             {
                                 //curProcss.Kill();
                                 //Console.WriteLine(string.Format("***********关闭进程开始") + DateTime.Now);
@@ -1065,8 +1081,12 @@ namespace GridControl
                                     {
                                         curProcss = null;
                                     }
-                                    bool isInProcess = curProcss == null ? false : true;
-                                    if (isInProcess)
+                                    bool isHaveExit = false;
+                                    if (curProcss != null)
+                                    {
+                                        isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                                    }
+                                    if (!isHaveExit)
                                     {
                                         //curProcss.Kill();
                                         HookHelper.KillProcessAndChildren(curPID);
@@ -1184,8 +1204,12 @@ namespace GridControl
                             {
                                 curProcss = null;
                             }
-                            bool isInProcess = curProcss == null ? false : true;
-                            if (isInProcess)
+                            bool isHaveExit = false;
+                            if (curProcss != null)
+                            {
+                                isHaveExit = curProcss.HasExited; //如果进程已经退出，则为true，否则为false
+                            }
+                            if (!isHaveExit)
                             {
                                 //curProcss.Kill();
                                 HookHelper.KillProcessAndChildren(curPID);
