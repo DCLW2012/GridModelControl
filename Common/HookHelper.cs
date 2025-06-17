@@ -44,6 +44,9 @@ namespace Common
 
         public static bool isLocatTest { get; set; }
 
+        //仅仅合并，跳过计算
+        public static bool isSkipCalc { get; set; }
+
         public static ConfigurationBuilder AppSettings { get; set; }
         public static List<ConnectInfo> ConnectInfoList { get; set; }
         
