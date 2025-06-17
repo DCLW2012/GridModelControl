@@ -451,6 +451,75 @@ namespace GridControl
             }
         }
 
+        //使用gdal写出asc文件能自动写出投影文件
+        public bool WriteResultAscFileByParamsWithMinMaxByGdal(string fileName,
+                        float[,,] data,
+                        HSFX_UNIT_Grid @params,
+                        ref float minValue,
+                        ref float maxValue)
+        {
+            try
+            {
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(fileName);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    // 写出 ASC 文件头
+                    writer.WriteLine($"ncols {@params.ncols}");
+                    writer.WriteLine($"nrows {@params.nrows}");
+                    writer.WriteLine($"xllcorner {@params.xllcorner:F6}");
+                    writer.WriteLine($"yllcorner {@params.yllcorner:F6}");
+                    writer.WriteLine($"cellsize {@params.cellsize:F6}");
+                    writer.WriteLine("NODATA_value -9999");
+
+                    int outRow = int.Parse(@params.nrows);
+                    int outCol = int.Parse(@params.ncols);
+
+                    const int NODATA_VALUE = -9999;
+
+                    // 行倒序写入（从最后一行开始）
+                    for (int r = outRow - 1; r >= 0; r--)
+                    {
+                        StringBuilder line = new StringBuilder();
+
+                        for (int c = 0; c < outCol; c++)
+                        {
+                            float curRain = data[r, c, 0];
+
+                            // 忽略无效值参与最值统计
+                            if (curRain >= NODATA_VALUE)
+                            {
+                                if (curRain < minValue && curRain > NODATA_VALUE)
+                                    minValue = curRain;
+
+                                if (curRain > maxValue)
+                                    maxValue = curRain;
+                            }
+
+                            // 保留三位小数
+                            line.AppendFormat("{0:F3}", curRain);
+
+                            if (c != outCol - 1)
+                                line.Append(" ");
+                        }
+
+                        writer.WriteLine(line.ToString());
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"写入文件失败: {ex.Message}");
+                return false;
+            }
+        }
 
         public bool WriteResultAscFileByParamsWithMinMax( string fileName,
                         float[,,] data,
