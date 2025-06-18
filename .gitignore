@@ -27,3 +27,4 @@ GridControl/GridControl.csproj
 SysDAL/SysDAL.csproj
 tools/TestProject1/bin/
 tools/TestProject1/obj/
+GridControl/Properties/PublishProfiles/
