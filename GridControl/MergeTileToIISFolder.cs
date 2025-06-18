@@ -1620,7 +1620,7 @@ namespace GridControl
                             {
                                 bool isPngOK4326 = AscDemToColorPng(curSearchDatReporjectFile, curCCTimeOutPng4326Filename, curMinvalue, curMaxValue);
                             }
-
+                            Console.WriteLine($"场次 {curCCname} 时间 {outFormatIndex} 的字段 {gridResultFieldName[g]} 在全国的PNG写出成功，共{totalTimeNum}个时间");
                             if (isPngOK32649)
                             {
                                 //再写出份4326的 
