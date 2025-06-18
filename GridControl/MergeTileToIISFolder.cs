@@ -1235,9 +1235,13 @@ namespace GridControl
                         //对齐输出文件索引
                         String txtFolder = Path.Combine(curCCname, proName, "output", "txt");
                         String pngFloder = Path.Combine(curCCname, proName, "output", "png", gridResultFieldName[g]);
+                        String pngFloder4326 = Path.Combine(curCCname, proName, "output", "png4326", gridResultFieldName[g]);
+
                         String outFormatIndex = t.ToString("D3");
                         String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
                         String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutPng4326Filename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder4326, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+
                         String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
                         String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
                         //遍历每个单元
@@ -1308,13 +1312,6 @@ namespace GridControl
                         }
 
                         //写出到文件
-                        //                  HSFX_UNIT_Grid params;
-                        //params.ncols = QString::number(lastDt.col);
-                        //params.nrows = QString::number(lastDt.row);
-                        //params.xllcorner = QString::number(lastDt.xllcorner, 'f', 6);
-                        //params.yllcorner = QString::number(lastDt.yllcorner, 'f', 6);
-                        //params.cellsize = QString::number(mfbl, 'f', 6);
-                        //以上写为netcore
                         HSFX_UNIT_Grid paramsgrid = new HSFX_UNIT_Grid();
                         paramsgrid.ncols = lastDt.col.ToString(CultureInfo.InvariantCulture);
                         paramsgrid.nrows = lastDt.row.ToString(CultureInfo.InvariantCulture);
@@ -1326,9 +1323,23 @@ namespace GridControl
                             float curMinvalue = 0.0f;
                             float curMaxValue = 0.0f;
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
+                            
+                            //! 写出同名proj文件curCCOutProjfileName
+                            int utmNumber = _srcEPSGINFO[proName];
+                            String utmIndexStr = (utmNumber - 32600).ToString();
+                            bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
                             if (status)
                             {
+                                //写出utm 坐标系png
                                 bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+                                //txt 目录下建立个 4326文件夹，转换一份4326坐标文件
+                                String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileName(curCCTimeOutdir));
+                                bool isrpro4326 = ReprojectAscToAsc(curCCTimeOutdir, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumber), "EPSG:4326");
+                                if (isrpro4326)
+                                {
+                                    bool isPngOK4326 = AscDemToColorPng(curSearchDatReporjectFile, curCCTimeOutPng4326Filename, curMinvalue, curMaxValue);
+                                }
+
                                 if (isPngOK)
                                 {
                                     //curCCTimeOutPngFilename 中获取带扩展名的文件名
@@ -1336,7 +1347,7 @@ namespace GridControl
 
                                     //为对应的指标添加url
                                     WaterDeep wd = new WaterDeep();
-                                    wd.url = String.Format("/output/png/{0}/{1}", gridResultFieldName[g], extStr);
+                                    wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
                                     wd.time = curFrameTime;
                                     wd.area = 0; //淹没面积
                                     wd.isHavarecord = "1"; //有数据
@@ -1357,7 +1368,7 @@ namespace GridControl
                                     {
                                         //合并当前省份下的所有png文件
                                         String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
-                                        
+
                                         bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                         if (isGifOK)
                                         {
@@ -1366,14 +1377,6 @@ namespace GridControl
                                         }
                                     }
                                 }
-                            }
-                            //! 写出同名proj文件curCCOutProjfileName
-                            int utmNumber = _srcEPSGINFO[proName];
-                            String utmIndexStr = (utmNumber - 32600).ToString();
-                            bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
-                            if (status)
-                            {
-                                //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
                             }
 
                             //写出min max值
