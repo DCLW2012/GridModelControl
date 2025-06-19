@@ -28,3 +28,6 @@ SysDAL/SysDAL.csproj
 tools/TestProject1/bin/
 tools/TestProject1/obj/
 GridControl/Properties/PublishProfiles/
+tools/ConsoleApp1/bin/Debug/
+tools/ConsoleApp1/obj/
+tools/readme/
