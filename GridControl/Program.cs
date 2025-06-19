@@ -125,11 +125,6 @@ namespace GridControl
                         //取出basename
                         // 获取文件名（不包含扩展名）
                         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullpath);
-                        //固定跳过某个示例文件的计算
-                        if (fileNameWithoutExtension.Contains("2025061100-10-r4000-c4000-d1"))
-                        {
-                            continue;
-                        }
                         string datname = taifenginfoForcalc.Rows[d]["filename"].ToString();
                         if (!File.Exists(fullpath))
                         {
