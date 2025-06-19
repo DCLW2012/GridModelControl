@@ -36,7 +36,7 @@ namespace GdalAscMerger
             {
                 $"-t_srs", dstSrsWkt,
                 "-r", "near", // 最近邻插值
-                "-of", "AAIGrid",
+                "-of", "GTiff",
                 "-te", outputBounds[0].ToString(), outputBounds[1].ToString(), outputBounds[2].ToString(), outputBounds[3].ToString() // 范围
             };
 
@@ -70,21 +70,25 @@ namespace GdalAscMerger
             Gdal.AllRegister();
 
             // 输出文件
-            string outputascFile = @"D:\output\china_merged.asc";
+            string outputascFile = @"D:\output\china_merged.tif";
 
             // 目标坐标系 (EPSG:4326 - WGS84)
             SpatialReference targetSrs = new SpatialReference("");
-            targetSrs.ImportFromEPSG(32649);
+            targetSrs.ImportFromEPSG(4326);
+            // 目标分辨率（按需调整）
+            double targetResolution = 0.01; // 单位：度
             string dstSrsWkt;
             targetSrs.ExportToWkt(out dstSrsWkt, null);
-            // 目标分辨率（按需调整）
-            double targetResolution = 1001; // 单位：度
+            
 
             // 步骤1: 预处理每个文件（重投影+重采样）
             var processedFiles = new List<string>();
+
+            string tempDir = Path.GetTempPath();
+
             foreach (var file in inputFiles)
             {
-                string tempFile = Path.GetTempFileName() + ".tif";
+                string tempFile = Path.Combine(tempDir, $"{Guid.NewGuid()}.tif");
                 processedFiles.Add(tempFile);
 
                 using (var srcDs = Gdal.Open(file, Access.GA_ReadOnly))
@@ -108,8 +112,8 @@ namespace GdalAscMerger
             }
 
             // 步骤2: 合并所有预处理后的文件
-            var vrtFile = Path.GetTempFileName() + ".vrt";
-            string tempoutmergeFile = Path.GetTempFileName() + ".tif";
+            var vrtFile = Path.Combine(tempDir, $"{Guid.NewGuid()}.vrt");
+            string tempoutmergeFile = Path.Combine(tempDir, $"{Guid.NewGuid()}.tif");
             using (var vrtDs = Gdal.BuildVRT(vrtFile, processedFiles.ToArray(), null, null, ""))
             {
                 // 转换为最终输出文件
@@ -123,7 +127,8 @@ namespace GdalAscMerger
             File.Delete(vrtFile);
 
             // 方法1: warp重采样
-            ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:32649", -908745.868177, 2007145.71554, 2408568.131823, 6121255.71554, 1001);
+            //ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:32649", -908745.868177, 2007145.71554, 2408568.131823, 6121255.71554, 1001);
+            ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:4326", 89.705, 17.339, 138.997, 55.238, 0.01);
             //清理tempoutmergeFile
             if (File.Exists(tempoutmergeFile))
             {
