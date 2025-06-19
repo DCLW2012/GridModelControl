@@ -520,6 +520,62 @@ namespace GridControl
             }
         }
 
+        //划分几个取值范围
+        Rgba32 GenRGBColorByLegend(float value, float curMinValue, float curMaxValue)
+        {
+            //0
+            //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
+            //创建十个元素的list List<float>
+            List<float> _cValues = new List<float>(10);
+            _cValues.Add(0.0f); // 0
+            _cValues.Add(10.0f); // 1
+            _cValues.Add(20.0f); // 2
+            _cValues.Add(50.0f); // 3
+            _cValues.Add(100.0f); // 4
+            _cValues.Add(200.0f); // 5
+            _cValues.Add(500.0f); // 6
+            _cValues.Add(1000.0f); // 7
+            _cValues.Add(2000.0f); // 8
+            _cValues.Add(5000.0f); // 9
+            _cValues.Add(10000.0f); // 10
+
+            
+            List<Rgba32> _cColors = new List<Rgba32>();
+            _cColors.Add(new Rgba32(115, 223, 255, 128));
+            _cColors.Add(new Rgba32(166, 242, 242, 128));
+            _cColors.Add(new Rgba32(61, 184, 63, 128));
+            _cColors.Add(new Rgba32(98, 184, 255, 128));
+            _cColors.Add(new Rgba32(0, 0, 253, 128));
+            _cColors.Add(new Rgba32(249, 1, 249, 128));
+            _cColors.Add(new Rgba32(127, 1, 64, 128));
+            _cColors.Add(new Rgba32(244, 167, 0, 128));
+            _cColors.Add(new Rgba32(235, 99, 0, 128));
+            _cColors.Add(new Rgba32(220, 0, 0, 128));
+            _cColors.Add(new Rgba32(147, 0, 0, 128));
+
+            if (value <= _cValues[0])
+            {
+                return new Rgba32(255, 255, 255, 128);
+            }
+
+            if (value > _cValues[10])
+            {
+                return _cColors[10];
+            }
+
+            int index = 0;
+            for (int i = 0; i < _cValues.Count-1; ++i)
+            {
+                if (value > _cValues[i] && value <= _cValues[i + 1])
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return _cColors[index];
+        }
+
         Rgba32 GenRGBColor(float value, float curMinValue, float curMaxValue)
         {
             //创建十个元素的list List<float>
@@ -681,7 +737,7 @@ namespace GridControl
                             }
                             else
                             {
-                                Rgba32 color = GenRGBColor(value, curMinValue, curMaxValue);
+                                Rgba32 color = GenRGBColorByLegend(value, curMinValue, curMaxValue);
                                 image[x, y] = color; // 根据值映射到灰度
                             }
                         }
