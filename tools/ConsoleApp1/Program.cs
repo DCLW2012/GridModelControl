@@ -4,6 +4,10 @@ using System.IO;
 using MaxRev.Gdal.Core;
 using OSGeo.GDAL;
 using OSGeo.OSR;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+
 
 namespace GdalAscMerger
 {
@@ -54,6 +58,159 @@ namespace GdalAscMerger
             dstDs.Dispose();
             drv.Dispose();
             return true;
+        }
+
+        static Rgba32 GenRGBColorByLegend(float value, float curMinValue, float curMaxValue)
+        {
+            //0
+            //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
+            //创建十个元素的list List<float>
+            List<float> _cValues = new List<float>(10);
+            _cValues.Add(0.0f); // 0
+            _cValues.Add(10.0f); // 1
+            _cValues.Add(20.0f); // 2
+            _cValues.Add(50.0f); // 3
+            _cValues.Add(100.0f); // 4
+            _cValues.Add(200.0f); // 5
+            _cValues.Add(500.0f); // 6
+            _cValues.Add(1000.0f); // 7
+            _cValues.Add(2000.0f); // 8
+            _cValues.Add(5000.0f); // 9
+            _cValues.Add(10000.0f); // 10
+
+
+            List<Rgba32> _cColors = new List<Rgba32>();
+            _cColors.Add(new Rgba32(115, 223, 255, 128));
+            _cColors.Add(new Rgba32(166, 242, 242, 128));
+            _cColors.Add(new Rgba32(61, 184, 63, 128));
+            _cColors.Add(new Rgba32(98, 184, 255, 128));
+            _cColors.Add(new Rgba32(0, 0, 253, 128));
+            _cColors.Add(new Rgba32(249, 1, 249, 128));
+            _cColors.Add(new Rgba32(127, 1, 64, 128));
+            _cColors.Add(new Rgba32(244, 167, 0, 128));
+            _cColors.Add(new Rgba32(235, 99, 0, 128));
+            _cColors.Add(new Rgba32(220, 0, 0, 128));
+            _cColors.Add(new Rgba32(147, 0, 0, 128));
+
+            if (value <= _cValues[0])
+            {
+                return new Rgba32(255, 255, 255, 128);
+            }
+
+            if (value > _cValues[10])
+            {
+                return _cColors[10];
+            }
+
+            int index = 0;
+            for (int i = 0; i < _cValues.Count - 1; ++i)
+            {
+                if (value > _cValues[i] && value <= _cValues[i + 1])
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return _cColors[index];
+        }
+
+        static public bool AscDemToColorPng(string inascfile, string outpngfile, float curMinValue, float curMaxValue)
+        {
+            try
+            {
+                // 检查输入文件是否存在
+                if (!File.Exists(inascfile))
+                {
+                    Console.WriteLine($"输入的ASC文件不存在: {inascfile}");
+                    return false;
+                }
+                // 检查输出目录是否存在，不存在则创建
+                string directory = Path.GetDirectoryName(outpngfile);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                //读取tif文件inascfile 从中获取行列数和波段1的最值范围
+                // 注册所有驱动程序
+                GdalBase.ConfigureAll();
+                Gdal.AllRegister();
+
+                using (Dataset dataset = Gdal.Open(inascfile, Access.GA_ReadOnly))
+                {
+                    if (dataset == null)
+                    {
+                        Console.WriteLine("无法打开指定的DEM文件");
+                        return false;
+                    }
+
+                    // 获取第一个波段
+                    Band band = dataset.GetRasterBand(1);
+
+                    // 获取波段统计信息，如果尚未计算，则自动计算
+                    double[] minMax = new double[2];
+                    band.ComputeRasterMinMax(minMax, 1);
+
+                    curMinValue = (float)minMax[0]; // 最小值
+                    curMaxValue = (float)minMax[1]; // 最大值
+
+                    int cols = dataset.RasterXSize; // 列数（宽度）
+                    int rows = dataset.RasterYSize; // 行数（高度）
+                    Console.WriteLine($"行列数: {cols} 列 x {rows} 行");
+
+                    // 获取数据类型（如 GDT_Float32、GDT_Int16 等）
+                    var dataType = band.DataType;
+                    Console.WriteLine($"数据类型: {dataType}");
+
+                    double noDataValue;
+                    int hasNoData;
+
+                    band.GetNoDataValue(out noDataValue, out hasNoData);
+
+                    // 分配一个缓冲区来读取整张图像
+                    float[] buffer = new float[cols * rows];
+
+                    // 读取波段数据到缓冲区
+                    band.ReadRaster(
+                        0, 0, cols, rows,
+                        buffer, cols, rows, 0, 0);
+                    Image<Rgba32> image = new Image<Rgba32>(cols, rows);
+                    // 遍历每个像素并输出高程值
+                    for (int row = 0; row < rows; row++)
+                    {
+                        for (int col = 0; col < cols; col++)
+                        {
+                            float value = buffer[row * cols + col];
+                            var temp = Math.Abs(value - noDataValue) < 0.0001; // 检查是否为无效值
+                            if (hasNoData>0 && temp)
+                            {
+                                image[col, row] = new Rgba32(0, 0, 0, 0); // 设置为完全透明
+                            }
+                            else
+                            {
+                                Rgba32 color = GenRGBColorByLegend(value, curMinValue, curMaxValue);
+                                image[col, row] = color; // 根据值映射到灰度
+                            }
+                        }
+                    }
+
+                    var options = new PngEncoder
+                    {
+                        ColorType = PngColorType.RgbWithAlpha,
+                        BitDepth = PngBitDepth.Bit8
+                    };
+
+                    image.Save(outpngfile, options);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"生成PNG失败: {ex.Message}");
+                return false;
+            }
         }
 
         static void Main(string[] args)
@@ -140,6 +297,17 @@ namespace GdalAscMerger
                 {
                     Console.WriteLine($"清理临时文件失败: {ex.Message}");
                 }
+            }
+
+            //tempoutmergeFile tif文件写出为png文件
+            if (File.Exists(outputascFile))
+            {
+                string pngOutputFile = Path.ChangeExtension(outputascFile, ".png");
+                AscDemToColorPng(outputascFile, pngOutputFile, 0, 1000);
+            }
+            else
+            {
+                Console.WriteLine("输出文件不存在，请检查路径和文件名。");
             }
         }
     }
