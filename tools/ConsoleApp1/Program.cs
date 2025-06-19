@@ -10,7 +10,8 @@ namespace GdalAscMerger
     class Program
     {
 
-        static public bool ReSampleToDestAndReprojectToChinaUTM49(string srcPath, string dstPath, String sourceSrs, String targetSrs)
+        static public bool ReSampleToDestAndReprojectToChinaUTM49(string srcPath, string dstPath, String targetSrs,
+                                 double minX, double minY, double maxX, double maxY, double resolution)
         {
             
             // 初始化GDAL
@@ -29,13 +30,7 @@ namespace GdalAscMerger
 
             // 重投影
             // 假设已初始化GDAL并打开srcDs，已设置dstSrsWkt
-            double chinaMinX = 73.0;  // 最西经度
-            double chinaMaxX = 135.0; // 最东经度
-            double chinaMinY = 18.0;  // 最南纬度
-            double chinaMaxY = 54.0;  // 最北纬度
-            double xRes = 1001; // 目标分辨率（单位：投影坐标系单位）
-            double yRes = 1001;
-            double[] outputBounds = { -908745.868177, 2007145.71554, 2408568.131823, 6121255.71554 }; // 指定输出范围
+            double[] outputBounds = { minX, minY, maxX, maxY }; // 指定输出范围
 
             string[] warpOptions = new string[]
             {
@@ -60,72 +55,6 @@ namespace GdalAscMerger
             drv.Dispose();
             return true;
         }
-        // 方法1: 使用VRT中间文件（推荐）
-        static void MergeUsingVRT(String tempoutmergeFile, string outputFile,
-                                 double minX, double minY, double maxX, double maxY, double resolution)
-        {
-            try
-            {
-                // 使用gdal打开tif文件
-                using (var dataset = Gdal.Open(tempoutmergeFile, Access.GA_ReadOnly))
-                { 
-                    if (dataset == null)
-                    {
-                        throw new Exception($"无法打开输入文件: {tempoutmergeFile}");
-                    }
-
-                    // 1. 获取输入数据的实际范围和坐标系
-                    double[] geoTransform = new double[6];
-                    dataset.GetGeoTransform(geoTransform);
-                    string inputSrsWkt = dataset.GetProjection();
-
-                    Console.WriteLine($"输入数据范围:");
-                    Console.WriteLine($"  左上: ({geoTransform[0]}, {geoTransform[3]})");
-                    Console.WriteLine($"  右下: ({geoTransform[0] + geoTransform[1] * dataset.RasterXSize}, " +
-                                      $"{geoTransform[3] + geoTransform[5] * dataset.RasterYSize})");
-                    Console.WriteLine($"输入坐标系: {inputSrsWkt}");
-
-                    // 设置Warp选项
-                    string dstSrsWkt;
-                    SpatialReference dstSrs = new SpatialReference("");
-                    dstSrs.ImportFromEPSG(4326);
-                    dstSrs.ExportToWkt(out dstSrsWkt, null);
-                    var warpOptions = new GDALWarpAppOptions(new string[] {
-                        "-te", $"{minX}", $"{minY}", $"{maxX}", $"{maxY}", // 目标范围
-                        "-tr", $"{resolution}", $"{resolution}",          // 分辨率
-                        "-t_srs", dstSrsWkt,                           // 目标坐标系
-                        "-r", "bilinear",                                // 重采样方法
-                        "-dstnodata", "-9999",                           // NoData值
-                        "-overwrite",
-                        "-of", "GTiff",
-                        "-co", "COMPRESS=LZW",
-                        "-co", "TILED=YES"
-                    });
-
-                    
-                    // 执行Warp操作
-                    using (var outputDs = Gdal.Warp(outputFile, new Dataset[] { dataset }, warpOptions, null, ""))
-                    {
-                        if (outputDs == null)
-                        {
-                            throw new Exception($"合并失败: {Gdal.GetLastErrorMsg()}");
-                        }
-                        Console.WriteLine($"成功合并到全国底图! 输出文件: {outputFile}");
-                        //释放资源
-                        outputDs.Dispose();
-                        dataset.Dispose();
-                        dstSrs.Dispose();
-                    }
-                }
-                
-                
-            }
-            finally
-            {
-                
-            }
-        }
-
 
         static void Main(string[] args)
         {
@@ -141,17 +70,7 @@ namespace GdalAscMerger
             Gdal.AllRegister();
 
             // 输出文件
-            string outputFile = @"D:\output\china_merged.tif";
             string outputascFile = @"D:\output\china_merged.asc";
-
-            // 全国范围定义 (中国大致地理范围)
-            double chinaMinX = 73.0;  // 最西经度
-            double chinaMaxX = 135.0; // 最东经度
-            double chinaMinY = 18.0;  // 最南纬度
-            double chinaMaxY = 54.0;  // 最北纬度
-
-            // 全国底图分辨率 (0.01度 ≈ 1公里)
-            double nationalRes = 0.01;
 
             // 目标坐标系 (EPSG:4326 - WGS84)
             SpatialReference targetSrs = new SpatialReference("");
@@ -204,8 +123,7 @@ namespace GdalAscMerger
             File.Delete(vrtFile);
 
             // 方法1: warp重采样
-            MergeUsingVRT(tempoutmergeFile, outputFile, chinaMinX, chinaMinY, chinaMaxX, chinaMaxY, nationalRes);
-            ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:32649", "EPSG:32649");
+            ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:32649", -908745.868177, 2007145.71554, 2408568.131823, 6121255.71554, 1001);
             //清理tempoutmergeFile
             if (File.Exists(tempoutmergeFile))
             {
