@@ -205,7 +205,7 @@ namespace GridControl
                         }
 
                         //合并当前场次的结果，到指定的目录下
-                        MergeTileToIISFolder mergeTileToIISFolder = new MergeTileToIISFolder(fileNameWithoutExtension, taifenginfoForcalc);
+                        MergeTileToIISFolderByGdal mergeTileToIISFolder = new MergeTileToIISFolderByGdal(fileNameWithoutExtension, taifenginfoForcalc);
                         bool isMerge = mergeTileToIISFolder.DoASCMergeGridPerProvinceLocal();
                         if (isMerge)
                         {
