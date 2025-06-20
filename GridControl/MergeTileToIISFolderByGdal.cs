@@ -646,7 +646,7 @@ namespace GridControl
             }
         }
 
-        public bool MergeASCFilesToTifAndPng(List<string> inputFiles, String outputTifFile, String pngOutputFile, double[] outputBounds, ref float curMinValue, ref float curMaxValue)
+        public bool MergeASCFilesToTifAndPng(String srcEPSG, String targetEPSG, List<string> inputFiles, String outputTifFile, String pngOutputFile, double[] outputBounds, ref float curMinValue, ref float curMaxValue)
         {
             //// 输入文件列表（替换为实际路径）
             //var inputFiles = new List<string>
@@ -700,12 +700,23 @@ namespace GridControl
                         "-of", "GTiff",         // 输出格式
                         "-overwrite"
                     };
+                    if (!String.IsNullOrEmpty(srcEPSG))
+                    {
+                        warpOptions = new string[]
+                        {
+                            "-s_srs", srcEPSG,      // 源坐标系
+                            "-t_srs", dstSrsWkt,
+                            "-tr", $"{targetResolution}", $"{targetResolution}",
+                            "-r", "near",       // 重采样方法：双线性插值
+                            "-of", "GTiff",         // 输出格式
+                            "-overwrite"
+                        };
+                    }
 
                     // 执行重投影和重采样
                     Dataset tempsr = Gdal.Warp(tempFile, new Dataset[] { srcDs }, new GDALWarpAppOptions(warpOptions), null, "");
                     tempsr.Dispose();
                 }
-                Console.WriteLine($"Processed: {file}");
             }
 
             // 步骤2: 合并所有预处理后的文件
@@ -751,7 +762,7 @@ namespace GridControl
         //执行合并
         //合并当前主机下所有模型目录下的结果
         //各个省份分目录存储
-        public bool DoASCMergeGridPerProvinceLocal()
+        public bool DoASCMergeGridPerProvinceLocal_usegdal()
         {
             //! 网格模型out中输出文件的英文名称
             List<String> gridResultFieldName = new List<string>();
@@ -825,6 +836,230 @@ namespace GridControl
                             Console.WriteLine($"没有找到省份 {proName} 的四至信息，跳过该省份的处理。");
                             continue;
                         }
+
+                        //坐标系信息
+                        if (!_srcEPSGINFO.ContainsKey(proName))
+                        {
+                            continue;
+                        }
+
+                        //提前确定好目标区域大小，将找到的单元，计算行列数后，放到这个数组中
+                        double xllcorner = double.Parse(dataRows[0]["xllcorner"].ToString());
+                        double yllcorner = double.Parse(dataRows[0]["yllcorner"].ToString());
+                        int ncols = int.Parse(dataRows[0]["ncols"].ToString());
+                        int nrows = int.Parse(dataRows[0]["nrows"].ToString());
+                        double cellsize = double.Parse(dataRows[0]["cellsize"].ToString());
+
+                        //double数组4个元素，存放四至信息
+                        double[] outBounds = new double[4];
+                        outBounds[0] = double.Parse(dataRows[0]["left"].ToString());
+                        outBounds[1] = double.Parse(dataRows[0]["bottom"].ToString());
+                        outBounds[2] = double.Parse(dataRows[0]["right"].ToString());
+                        outBounds[3] = double.Parse(dataRows[0]["top"].ToString());
+
+                        //每种指标对应的json索引文件名
+                        String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".json");
+
+                        //每种指标对应的当前省的 gif文件名
+                        String curgifproFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".gif");
+
+                        //对齐输出文件索引
+                        String txtFolder = Path.Combine(curCCname, proName, "output", "txt");
+                        String pngFloder = Path.Combine(curCCname, proName, "output", "png", gridResultFieldName[g]);
+                        String pngFloder4326 = Path.Combine(curCCname, proName, "output", "png4326", gridResultFieldName[g]);
+
+                        String outFormatIndex = t.ToString("D3");
+                        String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutPngFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCTimeOutPng4326Filename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.png", _iisRootDirectory, pngFloder4326, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+
+                        String curCCTimeOutMinmaxFilename = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.minmax", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String curCCOutProjfileName = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.prj", _iisRootDirectory, txtFolder, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        //遍历每个单元
+                        int isstop = 0;
+                        List<String> curCCTimeOutFileList = new List<string>();
+                        for (int i = 0; i < totalUnitsnum; ++i)
+                        {
+                            //! 当前目录,跳过不是当前省份的数据，只合并当前省份
+                            if (!proName.Equals(_unitsinfo.Rows[i]["province"].ToString()))
+                            {
+                                continue;
+                            }
+                            if (isstop == 1)
+                            {
+                                //break;
+                            }
+                            //QString curSearchDatFile = QString("%1/GRIDEXE/output/%2/%3/out/%4%5.txt").arg(unitsinfo[i].APPPath).arg(curCCname).arg(unitsinfo[i].UNITCD).arg(gridResultFieldName[g]).arg(indexNumber);
+                            //改为netcre
+                            String curSearchDatFile = String.Format("{0}/GRIDEXE/output/{1}/{2}/out/{3}{4}.txt", _unitsinfo.Rows[i]["APPPath"], curCCname, _unitsinfo.Rows[i]["UNITCD"], gridResultFieldName[g], indexNumber);
+                            //判断curSearchDatFile 文件是否存在
+                            if (!File.Exists(curSearchDatFile))
+                            {
+                                continue;
+                            }
+                            curCCTimeOutFileList.Add(curSearchDatFile);
+                        }
+                        if (curCCTimeOutFileList.Count > 0)
+                        {
+                            //提示信息，当前省份切片asc文件合并完成
+                            Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} asc文件列表收集完成，开始转换写出");
+                            float curMinvalue = 0.0f;
+                            float curMaxValue = 0.0f;
+                            String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir) + ".tif");
+                            String srcEPSG = String.Format("EPSG:{0}", _srcEPSGINFO[proName]);
+                            bool status = MergeASCFilesToTifAndPng(srcEPSG, "", curCCTimeOutFileList, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                            Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后asc文件完成");
+                            if (status)
+                            {
+                                {
+                                    //curCCTimeOutPngFilename 中获取带扩展名的文件名
+                                    String extStr = Path.GetFileName(curCCTimeOutPngFilename);
+
+                                    //为对应的指标添加url
+                                    WaterDeep wd = new WaterDeep();
+                                    wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
+                                    wd.time = curFrameTime;
+                                    wd.area = 0; //淹没面积
+                                    wd.isHavarecord = "1"; //有数据
+                                    String proKeyWithField = $"{proName}-{gridResultFieldName[g]}"; //使用省份名和字段名作为key
+                                    if (!gridResultFieldURL.ContainsKey(proKeyWithField))
+                                    {
+                                        gridResultFieldURL.Add(proKeyWithField, new List<WaterDeep>());
+                                    }
+                                    gridResultFieldURL[proKeyWithField].Add(wd);
+                                    ReadWriteJSONFile.Write(gridResultFieldURL[proKeyWithField], curJsonFilefullpath);
+
+                                    //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
+                                    //写出提示信息
+                                    Console.WriteLine($"场次 {curCCname} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 在 {proName} 省份的PNG写出成功");
+
+                                    //如果是最后一个时间，则在当前省份目录下直接输出gif文件，合并png
+                                    if (t == totalTimeNum - 1)
+                                    {
+                                        //合并当前省份下的所有png文件
+                                        String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder4326);
+
+                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                        if (isGifOK)
+                                        {
+                                            //输出gif成功
+                                            Console.WriteLine($"场次 {curCCname} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 在 {proName} 省份的GIF写出成功");
+                                        }
+                                    }
+                                }
+                            }
+
+                            //写出min max值
+                            if (status)
+                            {
+                                //更新最值
+                                if (curMinvalue < minmaxCurField["min"].value)
+                                {
+                                    minmaxCurField["min"].value = curMinvalue;
+                                    minmaxCurField["min"].tm = outFormatIndex;
+                                }
+                                if (curMaxValue > minmaxCurField["max"].value)
+                                {
+                                    minmaxCurField["max"].value = curMaxValue;
+                                    minmaxCurField["max"].tm = outFormatIndex;
+                                }
+                                //输出文件名
+                                String fiName = curCCTimeOutMinmaxFilename;
+                                //写出min maxvalue到finame中
+                                using (StreamWriter writer = new StreamWriter(fiName))
+                                {
+                                    //stream << "min" << "," << minmaxCurField["min"].value << "," << "time" << "," << minmaxCurField["min"].tm << "\n";
+                                    //stream << "max" << "," << minmaxCurField["max"].value << "," << "time" << "," << minmaxCurField["max"].tm << "\n";
+                                    //写出上边两行
+                                    writer.WriteLine($"min,{minmaxCurField["min"].value},time,{minmaxCurField["min"].tm}");
+                                    writer.WriteLine($"max,{minmaxCurField["max"].value},time,{minmaxCurField["max"].tm}");
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            }
+
+            return true;
+        }
+
+        //自己读取文本模式
+        public bool DoASCMergeGridPerProvinceLocal()
+        {
+            //! 网格模型out中输出文件的英文名称
+            List<String> gridResultFieldName = new List<string>();
+            Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
+
+            //为每个指标添加对应的url列表
+            gridResultFieldName.Add("water_depth");
+            gridResultFieldName.Add("discharge");
+            //gridResultFieldName.push_back("velocity");
+            //gridResultFieldName.push_back("precip");
+
+            //key的名字 需要是省份名字+字段名
+            //gridResultFieldURL.Add("water_depth", new List<WaterDeep>());
+            //gridResultFieldURL.Add("discharge", new List<WaterDeep>());
+
+            int NOData = -9999;
+
+            //执行数据合并写出
+            String curCCname = _fileNameWithoutExtension;
+
+            DateTime begin_time = Convert.ToDateTime(_taifenginfoForcalc.Rows[0]["starttime"]);
+            String startTimeCurDat = begin_time.ToString("yyyy-MM-dd HH:mm:ss");
+            //获取 "yyyyMMddhh"
+            String startTimeFromSrc = begin_time.ToString("yyyyMMddHH");
+
+            //! 遍历合并指定场次的信息，需要遍历的目录个数，目录路径，输出目录
+            int totalUnitsnum = _unitsinfo.Rows.Count;
+
+            int totalTimeNum = int.Parse(_taifenginfoForcalc.Rows[0]["times"].ToString());
+            double mfbl = double.Parse(_stpoinginfo.Rows[0][5].ToString());
+            //遍历每个时间
+            for (int t = 0; t < totalTimeNum; t = t + 1)
+            {
+                //begin_time 增加t天
+                DateTime curTime = begin_time.AddHours(t);
+                String curFrameTime = curTime.ToString("yyyyMMddHHmm");
+                for (int g = 0; g < gridResultFieldName.Count; ++g)
+                {
+                    //存储当前dat场次降雨最大最小值
+                    DatInfoRecord diRecordmin = new DatInfoRecord();
+                    diRecordmin.value = 99999;
+                    DatInfoRecord diRecordmax = new DatInfoRecord();
+                    diRecordmax.value = -99999;
+                    Dictionary<String, DatInfoRecord> minmaxCurField = new Dictionary<string, DatInfoRecord>();
+                    minmaxCurField.Add("min", diRecordmin);
+                    minmaxCurField.Add("max", diRecordmax);
+
+                    //遍历 srcSizeINFO
+                    for (int p = 0; p < _srcSizeINFO.Rows.Count; p++)
+                    {
+                        bool isDataUpdate = false;
+
+                        //对 时间 t索引 大于0小于10 则输出1位， 大于等于10且小于100输出2位 其他则输出3位
+                        String indexNumber = t.ToString("D3");
+                        if (totalTimeNum > 0 && totalTimeNum < 10)
+                        {
+                            indexNumber = t.ToString("D1");
+                        }
+                        else if (totalTimeNum >= 10 && totalTimeNum < 100)
+                        {
+                            indexNumber = t.ToString("D2");
+                        }
+
+                        //省名字
+                        String proName = _srcSizeINFO.Rows[p]["province"].ToString();
+                        mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
+
+                        //! 当前省份的四至信息
+                        DataRow[] dataRows = _extentInfo.Select($"province = '{proName}'");
+                        if (dataRows.Length == 0)
+                        {
+                            Console.WriteLine($"没有找到省份 {proName} 的四至信息，跳过该省份的处理。");
+                            continue;
+                        }
                         //提前确定好目标区域大小，将找到的单元，计算行列数后，放到这个数组中
                         double xllcorner = double.Parse(dataRows[0]["xllcorner"].ToString());
                         double yllcorner = double.Parse(dataRows[0]["yllcorner"].ToString());
@@ -887,7 +1122,7 @@ namespace GridControl
                             {
                                 continue;
                             }
-                            if(isstop == 1)
+                            if (isstop == 1)
                             {
                                 //break;
                             }
@@ -904,7 +1139,7 @@ namespace GridControl
                             }
 
                             //执行读写
-                            List<datInfo > curDats = new List<datInfo>();
+                            List<datInfo> curDats = new List<datInfo>();
 
                             // 打开读取这个文件
                             DatFileStruct curDt = new DatFileStruct();
@@ -961,7 +1196,7 @@ namespace GridControl
                             float curMinvalue = 0.0f;
                             float curMaxValue = 0.0f;
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
-                            
+
                             //! 写出同名proj文件curCCOutProjfileName
                             int utmNumber = _srcEPSGINFO[proName];
                             String utmIndexStr = (utmNumber - 32600).ToString();
@@ -969,10 +1204,11 @@ namespace GridControl
                             Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后asc文件完成");
                             if (status)
                             {
-                                String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir)+".tif");
-                                List<String > listForMerge = new List<String>();
+                                String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir) + ".tif");
+                                List<String> listForMerge = new List<String>();
                                 listForMerge.Add(curCCTimeOutdir);
-                                bool isrpro4326 = MergeASCFilesToTifAndPng(listForMerge, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                                String srcEPSG = String.Format("EPSG:{0}", _srcEPSGINFO[proName]);
+                                bool isrpro4326 = MergeASCFilesToTifAndPng(srcEPSG, "",listForMerge, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                                 Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后tif及png文件完成");
                                 if (isrpro4326)
                                 {
@@ -1042,7 +1278,7 @@ namespace GridControl
                         }
                     }
                 }
-                
+
             }
 
             return true;
@@ -1135,8 +1371,8 @@ namespace GridControl
                         String proName = _srcSizeINFO.Rows[p]["province"].ToString();
                         mfbl = double.Parse(_srcSizeINFO.Rows[p]["cellsize"].ToString());
 
-                        String txtFolderCurPro = Path.Combine(curCCname, proName, "output", "txt");
-                        String curSearchDatFile = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.asc", _iisRootDirectory, txtFolderCurPro, curCCname, gridResultFieldName[g], proName, outFormatIndex);
+                        String txtFolderCurPro = Path.Combine(curCCname, proName, "output", "txt", "4326");
+                        String curSearchDatFile = String.Format("{0}/{1}/{2}-{3}-{4}-{5}.tif", _iisRootDirectory, txtFolderCurPro, curCCname, gridResultFieldName[g], proName, outFormatIndex);
 
                         //判断curSearchDatFile 文件是否存在
                         if (!File.Exists(curSearchDatFile))
@@ -1149,7 +1385,7 @@ namespace GridControl
                     {
                         float curMinvalue = 0.0f;
                         float curMaxValue = 0.0f;
-                        bool status = MergeASCFilesToTifAndPng(srcProAscFileList, curCCTimeOutdir, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                        bool status = MergeASCFilesToTifAndPng("", "", srcProAscFileList, curCCTimeOutdir, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                         
                         if (status)
                         {

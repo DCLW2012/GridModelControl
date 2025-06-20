@@ -218,8 +218,7 @@ namespace GdalAscMerger
             // 输入文件列表（替换为实际路径）
             var inputFiles = new List<string>
             {
-                @"D:\\output\\2025061100-10-r4000-c4000-d1\\henan\\output\\txt\\2025061100-10-r4000-c4000-d1-discharge-henan-000.asc",
-                @"D:\\output\\2025061100-10-r4000-c4000-d1\\shandong\\output\\txt\\2025061100-10-r4000-c4000-d1-discharge-shandong-000.asc"
+                @"D://HSFXHeNanGRID//HSFXGrid3//GRIDEXE//output//2025061100-10-r4000-c4000-d1//WCF10_henan_1//out//water_depth00.txt"
             };
 
             // 初始化GDAL
@@ -254,6 +253,7 @@ namespace GdalAscMerger
                     
                     var warpOptions = new string[]
                     {
+                        "-s_srs", "EPSG:32649", // 源坐标系（假设输入文件是WGS84坐标系）
                         "-t_srs", dstSrsWkt,
                         "-tr", $"{targetResolution}", $"{targetResolution}",
                         "-r", "bilinear",       // 重采样方法：双线性插值
