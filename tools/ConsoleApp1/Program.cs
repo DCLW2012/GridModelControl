@@ -274,8 +274,21 @@ namespace GdalAscMerger
             using (var vrtDs = Gdal.BuildVRT(vrtFile, processedFiles.ToArray(), null, null, ""))
             {
                 // 转换为最终输出文件
-                Dataset temp = Gdal.wrapper_GDALTranslate(tempoutmergeFile, vrtDs, new GDALTranslateOptions(new string[] { "-of", "GTiff" }), null, "");
-                temp.Dispose();
+                //Dataset temp = Gdal.wrapper_GDALTranslate(tempoutmergeFile, vrtDs, new GDALTranslateOptions(new string[] { "-of", "GTiff" }), null, "");
+                //temp.Dispose();
+                // 假设已初始化GDAL并打开srcDs，已设置dstSrsWkt
+                double[] outputBounds = { 89.705, 17.339, 138.997, 55.238 }; // 指定输出范围
+
+                string[] warpOptions = new string[]
+                {
+                $"-t_srs", dstSrsWkt,
+                "-r", "near", // 最近邻插值
+                "-of", "GTiff",
+                "-te", outputBounds[0].ToString(), outputBounds[1].ToString(), outputBounds[2].ToString(), outputBounds[3].ToString() // 范围
+                };
+                // 调用Gdal.Warp
+                Dataset dstDs = Gdal.Warp(tempoutmergeFile, new Dataset[] { vrtDs }, new GDALWarpAppOptions(warpOptions), null, "");
+                dstDs.Dispose();
             }
             Console.WriteLine($"Merged output: {tempoutmergeFile}");
 
@@ -285,7 +298,7 @@ namespace GdalAscMerger
 
             // 方法1: warp重采样
             //ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:32649", -908745.868177, 2007145.71554, 2408568.131823, 6121255.71554, 1001);
-            ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:4326", 89.705, 17.339, 138.997, 55.238, 0.01);
+            //ReSampleToDestAndReprojectToChinaUTM49(tempoutmergeFile, outputascFile, "EPSG:4326", 89.705, 17.339, 138.997, 55.238, 0.01);
             //清理tempoutmergeFile
             if (File.Exists(tempoutmergeFile))
             {
