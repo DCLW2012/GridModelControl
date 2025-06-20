@@ -945,6 +945,10 @@ namespace GridControl
 
                         }
 
+                        //提示信息，当前省份所有单元切片asc文件读取完成，开始写出到文件并输出png图片
+                        //提示信息，当前省份所有单元切片asc文件读取完成，开始写出到文件并输出png文件
+                        Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 所有单元切片asc文件读取完成，开始写出到文件并输出png文件");
+
                         //写出到文件
                         HSFX_UNIT_Grid paramsgrid = new HSFX_UNIT_Grid();
                         paramsgrid.ncols = lastDt.col.ToString(CultureInfo.InvariantCulture);
@@ -962,13 +966,14 @@ namespace GridControl
                             int utmNumber = _srcEPSGINFO[proName];
                             String utmIndexStr = (utmNumber - 32600).ToString();
                             bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
+                            Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后asc文件完成");
                             if (status)
                             {
                                 String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir)+".tif");
                                 List<String > listForMerge = new List<String>();
                                 listForMerge.Add(curCCTimeOutdir);
                                 bool isrpro4326 = MergeASCFilesToTifAndPng(listForMerge, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
-                                
+                                Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后tif及png文件完成");
                                 if (isrpro4326)
                                 {
                                     //curCCTimeOutPngFilename 中获取带扩展名的文件名
