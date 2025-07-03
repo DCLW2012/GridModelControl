@@ -583,336 +583,8 @@ namespace GridControl
             }
         }
 
-        static Rgba32 GenRGBColor(float value, float curMinValue, float curMaxValue)
-        {
-            //创建十个元素的list List<float>
-            List<float> _cValues = new List<float>(10);
-            for (int i = 0; i < 10; ++i)
-            {
-                _cValues.Add(0.0f);
-            }
+        
 
-
-            //根据最小值，最大值，生成_cValues 区间。
-            for (int i = 0; i < 10; ++i)
-            {
-                if (i == 0)
-                {
-                    _cValues[0] = curMinValue;
-                }
-
-                if (i == 9)
-                {
-                    _cValues[9] = curMaxValue;
-                }
-
-                if (i > 0 && i < 9)
-                {
-                    _cValues[i] = (float)(curMinValue + (curMaxValue - curMinValue + 1.0e-6) / 10.0 * (float)i);
-                }
-            }
-
-            List<Rgba32> _cColors = new List<Rgba32>();
-            _cColors.Add(new Rgba32(255, 255, 255, 255));
-            _cColors.Add(new Rgba32(166, 242, 242, 255));
-            _cColors.Add(new Rgba32(61, 184, 63, 255));
-            _cColors.Add(new Rgba32(98, 184, 255, 255));
-            _cColors.Add(new Rgba32(0, 0, 253, 255));
-            _cColors.Add(new Rgba32(249, 1, 249, 255));
-            _cColors.Add(new Rgba32(127, 1, 64, 255));
-            _cColors.Add(new Rgba32(244, 167, 0, 255));
-            _cColors.Add(new Rgba32(235, 99, 0, 255));
-            _cColors.Add(new Rgba32(220, 0, 0, 255));
-            _cColors.Add(new Rgba32(147, 0, 0, 255));
-
-            if (value <= _cValues[0])
-            {
-                return _cColors[0];
-            }
-
-            if (value > _cValues[9])
-            {
-                return _cColors[10];
-            }
-
-            int index = 0;
-            for (int i = 0; i < _cValues.Count; ++i)
-            {
-                if (value > _cValues[i] && value <= _cValues[i + 1])
-                {
-                    index = i;
-                    break;
-                }
-            }
-
-            return _cColors[index + 1];
-
-        }
-
-        static public Rgba32 GenRGBColorByLegend_rain(float value, float curMinValue, float curMaxValue)
-        {
-            //0
-            //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
-            //创建十个元素的list List<float>
-            List<float> _cValues = new List<float>(10);
-            _cValues.Add(0.0f); // 0
-            _cValues.Add(1.0f); // 1
-            _cValues.Add(2.0f); // 2
-            _cValues.Add(5.0f); // 3
-            _cValues.Add(10.0f); // 4
-            _cValues.Add(15f); // 5
-            _cValues.Add(20.0f); // 6
-            _cValues.Add(50.0f); // 7
-            _cValues.Add(100.0f); // 8
-            _cValues.Add(150.0f); // 9
-            _cValues.Add(200.0f); // 10
-
-
-            List<Rgba32> _cColors = new List<Rgba32>();
-            _cColors.Add(new Rgba32(115, 223, 255, 128));
-            _cColors.Add(new Rgba32(166, 242, 242, 128));
-            _cColors.Add(new Rgba32(61, 184, 63, 128));
-            _cColors.Add(new Rgba32(98, 184, 255, 128));
-            _cColors.Add(new Rgba32(0, 0, 253, 128));
-            _cColors.Add(new Rgba32(249, 1, 249, 128));
-            _cColors.Add(new Rgba32(127, 1, 64, 128));
-            _cColors.Add(new Rgba32(244, 167, 0, 128));
-            _cColors.Add(new Rgba32(235, 99, 0, 128));
-            _cColors.Add(new Rgba32(220, 0, 0, 128));
-            _cColors.Add(new Rgba32(147, 0, 0, 128));
-
-            if (value <= _cValues[0])
-            {
-                return new Rgba32(255, 255, 255, 128);
-            }
-
-            if (value > _cValues[10])
-            {
-                return _cColors[10];
-            }
-
-            int index = 0;
-            for (int i = 0; i < _cValues.Count - 1; ++i)
-            {
-                if (value > _cValues[i] && value <= _cValues[i + 1])
-                {
-                    index = i;
-                    break;
-                }
-            }
-
-            return _cColors[index];
-        }
-
-        static public bool AscDemToColorPng(string inascfile, string outpngfile, ref float curMinValue, ref float curMaxValue)
-        {
-            try
-            {
-                // 检查输入文件是否存在
-                if (!File.Exists(inascfile))
-                {
-                    Console.WriteLine($"输入的ASC文件不存在: {inascfile}");
-                    return false;
-                }
-                // 检查输出目录是否存在，不存在则创建
-                string directory = Path.GetDirectoryName(outpngfile);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                //读取tif文件inascfile 从中获取行列数和波段1的最值范围
-                // 注册所有驱动程序
-                GdalBase.ConfigureAll();
-                Gdal.AllRegister();
-
-                using (Dataset dataset = Gdal.Open(inascfile, Access.GA_ReadOnly))
-                {
-                    if (dataset == null)
-                    {
-                        Console.WriteLine("无法打开指定的DEM文件");
-                        return false;
-                    }
-
-                    // 获取第一个波段
-                    Band band = dataset.GetRasterBand(1);
-
-                    // 获取波段统计信息，如果尚未计算，则自动计算
-                    double[] minMax = new double[2];
-                    band.ComputeRasterMinMax(minMax, 1);
-
-                    curMinValue = (float)minMax[0]; // 最小值
-                    curMaxValue = (float)minMax[1]; // 最大值
-
-                    int cols = dataset.RasterXSize; // 列数（宽度）
-                    int rows = dataset.RasterYSize; // 行数（高度）
-                    Console.WriteLine($"行列数: {cols} 列 x {rows} 行");
-
-                    // 获取数据类型（如 GDT_Float32、GDT_Int16 等）
-                    var dataType = band.DataType;
-
-                    double noDataValue;
-                    int hasNoData;
-
-                    band.GetNoDataValue(out noDataValue, out hasNoData);
-
-                    // 分配一个缓冲区来读取整张图像
-                    float[] buffer = new float[cols * rows];
-
-                    // 读取波段数据到缓冲区
-                    band.ReadRaster(
-                        0, 0, cols, rows,
-                        buffer, cols, rows, 0, 0);
-                    Image<Rgba32> image = new Image<Rgba32>(cols, rows);
-                    // 遍历每个像素并输出高程值
-                    for (int row = 0; row < rows; row++)
-                    {
-                        for (int col = 0; col < cols; col++)
-                        {
-                            float value = buffer[row * cols + col];
-                            var temp = Math.Abs(value - noDataValue) < 0.0001; // 检查是否为无效值
-                            if (hasNoData > 0 && temp)
-                            {
-                                image[col, row] = new Rgba32(0, 0, 0, 0); // 设置为完全透明
-                            }
-                            else
-                            {
-                                Rgba32 color = GenRGBColorByLegend_rain(value, curMinValue, curMaxValue);
-                                image[col, row] = color; // 根据值映射到灰度
-                            }
-                        }
-                    }
-
-                    var options = new PngEncoder
-                    {
-                        ColorType = PngColorType.RgbWithAlpha,
-                        BitDepth = PngBitDepth.Bit8
-                    };
-
-                    image.Save(outpngfile, options);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"生成PNG失败: {ex.Message}");
-                return false;
-            }
-        }
-
-        static public bool MergeASCFilesToTifAndPng(String srcEPSG, String targetEPSG, List<string> inputFiles, String outputTifFile, String pngOutputFile, double[] outputBounds, ref float curMinValue, ref float curMaxValue)
-        {
-            //// 输入文件列表（替换为实际路径）
-            //var inputFiles = new List<string>
-            //{
-            //    @"D:\\output\\2025061100-10-r4000-c4000-d1\\henan\\output\\txt\\2025061100-10-r4000-c4000-d1-discharge-henan-000.asc",
-            //    @"D:\\output\\2025061100-10-r4000-c4000-d1\\shandong\\output\\txt\\2025061100-10-r4000-c4000-d1-discharge-shandong-000.asc"
-            //};
-            // 检查输出目录是否存在，不存在则创建
-            string directory = Path.GetDirectoryName(outputTifFile);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            directory = Path.GetDirectoryName(pngOutputFile);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            // 初始化GDAL
-            GdalBase.ConfigureAll();
-            Gdal.AllRegister();
-            // 目标坐标系 (EPSG:4326 - WGS84)
-            SpatialReference targetSrs = new SpatialReference("");
-            targetSrs.ImportFromEPSG(4326);
-            // 目标分辨率（按需调整）
-            double targetResolution = 0.01; // 单位：度
-            string dstSrsWkt;
-            targetSrs.ExportToWkt(out dstSrsWkt, null);
-
-
-            // 步骤1: 预处理每个文件（重投影+重采样）
-            var processedFiles = new List<string>();
-
-            string tempDir = Path.GetTempPath();
-
-            foreach (var file in inputFiles)
-            {
-                string tempFile = Path.Combine(tempDir, $"{Guid.NewGuid()}.tif");
-                processedFiles.Add(tempFile);
-
-                using (var srcDs = Gdal.Open(file, Access.GA_ReadOnly))
-                {
-                    // 创建重投影选项
-
-                    var warpOptions = new string[]
-                    {
-                        "-t_srs", dstSrsWkt,
-                        "-tr", $"{targetResolution}", $"{targetResolution}",
-                        "-r", "bilinear",       // 重采样方法：双线性插值
-                        "-of", "GTiff",         // 输出格式
-                        "-overwrite"
-                    };
-                    if (!String.IsNullOrEmpty(srcEPSG))
-                    {
-                        warpOptions = new string[]
-                        {
-                            "-s_srs", srcEPSG,      // 源坐标系
-                            "-t_srs", dstSrsWkt,
-                            "-tr", $"{targetResolution}", $"{targetResolution}",
-                            "-r", "near",       // 重采样方法：双线性插值
-                            "-of", "GTiff",         // 输出格式
-                            "-overwrite"
-                        };
-                    }
-
-                    // 执行重投影和重采样
-                    Dataset tempsr = Gdal.Warp(tempFile, new Dataset[] { srcDs }, new GDALWarpAppOptions(warpOptions), null, "");
-                    tempsr.Dispose();
-                }
-            }
-
-            // 步骤2: 合并所有预处理后的文件
-            var vrtFile = Path.Combine(tempDir, $"{Guid.NewGuid()}.vrt");
-            using (var vrtDs = Gdal.BuildVRT(vrtFile, processedFiles.ToArray(), null, null, ""))
-            {
-                // 转换为最终输出文件
-                //Dataset temp = Gdal.wrapper_GDALTranslate(tempoutmergeFile, vrtDs, new GDALTranslateOptions(new string[] { "-of", "GTiff" }), null, "");
-                //temp.Dispose();
-                // 假设已初始化GDAL并打开srcDs，已设置dstSrsWkt
-                //double[] outputBounds = { 89.705, 17.339, 138.997, 55.238 }; // 指定输出范围
-
-                string[] warpOptions = new string[]
-                {
-                $"-t_srs", dstSrsWkt,
-                "-r", "near", // 最近邻插值
-                "-of", "GTiff",
-                "-te", outputBounds[0].ToString(), outputBounds[1].ToString(), outputBounds[2].ToString(), outputBounds[3].ToString() // 范围
-                };
-                // 调用Gdal.Warp
-                Dataset dstDs = Gdal.Warp(outputTifFile, new Dataset[] { vrtDs }, new GDALWarpAppOptions(warpOptions), null, "");
-                dstDs.Dispose();
-            }
-            Console.WriteLine($"Merged output: {outputTifFile}");
-
-            // 清理临时文件
-            foreach (var file in processedFiles) File.Delete(file);
-            File.Delete(vrtFile);
-
-            //tempoutmergeFile tif文件写出为png文件
-            if (File.Exists(outputTifFile))
-            {
-                AscDemToColorPng(outputTifFile, pngOutputFile, ref curMinValue, ref curMaxValue);
-            }
-            else
-            {
-                Console.WriteLine("输出文件不存在，请检查路径和文件名。");
-            }
-
-            return true;
-        }
 
         public static bool CreateTileByWATAByCSharp(string curDatFullname, ref string start, ref string end, ref string datnums, ref string yearmmddForID)
         {
@@ -1082,6 +754,8 @@ namespace GridControl
                 outBounds[1] = double.Parse(datStruct.Lats[tindex].ToString());
                 outBounds[2] = outBounds[0] + datStruct.col * datStruct.fbl;
                 outBounds[3] = outBounds[1] + datStruct.row * datStruct.fbl;
+                //保留三位小数，写出四至
+                String curExtent4326 = String.Format("{0:F3},{1:F3},{2:F3},{3:F3}", outBounds[0], outBounds[1], outBounds[2], outBounds[3]);
 
                 float curMinvalue = 9999.0f;
                 float curMaxValue = -9999.0f;
@@ -1092,7 +766,7 @@ namespace GridControl
                     List<String> listForMerge = new List<String>();
                     listForMerge.Add(curCCTimeOutdir);
                     String srcEPSG = String.Format("EPSG:{0}", "4326");
-                    bool isrpro4326 = MergeASCFilesToTifAndPng(srcEPSG, "", listForMerge, curoutReporjectTifFile, curCCTimepngFloder4326Outdir, outBounds, ref curMinvalue, ref curMaxValue);
+                    bool isrpro4326 = MergeTileToIISFolderByGdal.MergeASCFilesToTifAndPng("rain", srcEPSG, "", listForMerge, curoutReporjectTifFile, curCCTimepngFloder4326Outdir, outBounds, ref curMinvalue, ref curMaxValue);
                     //再写出份4326的 
                     //curCCTimeOutPng4326Filename 中获取带扩展名的文件名
                     String extStr = Path.GetFileName(curCCTimepngFloder4326Outdir);
@@ -1102,6 +776,7 @@ namespace GridControl
                     wd.url = String.Format("/rain/png4326/{0}", extStr);
                     wd.time = curFrameTime;
                     wd.area = 0; //淹没面积
+                    wd.extent = curExtent4326;
                     wd.isHavarecord = "1"; //有数据
                     if (!gridResultFieldURL.ContainsKey("rain"))
                     {
@@ -1119,7 +794,7 @@ namespace GridControl
                         //合并当前省份下的所有png文件
                         String pngFullFloder = Path.Combine(HookHelper.IISRootDirectory, pngFloder4326);
 
-                        bool isGifOK = MergeTileToIISFolder.CreateGif(pngFullFloder, curGifFilefullpath, 1000);
+                        bool isGifOK = MergeTileToIISFolderByGdal.CreateGif(pngFullFloder, curGifFilefullpath, 1000);
                         if (isGifOK)
                         {
                             //输出gif成功

@@ -15,6 +15,7 @@ namespace Common
             this.time = "";
             this.area = 0;
             this.isHavarecord = "1";
+            this.extent = "";
         }
 
         public string url { get; set; }
@@ -23,6 +24,9 @@ namespace Common
         public decimal area { get; set; }
         //是否空文件，用来让前端判断是否有数据
         public String isHavarecord { get; set; }
+
+        //存储四至边界
+        public String extent { get; set; }
 
     }
 }

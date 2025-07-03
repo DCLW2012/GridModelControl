@@ -303,7 +303,7 @@ namespace GridControl
             }
         }
 
-        public bool WriteResultAscFileByParamsWithMinMax( string fileName,
+        static public bool WriteResultAscFileByParamsWithMinMax( string fileName,
                         float[,,] data,
                         HSFX_UNIT_Grid @params,
                         ref float minValue,
@@ -373,7 +373,7 @@ namespace GridControl
         }
 
 
-        public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
+        static public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
         {
             // 检查输出目录是否存在，不存在则创建
             string directory = Path.GetDirectoryName(outputGifPath);
@@ -435,7 +435,7 @@ namespace GridControl
             Console.WriteLine("✅ GIF 创建完成！");
             return true;
         }
-        public Rgba32 GenRGBColorByLegend(float value, float curMinValue, float curMaxValue)
+        static public Rgba32 GenRGBColorByLegend(float value, float curMinValue, float curMaxValue)
         {
             //0
             //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
@@ -490,7 +490,7 @@ namespace GridControl
             return _cColors[index];
         }
 
-        public Rgba32 GenRGBColorByLegend_water(float value, float curMinValue, float curMaxValue)
+        static public Rgba32 GenRGBColorByLegend_water(float value, float curMinValue, float curMaxValue)
         {
             //0
             //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
@@ -545,7 +545,62 @@ namespace GridControl
             return _cColors[index];
         }
 
-        public bool AscDemToColorPng(string inascfile, string outpngfile, ref float curMinValue, ref float curMaxValue)
+        static public Rgba32 GenRGBColorByLegend_rain(float value, float curMinValue, float curMaxValue)
+        {
+            //0
+            //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
+            //创建十个元素的list List<float>
+            List<float> _cValues = new List<float>(10);
+            _cValues.Add(0.0f); // 0
+            _cValues.Add(1.0f); // 1
+            _cValues.Add(2.0f); // 2
+            _cValues.Add(5.0f); // 3
+            _cValues.Add(10.0f); // 4
+            _cValues.Add(15f); // 5
+            _cValues.Add(20.0f); // 6
+            _cValues.Add(50.0f); // 7
+            _cValues.Add(100.0f); // 8
+            _cValues.Add(150.0f); // 9
+            _cValues.Add(200.0f); // 10
+
+
+            List<Rgba32> _cColors = new List<Rgba32>();
+            _cColors.Add(new Rgba32(115, 223, 255, 128));
+            _cColors.Add(new Rgba32(166, 242, 242, 128));
+            _cColors.Add(new Rgba32(61, 184, 63, 128));
+            _cColors.Add(new Rgba32(98, 184, 255, 128));
+            _cColors.Add(new Rgba32(0, 0, 253, 128));
+            _cColors.Add(new Rgba32(249, 1, 249, 128));
+            _cColors.Add(new Rgba32(127, 1, 64, 128));
+            _cColors.Add(new Rgba32(244, 167, 0, 128));
+            _cColors.Add(new Rgba32(235, 99, 0, 128));
+            _cColors.Add(new Rgba32(220, 0, 0, 128));
+            _cColors.Add(new Rgba32(147, 0, 0, 128));
+
+            if (value <= _cValues[0])
+            {
+                return new Rgba32(255, 255, 255, 128);
+            }
+
+            if (value > _cValues[10])
+            {
+                return _cColors[10];
+            }
+
+            int index = 0;
+            for (int i = 0; i < _cValues.Count - 1; ++i)
+            {
+                if (value > _cValues[i] && value <= _cValues[i + 1])
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return _cColors[index];
+        }
+
+        static public bool AscDemToColorPng(String legendType, string inascfile, string outpngfile, ref float curMinValue, ref float curMaxValue)
         {
             try
             {
@@ -619,9 +674,13 @@ namespace GridControl
                             else
                             {
                                 Rgba32 color = GenRGBColorByLegend(value, curMinValue, curMaxValue);
-                                if (outpngfile.Contains("-water_depth-"))
+                                if (legendType.ToLower().Equals("water_depth"))
                                 {
                                     color = GenRGBColorByLegend_water(value, curMinValue, curMaxValue);
+                                }
+                                if (legendType.ToLower().Equals("rain"))
+                                {
+                                    color = GenRGBColorByLegend_rain(value, curMinValue, curMaxValue);
                                 }
                                 image[col, row] = color; // 根据值映射到灰度
                             }
@@ -646,7 +705,7 @@ namespace GridControl
             }
         }
 
-        public bool MergeASCFilesToTifAndPng(String srcEPSG, String targetEPSG, List<string> inputFiles, String outputTifFile, String pngOutputFile, double[] outputBounds, ref float curMinValue, ref float curMaxValue)
+        static public bool MergeASCFilesToTifAndPng(String legendType, String srcEPSG, String targetEPSG, List<string> inputFiles, String outputTifFile, String pngOutputFile, double[] outputBounds, ref float curMinValue, ref float curMaxValue)
         {
             //// 输入文件列表（替换为实际路径）
             //var inputFiles = new List<string>
@@ -749,7 +808,7 @@ namespace GridControl
             //tempoutmergeFile tif文件写出为png文件
             if (File.Exists(outputTifFile))
             {
-                AscDemToColorPng(outputTifFile, pngOutputFile, ref curMinValue, ref curMaxValue);
+                AscDemToColorPng(legendType, outputTifFile, pngOutputFile, ref curMinValue, ref curMaxValue);
             }
             else
             {
@@ -856,7 +915,8 @@ namespace GridControl
                         outBounds[1] = double.Parse(dataRows[0]["bottom"].ToString());
                         outBounds[2] = double.Parse(dataRows[0]["right"].ToString());
                         outBounds[3] = double.Parse(dataRows[0]["top"].ToString());
-
+                        //保留三位小数，写出四至
+                        String curExtent4326 = String.Format("{0:F3},{1:F3},{2:F3},{3:F3}", outBounds[0], outBounds[1], outBounds[2], outBounds[3]);
                         //每种指标对应的json索引文件名
                         String curJsonFilefullpath = Path.Combine(_iisRootDirectory, curCCname, proName, gridResultFieldName[g] + ".json");
 
@@ -907,7 +967,7 @@ namespace GridControl
                             float curMaxValue = -9999.0f;
                             String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir) + ".tif");
                             String srcEPSG = String.Format("EPSG:{0}", _srcEPSGINFO[proName]);
-                            bool status = MergeASCFilesToTifAndPng(srcEPSG, "", curCCTimeOutFileList, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                            bool status = MergeASCFilesToTifAndPng(gridResultFieldName[g], srcEPSG, "", curCCTimeOutFileList, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                             Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后asc文件完成");
                             if (status)
                             {
@@ -920,6 +980,7 @@ namespace GridControl
                                     wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
                                     wd.time = curFrameTime;
                                     wd.area = 0; //淹没面积
+                                    wd.extent = curExtent4326;
                                     wd.isHavarecord = "1"; //有数据
                                     String proKeyWithField = $"{proName}-{gridResultFieldName[g]}"; //使用省份名和字段名作为key
                                     if (!gridResultFieldURL.ContainsKey(proKeyWithField))
@@ -1073,7 +1134,8 @@ namespace GridControl
                         outBounds[1] = double.Parse(dataRows[0]["bottom"].ToString()); ;
                         outBounds[2] = double.Parse(dataRows[0]["right"].ToString()); ;
                         outBounds[3] = double.Parse(dataRows[0]["top"].ToString()); ;
-
+                        //保留三位小数，写出四至
+                        String curExtent4326 = String.Format("{0:F3},{1:F3},{2:F3},{3:F3}", outBounds[0], outBounds[1], outBounds[2], outBounds[3]);
                         //每次读取asc数据后，膨胀这个变量
                         //修改为根据每个省份的四至信息来处理
                         DatFileStruct lastDt = new DatFileStruct();
@@ -1208,7 +1270,7 @@ namespace GridControl
                                 List<String> listForMerge = new List<String>();
                                 listForMerge.Add(curCCTimeOutdir);
                                 String srcEPSG = String.Format("EPSG:{0}", _srcEPSGINFO[proName]);
-                                bool isrpro4326 = MergeASCFilesToTifAndPng(srcEPSG, "",listForMerge, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                                bool isrpro4326 = MergeASCFilesToTifAndPng(gridResultFieldName[g], srcEPSG, "",listForMerge, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                                 Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} 写出合并后tif及png文件完成");
                                 if (isrpro4326)
                                 {
@@ -1220,6 +1282,7 @@ namespace GridControl
                                     wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
                                     wd.time = curFrameTime;
                                     wd.area = 0; //淹没面积
+                                    wd.extent = curExtent4326;
                                     wd.isHavarecord = "1"; //有数据
                                     String proKeyWithField = $"{proName}-{gridResultFieldName[g]}"; //使用省份名和字段名作为key
                                     if (!gridResultFieldURL.ContainsKey(proKeyWithField))
@@ -1327,6 +1390,8 @@ namespace GridControl
             outBounds[1] = double.Parse(dataRows[0]["bottom"].ToString()); ;
             outBounds[2] = double.Parse(dataRows[0]["right"].ToString()); ;
             outBounds[3] = double.Parse(dataRows[0]["top"].ToString()); ;
+            //保留三位小数，写出四至
+            String curExtent4326 = String.Format("{0:F3},{1:F3},{2:F3},{3:F3}", outBounds[0], outBounds[1], outBounds[2], outBounds[3]);
             //遍历每个时间
             for (int t = 0; t < totalTimeNum; t = t + 1)
             {
@@ -1385,7 +1450,7 @@ namespace GridControl
                     {
                         float curMinvalue = 9999.0f;
                         float curMaxValue = -9999.0f;
-                        bool status = MergeASCFilesToTifAndPng("", "", srcProAscFileList, curCCTimeOutdir, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
+                        bool status = MergeASCFilesToTifAndPng(gridResultFieldName[g], "", "", srcProAscFileList, curCCTimeOutdir, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                         
                         if (status)
                         {
@@ -1399,6 +1464,7 @@ namespace GridControl
                             wd.url = String.Format("/output/png4326/{0}/{1}", gridResultFieldName[g], extStr);
                             wd.time = curFrameTime;
                             wd.area = 0; //淹没面积
+                            wd.extent = curExtent4326;
                             wd.isHavarecord = "1"; //有数据
                             if (!gridResultFieldURL.ContainsKey(gridResultFieldName[g]))
                             {

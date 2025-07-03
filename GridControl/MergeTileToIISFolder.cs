@@ -519,184 +519,7 @@ namespace GridControl
                 return false;
             }
         }
-
-        //划分几个取值范围
-        Rgba32 GenRGBColorByLegend(float value, float curMinValue, float curMaxValue)
-        {
-            //0
-            //0-10，10-20，20-50，50-100，100-200，200-500，500-1000，1000-2000，2000-5000，5000-10000，10000以上
-            //创建十个元素的list List<float>
-            List<float> _cValues = new List<float>(10);
-            _cValues.Add(0.0f); // 0
-            _cValues.Add(10.0f); // 1
-            _cValues.Add(20.0f); // 2
-            _cValues.Add(50.0f); // 3
-            _cValues.Add(100.0f); // 4
-            _cValues.Add(200.0f); // 5
-            _cValues.Add(500.0f); // 6
-            _cValues.Add(1000.0f); // 7
-            _cValues.Add(2000.0f); // 8
-            _cValues.Add(5000.0f); // 9
-            _cValues.Add(10000.0f); // 10
-
-            
-            List<Rgba32> _cColors = new List<Rgba32>();
-            _cColors.Add(new Rgba32(115, 223, 255, 128));
-            _cColors.Add(new Rgba32(166, 242, 242, 128));
-            _cColors.Add(new Rgba32(61, 184, 63, 128));
-            _cColors.Add(new Rgba32(98, 184, 255, 128));
-            _cColors.Add(new Rgba32(0, 0, 253, 128));
-            _cColors.Add(new Rgba32(249, 1, 249, 128));
-            _cColors.Add(new Rgba32(127, 1, 64, 128));
-            _cColors.Add(new Rgba32(244, 167, 0, 128));
-            _cColors.Add(new Rgba32(235, 99, 0, 128));
-            _cColors.Add(new Rgba32(220, 0, 0, 128));
-            _cColors.Add(new Rgba32(147, 0, 0, 128));
-
-            if (value <= _cValues[0])
-            {
-                return new Rgba32(255, 255, 255, 128);
-            }
-
-            if (value > _cValues[10])
-            {
-                return _cColors[10];
-            }
-
-            int index = 0;
-            for (int i = 0; i < _cValues.Count-1; ++i)
-            {
-                if (value > _cValues[i] && value <= _cValues[i + 1])
-                {
-                    index = i;
-                    break;
-                }
-            }
-
-            return _cColors[index];
-        }
-
         
-
-        static public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
-        {
-            // 检查输出目录是否存在，不存在则创建
-            string directory = Path.GetDirectoryName(outputGifPath);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            List<string> imagePaths = new List<string>();
-            //获取 pngFloder 目录下的所有png文件，并按名字升序排列
-            if (Directory.Exists(pngFloder))
-            {
-                imagePaths = Directory.GetFiles(pngFloder, "*.png")
-                                    .OrderBy(f => f)
-                                    .ToList();
-            }
-            if(imagePaths.Count == 0)
-            {
-                return false;
-            }
-
-            // 加载所有PNG图像
-            var frames = new List<Image>();
-            foreach (var path in imagePaths)
-            {
-                frames.Add(Image.Load(path));
-            }
-
-            int repeatCount = 0;
-            // 创建GIF（使用第一帧初始化）
-            using var gif = new Image<Rgba32>(frames[0].Width, frames[0].Height);
-            var gifMeta = gif.Metadata.GetGifMetadata();
-            gifMeta.RepeatCount = (ushort)repeatCount;
-
-            // 添加所有帧
-            foreach (var frame in frames)
-            {
-                // 克隆帧并设置延迟
-                var clonedFrame = frame.Clone(ctx => ctx.Resize(gif.Size)); // 确保尺寸一致
-                var frameMeta = clonedFrame.Frames.RootFrame.Metadata.GetGifMetadata();
-                frameMeta.FrameDelay = delayMilliseconds / 10; // 转换为GIF时间单位（1单位=10ms）
-                //上边的单位是10ms，所以这里除以10
-
-                // 添加到GIF
-                gif.Frames.AddFrame(clonedFrame.Frames.RootFrame);
-            }
-
-            // 移除初始空白帧
-            gif.Frames.RemoveFrame(0);
-
-            // 保存GIF
-            var encoder = new GifEncoder
-            {
-                ColorTableMode = GifColorTableMode.Global,
-                Quantizer = new OctreeQuantizer() // 优化颜色
-            };
-            gif.Save(outputGifPath, encoder);
-
-            Console.WriteLine("✅ GIF 创建完成！");
-            return true;
-        }
-        public bool AscDemToColorPng(string inascfile, string outpngfile, float curMinValue, float curMaxValue)
-        {
-            try
-            {
-                // 检查输入文件是否存在
-                if (!File.Exists(inascfile))
-                {
-                    Console.WriteLine($"输入的ASC文件不存在: {inascfile}");
-                    return false;
-                }
-                // 检查输出目录是否存在，不存在则创建
-                string directory = Path.GetDirectoryName(outpngfile);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-                DatFileStruct curDt = new DatFileStruct();
-                ReadGridDataFromAsc(inascfile, ref curDt);
-
-                // 创建 ImageSharp 图像
-                using (Image<Rgba32> image = new Image<Rgba32>(curDt.col, curDt.row))
-                {
-                    for (int y = 0; y < curDt.row; y++)
-                    {
-                        for (int x = 0; x < curDt.col; x++)
-                        {
-                            float value = curDt.rain[y, x, 0];
-                            if (value == curDt.nodata)
-                            {
-                                image[x, y] = new Rgba32(0, 0, 0, 0); // 设置为完全透明
-                            }
-                            else
-                            {
-                                Rgba32 color = GenRGBColorByLegend(value, curMinValue, curMaxValue);
-                                image[x, y] = color; // 根据值映射到灰度
-                            }
-                        }
-                    }
-
-                    var options = new PngEncoder
-                    {
-                        ColorType = PngColorType.RgbWithAlpha,
-                        BitDepth = PngBitDepth.Bit8
-                    };
-
-                    image.Save(outpngfile, options);
-                }
-
-                
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"生成PNG失败: {ex.Message}");
-                return false;
-            }
-        }
 
         //使用gdal写出图片
         public bool AscDemToColorPngByGDAL(string inascfile, string outpngfile, float curMinValue, float curMaxValue)
@@ -1029,7 +852,7 @@ namespace GridControl
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
                             if (status)
                             {
-                                bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+                                bool isPngOK = MergeTileToIISFolderByGdal.AscDemToColorPng(gridResultFieldName[g], curCCTimeOutdir, curCCTimeOutPngFilename, ref curMinvalue, ref curMaxValue);
                                 if (isPngOK)
                                 {
                                     //curCCTimeOutPngFilename 中获取带扩展名的文件名
@@ -1058,7 +881,7 @@ namespace GridControl
                                         //合并当前省份下的所有png文件
                                         String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
 
-                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                        bool isGifOK = MergeTileToIISFolderByGdal.CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                         if (isGifOK)
                                         {
                                             //输出gif成功
@@ -1323,13 +1146,13 @@ namespace GridControl
                             if (status)
                             {
                                 //写出utm 坐标系png
-                                bool isPngOK = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+                                bool isPngOK = MergeTileToIISFolderByGdal.AscDemToColorPng(gridResultFieldName[g], curCCTimeOutdir, curCCTimeOutPngFilename, ref curMinvalue, ref curMaxValue);
                                 //txt 目录下建立个 4326文件夹，转换一份4326坐标文件
                                 String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileName(curCCTimeOutdir));
                                 bool isrpro4326 = ReprojectAscToAsc(curCCTimeOutdir, curSearchDatReporjectFile, String.Format("EPSG:{0}", utmNumber), "EPSG:4326");
                                 if (isrpro4326)
                                 {
-                                    bool isPngOK4326 = AscDemToColorPng(curSearchDatReporjectFile, curCCTimeOutPng4326Filename, curMinvalue, curMaxValue);
+                                    bool isPngOK4326 = MergeTileToIISFolderByGdal.AscDemToColorPng(gridResultFieldName[g], curSearchDatReporjectFile, curCCTimeOutPng4326Filename, ref curMinvalue, ref curMaxValue);
                                 }
 
                                 if (isPngOK)
@@ -1361,7 +1184,7 @@ namespace GridControl
                                         //合并当前省份下的所有png文件
                                         String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder);
 
-                                        bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                        bool isGifOK = MergeTileToIISFolderByGdal.CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                         if (isGifOK)
                                         {
                                             //输出gif成功
@@ -1603,14 +1426,14 @@ namespace GridControl
                         bool statusProj = WriteResultProjAscFileByParams(curCCOutProjfileName, utmIndexStr);
                         if (status)
                         {
-                            bool isPngOK32649 = AscDemToColorPng(curCCTimeOutdir, curCCTimeOutPngFilename, curMinvalue, curMaxValue);
+                            bool isPngOK32649 = MergeTileToIISFolderByGdal.AscDemToColorPng(gridResultFieldName[g], curCCTimeOutdir, curCCTimeOutPngFilename, ref curMinvalue, ref curMaxValue);
 
                             //txt 目录下建立个 4326文件夹，转换一份4326坐标文件
                             String curSearchDatReporjectFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileName(curCCTimeOutdir));
                             bool isrpro4326 = ReprojectAscToAsc(curCCTimeOutdir, curSearchDatReporjectFile, String.Format("EPSG:32649"), "EPSG:4326");
                             if (isrpro4326)
                             {
-                                bool isPngOK4326 = AscDemToColorPng(curSearchDatReporjectFile, curCCTimeOutPng4326Filename, curMinvalue, curMaxValue);
+                                bool isPngOK4326 = MergeTileToIISFolderByGdal.AscDemToColorPng(gridResultFieldName[g], curSearchDatReporjectFile, curCCTimeOutPng4326Filename, ref curMinvalue, ref curMaxValue);
                             }
                             Console.WriteLine($"场次 {curCCname} 时间 {outFormatIndex} 的字段 {gridResultFieldName[g]} 在全国的PNG写出成功，共{totalTimeNum}个时间");
                             if (isPngOK32649)
@@ -1641,7 +1464,7 @@ namespace GridControl
                                     //合并当前省份下的所有png文件
                                     String pngFullFloder = Path.Combine(_iisRootDirectory, pngFloder4326);
 
-                                    bool isGifOK = CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
+                                    bool isGifOK = MergeTileToIISFolderByGdal.CreateGif(pngFullFloder, curgifproFilefullpath, 1000);
                                     if (isGifOK)
                                     {
                                         //输出gif成功
