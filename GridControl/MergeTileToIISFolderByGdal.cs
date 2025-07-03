@@ -520,17 +520,17 @@ namespace GridControl
             }
 
             List<Rgba32> _cColors = new List<Rgba32>();
-            _cColors.Add(new Rgba32(255, 255, 255, 255));
-            _cColors.Add(new Rgba32(166, 242, 242, 255));
-            _cColors.Add(new Rgba32(61, 184, 63, 255));
-            _cColors.Add(new Rgba32(98, 184, 255, 255));
-            _cColors.Add(new Rgba32(0, 0, 253, 255));
-            _cColors.Add(new Rgba32(249, 1, 249, 255));
-            _cColors.Add(new Rgba32(127, 1, 64, 255));
-            _cColors.Add(new Rgba32(244, 167, 0, 255));
-            _cColors.Add(new Rgba32(235, 99, 0, 255));
-            _cColors.Add(new Rgba32(220, 0, 0, 255));
-            _cColors.Add(new Rgba32(147, 0, 0, 255));
+            _cColors.Add(new Rgba32(255, 255, 255, 100));
+            _cColors.Add(new Rgba32(166, 242, 242, 100));
+            _cColors.Add(new Rgba32(61, 184, 63, 100));
+            _cColors.Add(new Rgba32(98, 184, 255, 100));
+            _cColors.Add(new Rgba32(0, 0, 253, 100));
+            _cColors.Add(new Rgba32(249, 1, 249, 100));
+            _cColors.Add(new Rgba32(127, 1, 64, 100));
+            _cColors.Add(new Rgba32(244, 167, 0, 100));
+            _cColors.Add(new Rgba32(235, 99, 0, 100));
+            _cColors.Add(new Rgba32(220, 0, 0, 100));
+            _cColors.Add(new Rgba32(147, 0, 0, 100));
 
             if (value <= _cValues[0])
             {
