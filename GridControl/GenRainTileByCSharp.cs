@@ -777,7 +777,7 @@ namespace GridControl
                             }
                             else
                             {
-                                Rgba32 color = GenRGBColor(value, curMinValue, curMaxValue);
+                                Rgba32 color = GenRGBColorByLegend_rain(value, curMinValue, curMaxValue);
                                 image[col, row] = color; // 根据值映射到灰度
                             }
                         }
@@ -1083,8 +1083,8 @@ namespace GridControl
                 outBounds[2] = outBounds[0] + datStruct.col * datStruct.fbl;
                 outBounds[3] = outBounds[1] + datStruct.row * datStruct.fbl;
 
-                float curMinvalue = 0.0f;
-                float curMaxValue = 0.0f;
+                float curMinvalue = 9999.0f;
+                float curMaxValue = -9999.0f;
                 bool isPngOK32649 = WriteRainAscFileByParamsWithMinMax(datStruct, tindex, curCCTimeOutdir, ref curMinvalue, ref curMaxValue);
                 if (isPngOK32649)
                 {

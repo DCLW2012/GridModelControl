@@ -1024,8 +1024,8 @@ namespace GridControl
                         paramsgrid.cellsize = mfbl.ToString("f6", CultureInfo.InvariantCulture);
                         if (isDataUpdate)
                         {
-                            float curMinvalue = 0.0f;
-                            float curMaxValue = 0.0f;
+                            float curMinvalue = 9999.0f;
+                            float curMaxValue = -9999.0f;
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
                             if (status)
                             {
@@ -1312,8 +1312,8 @@ namespace GridControl
                         paramsgrid.cellsize = mfbl.ToString("f6", CultureInfo.InvariantCulture);
                         if (isDataUpdate)
                         {
-                            float curMinvalue = 0.0f;
-                            float curMaxValue = 0.0f;
+                            float curMinvalue = 9999.0f;
+                            float curMaxValue = -9999.0f;
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
                             
                             //! 写出同名proj文件curCCOutProjfileName
@@ -1593,8 +1593,8 @@ namespace GridControl
                     }
                     if (isDataUpdate)
                     {
-                        float curMinvalue = 0.0f;
-                        float curMaxValue = 0.0f;
+                        float curMinvalue = 9999.0f;
+                        float curMaxValue = -9999.0f;
                         bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
                         
                         //! 写出同名proj文件curCCOutProjfileName

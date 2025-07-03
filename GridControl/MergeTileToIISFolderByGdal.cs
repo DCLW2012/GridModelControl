@@ -903,8 +903,8 @@ namespace GridControl
                         {
                             //提示信息，当前省份切片asc文件合并完成
                             Console.WriteLine($"当前省份 {proName} 时间 {indexNumber} 的字段 {gridResultFieldName[g]} asc文件列表收集完成，开始转换写出");
-                            float curMinvalue = 0.0f;
-                            float curMaxValue = 0.0f;
+                            float curMinvalue = 9999.0f;
+                            float curMaxValue = -9999.0f;
                             String curoutReporjectTifFile = Path.Combine(Path.GetDirectoryName(curCCTimeOutdir), "4326", Path.GetFileNameWithoutExtension(curCCTimeOutdir) + ".tif");
                             String srcEPSG = String.Format("EPSG:{0}", _srcEPSGINFO[proName]);
                             bool status = MergeASCFilesToTifAndPng(srcEPSG, "", curCCTimeOutFileList, curoutReporjectTifFile, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
@@ -1193,8 +1193,8 @@ namespace GridControl
                         paramsgrid.cellsize = mfbl.ToString("f6", CultureInfo.InvariantCulture);
                         if (isDataUpdate)
                         {
-                            float curMinvalue = 0.0f;
-                            float curMaxValue = 0.0f;
+                            float curMinvalue = 9999.0f;
+                            float curMaxValue = -9999.0f;
                             bool status = WriteResultAscFileByParamsWithMinMax(curCCTimeOutdir, lastDt.rain, paramsgrid, ref curMinvalue, ref curMaxValue);
 
                             //! 写出同名proj文件curCCOutProjfileName
@@ -1383,8 +1383,8 @@ namespace GridControl
                     }
                     if (srcProAscFileList.Count != 0)
                     {
-                        float curMinvalue = 0.0f;
-                        float curMaxValue = 0.0f;
+                        float curMinvalue = 9999.0f;
+                        float curMaxValue = -9999.0f;
                         bool status = MergeASCFilesToTifAndPng("", "", srcProAscFileList, curCCTimeOutdir, curCCTimeOutPng4326Filename, outBounds, ref curMinvalue, ref curMaxValue);
                         
                         if (status)
