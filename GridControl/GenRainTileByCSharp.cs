@@ -528,7 +528,10 @@ namespace GridControl
             datStruct.col = gridcol;
             datStruct.row = gridrow;
             datStruct.fbl = rainSRCFBL;
+            DateTime begin_time = DateTime.Now;
 
+            Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
+            gridResultFieldURL.Add("rain", new List<WaterDeep>());
 
             // 读取文件
             BinaryReader br;
@@ -572,6 +575,7 @@ namespace GridControl
                 string yearStrForCalc = "2020";
                 //DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
                 DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + "01" + "-" + "01" + " " + "00" + ":00:00");
+                begin_time = dt;
                 //! 传入到模型中的时间值，用来计算该时间段的水文结果
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
                 end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");
@@ -623,6 +627,71 @@ namespace GridControl
             stopwatch.Restart();
 
             //！22 数据读取完成，则需要插值到各个计算单元，然后写出
+            //首先要把降雨数据存储到结果目录中，判断结果目录是否存在，不存在则创建
+            //对齐输出文件索引
+            String rainFolder = Path.Combine(datPureName, "rain", "txt");
+            String pngFloder = Path.Combine(datPureName, "rain", "png");
+            String pngFloder4326 = Path.Combine(datPureName, "rain", "png4326");
+
+            String curJsonFilefullpath = Path.Combine(HookHelper.IISRootDirectory, datPureName, "rain.json");
+            String curGifFilefullpath = Path.Combine(HookHelper.IISRootDirectory, datPureName, "rain.gif");
+
+            for (int tindex = 0; tindex < datStruct.headerone[2]; ++tindex)
+            {
+                String outFormatIndex = tindex.ToString("D3");
+                String curCCTimeOutdir = String.Format("{0}/{1}/{2}-{3}.asc", HookHelper.IISRootDirectory, rainFolder, datPureName, tindex.ToString("D3"));
+                String curCCTimepngFloder4326Outdir = String.Format("{0}/{1}/{2}-{3}.png", HookHelper.IISRootDirectory, rainFolder, datPureName, tindex.ToString("D3"));
+
+                //！ curCCTimepngFloder4326Outdir 文件存在则跳过
+                if (File.Exists(curCCTimepngFloder4326Outdir))
+                {
+                    continue;
+                }
+
+                DateTime curTime = begin_time.AddHours(tindex);
+                String curFrameTime = curTime.ToString("yyyyMMddHHmm");
+                //写出数据为png降雨图片到curCCTimepngFloder4326Outdir文件中
+                bool isPngOK32649 = true;
+                if (isPngOK32649)
+                {
+                    //再写出份4326的 
+                    //curCCTimeOutPng4326Filename 中获取带扩展名的文件名
+                    String extStr = Path.GetFileName(curCCTimepngFloder4326Outdir);
+
+                    //为对应的指标添加url
+                    WaterDeep wd = new WaterDeep();
+                    wd.url = String.Format("/rain/png4326/{0}", extStr);
+                    wd.time = curFrameTime;
+                    wd.area = 0; //淹没面积
+                    wd.isHavarecord = "1"; //有数据
+                    if (!gridResultFieldURL.ContainsKey("rain"))
+                    {
+                        gridResultFieldURL["rain"] = new List<WaterDeep>();
+                    }
+                    gridResultFieldURL["rain"].Add(wd);
+                    ReadWriteJSONFile.Write(gridResultFieldURL["rain"], curJsonFilefullpath);
+
+                    //Logger::Message(QStringLiteral("%1场次时间%2的字段%3在%4省份png写出成功").arg(curCCname).arg(indexNumber).arg(gridResultFieldName[g]).arg(proName));
+
+
+                    //如果是最后一个时间，则在当前png目录下直接输出gif文件，合并png
+                    if (tindex == datStruct.headerone[2] - 1)
+                    {
+                        //合并当前省份下的所有png文件
+                        String pngFullFloder = Path.Combine(HookHelper.IISRootDirectory, pngFloder4326);
+
+                        bool isGifOK = MergeTileToIISFolder.CreateGif(pngFullFloder, curGifFilefullpath, 1000);
+                        if (isGifOK)
+                        {
+                            //输出gif成功
+                            Console.WriteLine("全区域合并成功");
+                        }
+                    }
+                }
+
+            }
+
+
             //! 遍历所有的计算单元信息表，写出数据
             //! 遍历每个计算单元，然后在其中遍历每个场次的数据
             int unitNUM = dbTableConfigs["china"]["GRID_HSFX_UNIT"].Rows.Count;

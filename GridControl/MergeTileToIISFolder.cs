@@ -642,7 +642,7 @@ namespace GridControl
 
         }
 
-        public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
+        static public bool CreateGif(String pngFloder, string outputGifPath, int delayMilliseconds)
         {
             // 检查输出目录是否存在，不存在则创建
             string directory = Path.GetDirectoryName(outputGifPath);
