@@ -1288,6 +1288,7 @@ namespace GridControl
 
 
                             //！根据当前curDt，计算其在lastDt中的行列号
+                            //从左下角遍历的，读取时候的rain是从左上角开始的，写出时候存储的是左下角开始的
                             for (int dtR = 0; dtR < curDt.row; dtR++)
                             {
                                 for (int dtC = 0; dtC < curDt.col; dtC++)
