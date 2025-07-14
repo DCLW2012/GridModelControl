@@ -14,6 +14,7 @@ using OSGeo.OSR;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp;
+using System.Globalization;
 
 namespace GridControl
 {
@@ -627,6 +628,7 @@ namespace GridControl
             datStruct.row = gridrow;
             datStruct.fbl = rainSRCFBL;
             DateTime begin_time = DateTime.Now;
+            DateTime real_startTM = DateTime.Now;
 
             Dictionary<String, List<WaterDeep>> gridResultFieldURL = new Dictionary<string, List<WaterDeep>>();
             gridResultFieldURL.Add("rain", new List<WaterDeep>());
@@ -674,6 +676,12 @@ namespace GridControl
                 //DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + mdhSt.Substring(0, 2) + "-" + mdhSt.Substring(2, 2) + " " + mdhSt.Substring(4, 2) + ":00:00");
                 DateTime dt = Convert.ToDateTime(yearStrForCalc + "-" + "01" + "-" + "01" + " " + "00" + ":00:00");
                 begin_time = dt;
+
+                real_startTM = DateTime.ParseExact(
+                                            ymdhstr,
+                                            "yyyyMMddHH",     // 格式：年4位，月2位，日2位，小时2位
+                                            CultureInfo.InvariantCulture
+                                        );
                 //! 传入到模型中的时间值，用来计算该时间段的水文结果
                 start = dt.ToString("yyyy-MM-ddTHH:mm");
                 end = (dt.AddHours(times - 1)).ToString("yyyy-MM-ddTHH:mm");
@@ -746,7 +754,7 @@ namespace GridControl
                     continue;
                 }
 
-                DateTime curTime = begin_time.AddHours(tindex);
+                DateTime curTime = real_startTM.AddHours(tindex);
                 String curFrameTime = curTime.ToString("yyyyMMddHHmm");
                 //写出数据为png降雨图片到curCCTimepngFloder4326Outdir文件中
                 double[] outBounds = new double[4];
